@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">در حال بارگذاری... | آتلیه</title>
+
+    <!-- فونت وزیرمتن -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        bg: 'var(--color-bg)',
+                        surface: 'var(--color-surface)',
+                        'surface-muted': 'var(--color-surface-muted)',
+                        media: 'var(--color-media)',
+                        line: 'var(--color-line)',
+                        foreground: 'var(--color-foreground)',
+                        muted: 'var(--color-muted)',
+                        emerald: {
+                            DEFAULT: 'var(--color-emerald)',
+                            soft: 'var(--color-emerald-soft)',
+                            deep: 'var(--color-emerald-deep)',
+                        },
+                        gold: {
+                            DEFAULT: 'var(--color-gold)',
+                            soft: 'var(--color-gold-soft)',
+                        },
+                        danger: 'var(--color-danger)',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        :root {
+            --color-bg: #f7f7f5;
+            --color-surface: #ffffff;
+            --color-surface-muted: #f1f1ee;
+            --color-media: #ececea;
+            --color-line: #e4e4e1;
+            --color-foreground: #1c1c1a;
+            --color-muted: #8a8a85;
+            --color-emerald: #1f8a5f;
+            --color-emerald-soft: #e5f4ec;
+            --color-emerald-deep: #14523a;
+            --color-gold: #b8903e;
+            --color-gold-soft: #f7eedd;
+            --color-danger: #c0392b;
+        }
+
+        html, body {
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-foreground);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .ticker {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background-color: var(--color-surface-muted);
+        }
+
+            .skeleton::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                transform: translateX(-100%);
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+                animation: shimmer 1.5s infinite;
+            }
+
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .bg-emerald-hover:hover {
+            background-color: var(--color-emerald-deep);
+        }
+
+        .thumb.active {
+            border-color: var(--color-emerald);
+        }
+
+        .color-swatch.active {
+            border-color: var(--color-emerald);
+        }
+
+        .tab-btn.active {
+            color: var(--color-foreground);
+            border-color: var(--color-emerald) !important;
+        }
+
+        .zoom-wrap {
+            position: relative;
+        }
+
+        .zoom-img {
+            transition: transform 0.4s ease;
+        }
+
+        .zoom-wrap:hover .zoom-img {
+            transform: scale(1.05);
+        }
+
+        .tilt-card {
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+            .tilt-card:hover {
+                box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+                transform: translateY(-2px);
+            }
+
+        .carousel-wrap .track.cursor-grabbing {
+            cursor: grabbing;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-bg">
+
+    <div id="loading-bar" class="fixed inset-x-0 top-0 z-[210] h-0.5 overflow-hidden bg-transparent">
+        <div id="loading-bar-fill" class="h-full bg-emerald transition-all duration-300 ease-out" style="width:15%"></div>
+    </div>
+    <div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
+
+    <div id="header-placeholder"></div>
+
+    <!-- breadcrumb -->
+    <div class="border-b border-line bg-surface">
+        <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
+            <a href="index.html" class="hover:text-emerald">صفحه اصلی</a>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+            <a id="breadcrumb-category" href="shop.html" class="hover:text-emerald">دسته‌بندی</a>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+            <span id="breadcrumb-title" class="truncate text-foreground/70">در حال بارگذاری...</span>
+        </div>
+    </div>
+
+    <!-- ============ loading skeleton ============ -->
+    <div id="loading-state" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+            <div class="skeleton aspect-square rounded-3xl"></div>
+            <div class="space-y-4">
+                <div class="skeleton h-4 w-24 rounded"></div>
+                <div class="skeleton h-8 w-3/4 rounded"></div>
+                <div class="skeleton h-4 w-32 rounded"></div>
+                <div class="skeleton h-20 w-full rounded-2xl"></div>
+                <div class="skeleton h-12 w-full rounded-2xl"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ empty / not found ============ -->
+    <div id="not-found-state" class="mx-auto hidden max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
+        <p class="text-lg font-bold">محصول مورد نظر یافت نشد</p>
+        <a href="shop.html" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به فروشگاه</a>
+    </div>
+
+    <!-- ============ PRODUCT MAIN ============ -->
+    <section id="product-content" class="mx-auto hidden max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+
+            <!-- gallery -->
+            <div>
+                <div class="zoom-wrap relative aspect-square overflow-hidden rounded-3xl bg-media">
+                    <span id="discount-badge" class="absolute right-4 top-4 z-10 hidden rounded-full bg-danger/10 px-3 py-1.5 text-[11px] font-semibold text-danger"></span>
+                    <button onclick="toggleGalleryWish()" id="gallery-wish" class="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>
+                    </button>
+                    <img id="main-image" src="" class="zoom-img h-full w-full object-cover" />
+                </div>
+                <div id="thumb-row" class="mt-3 flex gap-3 overflow-x-auto no-scrollbar"></div>
+            </div>
+
+            <!-- info -->
+            <div>
+                <div class="flex items-center gap-2 text-xs text-muted">
+                    <span id="info-category"></span>
+                </div>
+                <h1 id="product-name" class="mt-2 text-2xl font-extrabold leading-relaxed sm:text-[28px]"></h1>
+
+                <div class="mt-3 flex items-center gap-3">
+                    <div class="flex items-center gap-1 text-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z" /></svg>
+                        <span class="ticker font-semibold" id="avg-rating">-</span>
+                    </div>
+                    <a href="#reviews-tab" class="text-xs text-muted hover:text-emerald"><span id="review-count">0</span> نظر</a>
+                    <span class="h-3 w-px bg-line"></span>
+                    <span class="text-xs text-emerald" id="sku-display"></span>
+                </div>
+
+                <div class="mt-5 flex items-baseline gap-3 rounded-2xl bg-surface-muted p-4">
+                    <span class="ticker text-2xl font-extrabold" id="main-price"></span>
+                    <span class="text-xs text-muted">تومان</span>
+                    <span class="ticker text-sm text-muted line-through hidden" id="old-price"></span>
+                    <span class="rounded-full bg-danger/10 px-2 py-1 text-[11px] font-semibold text-danger hidden" id="discount-pct"></span>
+                </div>
+
+                <div id="stock-status" class="mt-4 flex items-center gap-2 text-xs"></div>
+
+                <!-- color / variant -->
+                <div id="variant-block" class="mt-6 hidden">
+                    <div class="mb-2.5 text-sm font-semibold">رنگ: <span id="color-label" class="font-normal text-muted"></span></div>
+                    <div id="color-swatches" class="flex flex-wrap items-center gap-2.5"></div>
+                </div>
+
+                <!-- quantity + add to cart -->
+                <div class="mt-7 flex items-stretch gap-3">
+                    <div class="flex items-center rounded-2xl border border-line">
+                        <button onclick="changeQty(1)" class="flex h-full w-11 items-center justify-center text-foreground hover:text-emerald" aria-label="افزایش">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                        </button>
+                        <span id="qty-value" class="ticker w-9 text-center text-sm font-bold">1</span>
+                        <button onclick="changeQty(-1)" class="flex h-full w-11 items-center justify-center text-foreground hover:text-emerald" aria-label="کاهش">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14" /></svg>
+                        </button>
+                    </div>
+                    <button id="pdp-cart-btn" onclick="addToCartPDP()" class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /></svg>
+                        افزودن به سبد خرید
+                    </button>
+                </div>
+
+                <!-- trust strip -->
+                <div class="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-2">
+                    <div class="flex items-center gap-2.5 text-xs text-muted">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z" /><path d="m9 12 2 2 4-4" /></svg></span>
+                        ضمانت اصالت کالا
+                    </div>
+                    <div class="flex items-center gap-2.5 text-xs text-muted">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg></span>
+                        ۷ روز ضمانت بازگشت
+                    </div>
+                    <div class="flex items-center gap-2.5 text-xs text-muted">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V6H2v11h2" /><path d="M14 10h4l3 3v4h-2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg></span>
+                        ارسال رایگان بالای ۵۰۰ هزار تومان
+                    </div>
+                    <div class="flex items-center gap-2.5 text-xs text-muted">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3Z" /><path d="M3 19a2 2 0 0 0 2 2h1v-6H3Z" /></svg></span>
+                        پشتیبانی ۲۴ ساعته
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ TABS ============ -->
+        <div class="mt-14 border-b border-line">
+            <div class="flex gap-6 overflow-x-auto no-scrollbar">
+                <button onclick="switchTab('desc')" data-tab="desc" class="tab-btn active shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">توضیحات محصول</button>
+                <button onclick="switchTab('specs')" data-tab="specs" class="tab-btn shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">مشخصات فنی</button>
+                <button onclick="switchTab('reviews')" data-tab="reviews" class="tab-btn shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">نظرات (<span id="tab-review-count">0</span>)</button>
+            </div>
+        </div>
+
+        <div class="py-8" id="reviews-tab">
+            <div id="tab-desc" class="tab-panel max-w-3xl text-sm leading-8 text-foreground/80"></div>
+            <div id="tab-specs" class="tab-panel hidden max-w-2xl overflow-hidden rounded-2xl border border-line"></div>
+            <div id="tab-reviews" class="tab-panel hidden max-w-2xl"></div>
+        </div>
+    </section>
+
+    <!-- related products -->
+    <section id="related-section" class="mx-auto hidden max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-7">
+            <span class="text-xs font-medium tracking-widest text-emerald">مرتبط با این کالا</span>
+            <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات مشابه</h2>
+        </div>
+        <div id="carousel-related" class="carousel-wrap relative"></div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- mobile sticky add-to-cart bar -->
+    <div id="mobile-cart-bar" class="fixed inset-x-0 bottom-0 z-[96] hidden items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div class="flex flex-col">
+            <span class="ticker text-sm font-extrabold" id="mobile-price"></span>
+            <span class="text-[10px] text-muted">تومان</span>
+        </div>
+        <button onclick="addToCartPDP()" class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /></svg>
+            افزودن به سبد خرید
+        </button>
+    </div>
+
+
+    <script src="js/api.js"></script>
+    <script src="js/layout.js"></script>
+    <script>
+        function showToast(kind, message) {
+            const root = document.getElementById('toast-root');
+            const el = document.createElement('div');
+            const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+            el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+            el.innerHTML = (kind === 'success'
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+                + `<span>${message}</span>`;
+            root.appendChild(el);
+            requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+            setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
+        }
+        const spinnerSVG = '<svg class="animate-spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+
+        window.addEventListener('load', () => {
+            const fill = document.getElementById('loading-bar-fill');
+            const bar = document.getElementById('loading-bar');
+            setTimeout(() => fill.style.width = '70%', 100);
+            setTimeout(() => fill.style.width = '100%', 400);
+            setTimeout(() => bar.style.display = 'none', 650);
+        });
+
+        /* ---------- گرفتن slug از URL ---------- */
+        const slug = new URLSearchParams(window.location.search).get('slug');
+        let product = null;
+        let selectedVariantId = null;
+        let qty = 1;
+        let galleryLiked = false;
+
+        async function loadProduct() {
+            if (!slug) {
+                showNotFound();
+                return;
+            }
+            try {
+                product = await Api.getProduct(slug);
+                renderProduct();
+                loadRelated();
+            } catch (e) {
+                showNotFound();
+            }
+        }
+
+        function showNotFound() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('not-found-state').classList.remove('hidden');
+        }
+
+        function renderProduct() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('product-content').classList.remove('hidden');
+            document.getElementById('related-section').classList.remove('hidden');
+            document.getElementById('mobile-cart-bar').classList.remove('hidden');
+            document.getElementById('mobile-cart-bar').classList.add('flex');
+
+            document.getElementById('page-title').textContent = `${product.name} | آتلیه`;
+            document.getElementById('breadcrumb-category').textContent = product.categoryName;
+            document.getElementById('breadcrumb-title').textContent = product.name;
+            document.getElementById('info-category').textContent = product.categoryName;
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('avg-rating').textContent = product.averageRating.toFixed(1);
+            document.getElementById('review-count').textContent = product.reviewCount;
+            document.getElementById('tab-review-count').textContent = product.reviewCount;
+            document.getElementById('sku-display').textContent = product.sku ? `کد کالا: ${product.sku}` : '';
+
+            // گالری
+            const images = product.images.length ? product.images : [{ imageUrl: '', isMain: true }];
+            const mainImg = images.find(i => i.isMain) || images[0];
+            document.getElementById('main-image').src = mainImg.imageUrl;
+            document.getElementById('thumb-row').innerHTML = images.map((img, i) => `
+            <button onclick="setMainImage(this, '${img.imageUrl}')" class="thumb ${img.imageUrl === mainImg.imageUrl ? 'active' : ''} h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-line">
+              <img src="${img.imageUrl}" class="h-full w-full object-cover" />
+            </button>
+          `).join('');
+
+            // قیمت
+            const mainPrice = product.discountPrice ?? product.price;
+            document.getElementById('main-price').textContent = formatPrice(mainPrice);
+            document.getElementById('mobile-price').textContent = formatPrice(mainPrice);
+            if (product.discountPrice) {
+                document.getElementById('old-price').textContent = formatPrice(product.price);
+                document.getElementById('old-price').classList.remove('hidden');
+                const pct = Math.round((1 - product.discountPrice / product.price) * 100);
+                const pctEl = document.getElementById('discount-pct');
+                pctEl.textContent = `${pct}٪ تخفیف`;
+                pctEl.classList.remove('hidden');
+                const badge = document.getElementById('discount-badge');
+                badge.textContent = `${pct}٪ تخفیف`;
+                badge.classList.remove('hidden');
+            }
+
+            // موجودی
+            const stockEl = document.getElementById('stock-status');
+            if (product.stockQuantity > 0) {
+                stockEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg><span class="text-emerald">موجود در انبار — ارسال ۲۴ ساعته</span>`;
+            } else {
+                stockEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-danger"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg><span class="text-danger">ناموجود</span>`;
+                document.getElementById('pdp-cart-btn').disabled = true;
+                document.getElementById('pdp-cart-btn').classList.add('opacity-40');
+            }
+
+            // رنگ‌بندی
+            if (product.variants && product.variants.length) {
+                document.getElementById('variant-block').classList.remove('hidden');
+                selectedVariantId = product.variants[0].id;
+                document.getElementById('color-label').textContent = product.variants[0].color || '';
+                document.getElementById('color-swatches').innerHTML = product.variants.map((v, i) => `
+              <button onclick="selectVariant(${v.id}, '${v.color || ''}', this)" class="color-swatch ${i === 0 ? 'active' : ''} h-9 w-9 rounded-full border-2 ${i === 0 ? '' : 'border-transparent'} p-0.5" aria-label="${v.color || ''}">
+                <span class="block h-full w-full rounded-full border border-line" style="background:${colorToHex(v.color)}"></span>
+              </button>
+            `).join('');
+            }
+
+            // توضیحات
+            document.getElementById('tab-desc').innerHTML = product.description
+                ? `<p>${product.description}</p>`
+                : `<p class="text-muted">توضیحاتی برای این محصول ثبت نشده است.</p>`;
+
+            // مشخصات فنی
+            const specsWrap = document.getElementById('tab-specs');
+            if (product.specifications && product.specifications.length) {
+                specsWrap.innerHTML = `
+              <div class="grid grid-cols-2 divide-x divide-line divide-x-reverse border-b border-line bg-surface-muted text-sm">
+                <div class="px-4 py-3 font-semibold">مشخصه</div><div class="px-4 py-3 font-semibold">مقدار</div>
+              </div>
+              ${product.specifications.map((s, i) => `
+                <div class="grid grid-cols-2 divide-x divide-line divide-x-reverse ${i < product.specifications.length - 1 ? 'border-b border-line' : ''} text-sm">
+                  <div class="px-4 py-3 text-muted">${s.key}</div><div class="px-4 py-3">${s.value}</div>
+                </div>
+              `).join('')}
+            `;
+            } else {
+                specsWrap.innerHTML = `<p class="p-4 text-sm text-muted">مشخصات فنی ثبت نشده است.</p>`;
+            }
+
+            // نظرات
+            const reviewsWrap = document.getElementById('tab-reviews');
+            if (product.reviews && product.reviews.length) {
+                reviewsWrap.innerHTML = `
+              <div class="mb-6 flex items-center gap-4 rounded-2xl bg-surface-muted p-5">
+                <div class="text-center">
+                  <div class="ticker text-3xl font-extrabold">${product.averageRating.toFixed(1)}</div>
+                </div>
+                <div class="text-xs text-muted">بر اساس ${product.reviewCount} نظر خریداران</div>
+              </div>
+              <div class="space-y-5">
+                ${product.reviews.map((r, i) => `
+                  <div class="${i < product.reviews.length - 1 ? 'border-b border-line' : ''} pb-5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-semibold">${r.userFullName}</span>
+                      <span class="text-[11px] text-muted">${new Date(r.createdAt).toLocaleDateString('fa-IR')}</span>
+                    </div>
+                    <div class="mt-1 flex gap-0.5">${starsHtml(r.rating)}</div>
+                    <p class="mt-2 text-sm leading-7 text-foreground/80">${r.comment || ''}</p>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+            } else {
+                reviewsWrap.innerHTML = `<p class="text-sm text-muted">هنوز نظری برای این محصول ثبت نشده است.</p>`;
+            }
+
+            updateCartBadge();
+        }
+
+        function starsHtml(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += i <= rating
+                    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>'
+                    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>';
+            }
+            return html;
+        }
+
+        function colorToHex(name) {
+            const map = { 'مشکی': '#1c1c1c', 'سفید': '#f4f3ee', 'طلایی': '#b8903e', 'قرمز': '#b4432f', 'آبی': '#1f4b6f', 'سبز': '#1f6f5c' };
+            return map[name] || '#9ca3af';
+        }
+
+        /* ---------- گالری ---------- */
+        function setMainImage(btn, url) {
+            document.getElementById('main-image').src = url;
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function toggleGalleryWish() {
+            if (!isLoggedIn()) {
+                showToast('error', 'برای افزودن به علاقه‌مندی‌ها ابتدا وارد شوید');
+                setTimeout(() => { window.location.href = 'auth.html'; }, 900);
+                return;
+            }
+            const btn = document.getElementById('gallery-wish');
+            btn.innerHTML = spinnerSVG;
+            try {
+                if (galleryLiked) {
+                    await Api.removeFromWishlist(product.id);
+                    galleryLiked = false;
+                    btn.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+                    showToast('success', 'از علاقه‌مندی‌ها حذف شد');
+                } else {
+                    await Api.addToWishlist(product.id);
+                    galleryLiked = true;
+                    btn.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" class="text-danger"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+                    showToast('success', 'به علاقه‌مندی‌ها اضافه شد');
+                }
+            } catch (err) {
+                showToast('error', err.message);
+            }
+        }
+
+        /* ---------- رنگ‌بندی ---------- */
+        function selectVariant(variantId, colorName, btn) {
+            selectedVariantId = variantId;
+            document.querySelectorAll('.color-swatch').forEach(s => { s.classList.remove('active'); s.classList.add('border-transparent'); });
+            btn.classList.add('active');
+            btn.classList.remove('border-transparent');
+            document.getElementById('color-label').textContent = colorName;
+        }
+
+        /* ---------- تعداد ---------- */
+        function changeQty(delta) {
+            qty = Math.min(10, Math.max(1, qty + delta));
+            document.getElementById('qty-value').textContent = qty;
+        }
+
+        /* ---------- افزودن به سبد خرید ---------- */
+        async function addToCartPDP() {
+            const btn = document.getElementById('pdp-cart-btn');
+            if (btn.dataset.loading === '1') return;
+            btn.dataset.loading = '1';
+            const original = btn.innerHTML;
+            btn.innerHTML = spinnerSVG;
+            try {
+                await Api.addToCart(product.id, qty, selectedVariantId);
+                showToast('success', `${qty} عدد به سبد خرید اضافه شد`);
+                updateCartBadge();
+            } catch (err) {
+                showToast('error', err.message);
+            } finally {
+                btn.dataset.loading = '0';
+                btn.innerHTML = original;
+            }
+        }
+
+        /* ---------- تب‌ها ---------- */
+        function switchTab(id) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== `tab-${id}`));
+        }
+
+        /* ---------- محصولات مرتبط ---------- */
+        const badgeCls = { "جدید": "bg-emerald-soft text-emerald", "پرفروش": "bg-gold-soft text-gold", "پیشنهاد ویژه": "bg-danger/10 text-danger" };
+
+        function relatedCard(p) {
+            const badge = p.badge ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${badgeCls[p.badge] || 'bg-surface-muted text-muted'}">${p.badge}</span>` : "";
+            const old = p.discountPrice ? `<span class="ticker text-xs text-muted line-through">${formatPrice(p.price)}</span>` : "";
+            const mainPrice = p.discountPrice ?? p.price;
+            return `<div class="tilt-card w-full rounded-2xl border border-line bg-surface p-3">
+            <a href="product.html?slug=${p.slug}" class="relative block aspect-square overflow-hidden rounded-xl bg-media">
+              <img src="${p.mainImageUrl}" class="h-full w-full object-cover" loading="lazy" />
+              ${badge}
+            </a>
+            <div class="mt-3 px-1">
+              <div class="text-xs text-muted">${p.categoryName}</div>
+              <a href="product.html?slug=${p.slug}"><h3 class="mt-1 truncate text-sm font-semibold hover:text-emerald">${p.name}</h3></a>
+              <div class="mt-1.5 flex items-center gap-1 text-xs text-muted">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+                <span class="ticker">${p.averageRating.toFixed(1)}</span><span>(${p.reviewCount})</span>
+              </div>
+              <div class="mt-2.5 flex items-baseline gap-2">
+                <span class="ticker text-[15px] font-bold">${formatPrice(mainPrice)}</span><span class="text-[11px] text-muted">تومان</span>${old}
+              </div>
+              <button onclick="quickAddToCart(${p.id}, this)" class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+                افزودن به سبد
+              </button>
+            </div>
+          </div>`;
+        }
+
+        async function quickAddToCart(productId, btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = spinnerSVG;
+            try {
+                await Api.addToCart(productId, 1);
+                showToast('success', 'به سبد خرید اضافه شد');
+                updateCartBadge();
+            } catch (err) {
+                showToast('error', err.message);
+            } finally {
+                btn.innerHTML = original;
+            }
+        }
+
+        async function loadRelated() {
+            try {
+                const result = await Api.getProducts('?sortBy=rating&pageSize=12');
+                const related = result.items.filter(p => p.id !== product.id).slice(0, 8);
+                buildRelatedCarousel(related);
+            } catch (e) {
+                buildRelatedCarousel([]);
+            }
+        }
+
+        function buildRelatedCarousel(items) {
+            const wrap = document.getElementById('carousel-related');
+            if (!items || items.length === 0) {
+                wrap.innerHTML = `<p class="py-6 text-center text-sm text-muted">محصول مشابهی یافت نشد</p>`;
+                return;
+            }
+            wrap.innerHTML = `
+            <div class="fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+            <div class="fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+            <button class="arrow-next absolute left-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت بعدی">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button class="arrow-prev absolute right-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت قبلی">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+            <div class="track flex cursor-grab gap-4 overflow-x-auto pb-2 select-none no-scrollbar"></div>
+          `;
+            const track = wrap.querySelector('.track');
+            track.innerHTML = items.map(p => `<div class="w-[220px] shrink-0 sm:w-[240px]">${relatedCard(p)}</div>`).join('');
+
+            const fadeRight = wrap.querySelector('.fade-right');
+            const fadeLeft = wrap.querySelector('.fade-left');
+            const arrowNext = wrap.querySelector('.arrow-next');
+            const arrowPrev = wrap.querySelector('.arrow-prev');
+            function scrollBy(dir) { track.scrollBy({ left: track.clientWidth * 0.7 * dir, behavior: 'smooth' }); }
+            arrowNext.addEventListener('click', () => scrollBy(-1));
+            arrowPrev.addEventListener('click', () => scrollBy(1));
+            function updateEdges() {
+                const scrolled = Math.abs(track.scrollLeft);
+                const max = track.scrollWidth - track.clientWidth;
+                const atStart = scrolled <= 4;
+                const atEnd = max <= 4 || scrolled >= max - 4;
+                fadeRight.style.opacity = atStart ? '0' : '1';
+                fadeLeft.style.opacity = atEnd ? '0' : '1';
+                arrowNext.style.display = atEnd ? 'none' : 'flex';
+                arrowPrev.style.display = atStart ? 'none' : 'flex';
+            }
+            track.addEventListener('scroll', updateEdges, { passive: true });
+            window.addEventListener('resize', updateEdges);
+            updateEdges();
+            let dragActive = false, lastX = 0, moved = false;
+            track.addEventListener('mousedown', (e) => { dragActive = true; lastX = e.pageX; moved = false; track.classList.add('cursor-grabbing'); });
+            track.addEventListener('mousemove', (e) => {
+                if (!dragActive) return;
+                const dx = e.pageX - lastX;
+                if (Math.abs(dx) > 2) moved = true;
+                track.scrollBy({ left: -dx });
+                lastX = e.pageX;
+            });
+            function endDrag() { dragActive = false; track.classList.remove('cursor-grabbing'); }
+            track.addEventListener('mouseup', endDrag);
+            track.addEventListener('mouseleave', endDrag);
+            track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+        }
+
+        /* ---------- شروع ---------- */
+        updateAuthUI();
+        updateCartBadge();
+        loadProduct();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>آتلیه | فروشگاه اینترنتی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  :root{
+    --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
+    --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
+    --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
+  }
+  .dark{
+    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
+    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
+    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
+  }
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
+  .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
+  .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
+  .text-muted{color:var(--muted)} .text-emerald{color:var(--emerald)} .bg-emerald{background:var(--emerald)}
+  .bg-emerald-deep{background:var(--emerald-deep)} .text-emerald-deep{color:var(--emerald-deep)} .bg-emerald-soft{background:var(--emerald-soft)}
+  .text-gold{color:var(--gold)} .bg-gold-soft{background:var(--gold-soft)}
+  .text-danger{color:var(--danger)} .bg-danger\/10{background:color-mix(in srgb, var(--danger) 10%, transparent)}
+  .bg-media{background:var(--media)}
+  .from-bg{--tw-gradient-from: var(--background) var(--tw-gradient-from-position); --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);}
+  .hover-emerald:hover{color:var(--emerald)}
+  .border-emerald{border-color:var(--emerald)}
+  .bg-surface\/90{background:color-mix(in srgb, var(--surface) 90%, transparent)}
+  .bg-surface\/95{background:color-mix(in srgb, var(--surface) 95%, transparent)}
+  .hover\:bg-surface-muted:hover{background:var(--surface-muted)}
+  .hover\:border-emerald:hover{border-color:var(--emerald)}
+  .hover\:text-emerald:hover{color:var(--emerald)}
+  .tilt-card{transition:transform .2s ease-out}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .no-scrollbar{scrollbar-width:none}
+  .cursor-grab{cursor:grab} .cursor-grabbing{cursor:grabbing}
+  .bg-emerald-hover:hover{background:#195d4d}
+  .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
+  @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body class="bg-bg">
+
+<div id="loading-bar" class="fixed inset-x-0 top-0 z-[210] h-0.5 overflow-hidden bg-transparent">
+  <div id="loading-bar-fill" class="h-full bg-emerald transition-all duration-300 ease-out" style="width:15%"></div>
+</div>
+<div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
+
+<header class="sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+    <a href="index.html" class="flex items-center gap-2">
+      <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald text-sm font-bold text-white">آ</span>
+      <span class="text-lg font-extrabold tracking-tight">آتلیه</span>
+    </a>
+    <nav class="hidden items-center gap-7 lg:flex">
+      <a href="index.html" class="text-sm text-foreground/75 hover-emerald">صفحه اصلی</a>
+      <a href="shop.html?category=fashion" class="text-sm text-foreground/75 hover-emerald">پوشاک</a>
+      <a href="shop.html?category=digital" class="text-sm text-foreground/75 hover-emerald">دیجیتال</a>
+      <a href="shop.html?category=home-kitchen" class="text-sm text-foreground/75 hover-emerald">خانه و آشپزخانه</a>
+      <a href="shop.html?category=beauty-health" class="text-sm text-foreground/75 hover-emerald">زیبایی</a>
+      <a href="blog.html" class="text-sm text-foreground/75 hover-emerald">وبلاگ</a>
+    </nav>
+    <div class="hidden flex-1 max-w-xs lg:flex mx-2">
+      <div class="flex w-full items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-2.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted shrink-0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="جستجوی کالا، برند..." class="w-full bg-transparent text-sm outline-none placeholder:text-muted" />
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="auth.html" data-auth-link data-auth-loggedin-text="حساب کاربری" data-auth-loggedout-text="ورود | ثبت‌نام"
+         class="hidden items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-medium text-foreground hover:border-emerald hover:text-emerald lg:inline-flex">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        ورود | ثبت‌نام
+      </a>
+      <a href="auth.html" data-auth-link data-auth-loggedin-text="حساب من" data-auth-loggedout-text="ورود"
+         class="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-2 text-sm font-medium text-foreground hover:border-emerald hover:text-emerald lg:hidden">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        ورود
+      </a>
+      <button onclick="document.documentElement.classList.toggle('dark')" class="rounded-full p-2.5 text-foreground hover:bg-surface-muted" aria-label="تغییر حالت شب و روز">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+      <a href="cart.html" class="relative hidden lg:inline-flex rounded-full p-2.5 text-foreground hover:bg-surface-muted" aria-label="سبد خرید">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span data-cart-badge class="absolute -top-0.5 -left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[10px] font-bold text-white" style="display:none">0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- hero banner slider -->
+<section class="border-b border-line bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+    <div id="banner"
+     class="relative mx-auto aspect-[16/10] sm:aspect-[21/9] lg:aspect-[16/6] w-full max-w-3xl lg:max-w-7xl overflow-hidden rounded-[28px] bg-media"
+     onmouseenter="pauseBanner()" onmouseleave="resumeBanner()">
+      <div id="banner-slides"></div>
+      <div class="absolute inset-x-0 bottom-8 z-10 flex items-center justify-center gap-2">
+        <button onclick="bannerGo(bannerIndex+1)" aria-label="بنر بعدی" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-white opacity-60 backdrop-blur transition hover:bg-white/40 hover:opacity-100">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+        <button onclick="bannerGo(bannerIndex-1)" aria-label="بنر قبلی" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-white opacity-60 backdrop-blur transition hover:bg-white/40 hover:opacity-100">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
+      <div id="banner-dots" class="absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-1.5"></div>
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+  <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">دسته‌بندی‌ها</span>
+    <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">ویترین بر اساس نیاز شما</h2></div>
+  <div id="category-grid" class="grid auto-rows-[140px] grid-cols-2 gap-3 sm:auto-rows-[170px] lg:grid-cols-4"></div>
+</section>
+
+<!-- featured carousel -->
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="flex items-end justify-between">
+    <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">پیشنهاد ما</span>
+      <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات ویژه</h2></div>
+    <a href="shop.html" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
+      مشاهده همه
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+  </div>
+  <div id="carousel-featured" class="carousel-wrap relative"></div>
+</section>
+
+<section class="border-y border-line bg-surface-muted py-8">
+  <div id="brand-strip" class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-4 sm:px-6 lg:px-8"></div>
+</section>
+
+<!-- discount carousel -->
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="flex items-end justify-between">
+    <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">فرصت محدود</span>
+      <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">تخفیف‌دارها</h2></div>
+    <a href="shop.html" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
+      مشاهده همه
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </a>
+  </div>
+  <div id="carousel-discount" class="carousel-wrap relative"></div>
+</section>
+
+<section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+  <div class="flex flex-col items-center gap-6 rounded-3xl bg-emerald-deep px-6 py-12 text-center text-white sm:px-12">
+    <h3 class="text-2xl font-extrabold sm:text-3xl">از تخفیف‌های ویژه باخبر شوید</h3>
+    <p class="mx-auto max-w-md text-sm text-white/70">عضو خبرنامه شوید و پیشنهادهای شگفت‌انگیز و کدهای تخفیف را زودتر از همه دریافت کنید.</p>
+    <form class="flex w-full max-w-md flex-col gap-3 sm:flex-row" onsubmit="return submitNewsletter(event)">
+      <input id="newsletter-email" type="email" required placeholder="آدرس ایمیل شما" class="w-full rounded-full bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/50 outline-none ring-1 ring-white/20" />
+      <button id="newsletter-btn" type="submit" class="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-deep">عضویت</button>
+    </form>
+  </div>
+</section>
+
+<footer class="border-t border-line bg-surface pb-16 lg:pb-0">
+  <div class="mx-auto grid max-w-7xl grid-cols-2 gap-6 border-b border-line px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8">
+    <div class="flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V6H2v11h2"/><path d="M14 10h4l3 3v4h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span><div><div class="text-sm font-semibold">ارسال سریع</div><div class="text-xs text-muted">تحویل ۲۴ ساعته</div></div></div>
+    <div class="flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg></span><div><div class="text-sm font-semibold">ضمانت اصالت</div><div class="text-xs text-muted">کالای اورجینال</div></div></div>
+    <div class="flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span><div><div class="text-sm font-semibold">بازگشت رایگان</div><div class="text-xs text-muted">تا ۷ روز</div></div></div>
+    <div class="flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3Z"/><path d="M3 19a2 2 0 0 0 2 2h1v-6H3Z"/></svg></span><div><div class="text-sm font-semibold">پشتیبانی ۲۴/۷</div><div class="text-xs text-muted">همیشه در کنار شما</div></div></div>
+  </div>
+
+  <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-12 sm:px-6 md:grid-cols-5 lg:px-8">
+    <div class="col-span-2 md:col-span-1">
+      <div class="flex items-center gap-2">
+        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald text-sm font-bold text-white">آ</span>
+        <span class="text-lg font-extrabold">آتلیه</span>
+      </div>
+      <p class="mt-3 max-w-xs text-sm leading-7 text-muted">ویترینی مینیمال از بهترین کالاهای روز، با تمرکز بر کیفیت، اصالت و تجربه‌ی خرید آسان. پشتیبانی تلفنی: ۰۲۱-۹۱۰۰۰۰۰۰</p>
+      <div class="mt-4 flex items-center gap-2">
+        <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-line text-xs font-semibold hover:border-emerald hover:text-emerald">IG</a>
+        <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-line text-xs font-semibold hover:border-emerald hover:text-emerald">TG</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold">فروشگاه</h4>
+      <ul class="mt-4 space-y-2.5 text-sm text-muted">
+        <li><a href="index.html" class="hover:text-emerald">صفحه اصلی</a></li>
+        <li><a href="shop.html?category=fashion" class="hover:text-emerald">پوشاک</a></li>
+        <li><a href="shop.html?category=digital" class="hover:text-emerald">دیجیتال</a></li>
+        <li><a href="shop.html?category=home-kitchen" class="hover:text-emerald">خانه و آشپزخانه</a></li>
+        <li><a href="shop.html?category=beauty-health" class="hover:text-emerald">زیبایی</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold">خدمات مشتریان</h4>
+      <ul class="mt-4 space-y-2.5 text-sm text-muted">
+        <li><a href="account.html" class="hover:text-emerald">پیگیری سفارش</a></li>
+        <li><a href="#" class="hover:text-emerald">شرایط بازگشت کالا</a></li>
+        <li><a href="#" class="hover:text-emerald">راهنمای خرید</a></li>
+        <li><a href="#" class="hover:text-emerald">سوالات متداول</a></li>
+        <li><a href="#" class="hover:text-emerald">تماس با ما</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold">درباره آتلیه</h4>
+      <ul class="mt-4 space-y-2.5 text-sm text-muted">
+        <li><a href="#" class="hover:text-emerald">داستان ما</a></li>
+        <li><a href="#" class="hover:text-emerald">فرصت‌های شغلی</a></li>
+        <li><a href="blog.html" class="hover:text-emerald">وبلاگ</a></li>
+        <li><a href="#" class="hover:text-emerald">همکاری در فروش</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold">نمادهای اعتماد</h4>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <a href="#" class="flex h-20 w-20 flex-col items-center justify-center gap-0.5 rounded-xl border border-line bg-surface-muted text-center leading-tight hover:border-emerald">
+          <span class="text-xs font-bold text-emerald">نماد</span>
+          <span class="text-xs font-bold text-emerald">اعتماد</span>
+          <span class="text-[10px] text-muted">الکترونیکی</span>
+        </a>
+        <a href="#" class="flex h-20 w-20 flex-col items-center justify-center gap-0.5 rounded-xl border border-line bg-surface-muted text-center leading-tight hover:border-emerald">
+          <span class="text-xs font-bold text-gold">زرین‌پال</span>
+          <span class="text-[10px] text-muted">درگاه معتبر</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-line px-4 py-5 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl text-center text-xs text-muted">© ۲۰۲۶ فروشگاه آتلیه. تمامی حقوق محفوظ است.</div>
+  </div>
+</footer>
+
+<!-- back to top -->
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="بازگشت به بالای صفحه"
+  class="fixed bottom-20 right-4 z-[94] flex h-11 w-11 translate-y-3 items-center justify-center rounded-full border border-line bg-surface text-foreground opacity-0 shadow-lg backdrop-blur transition-all duration-300 pointer-events-none hover:border-emerald hover:text-emerald lg:bottom-6">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+</button>
+
+<!-- mobile bottom navigation -->
+<div id="sheet-overlay" class="fixed inset-0 z-[90] hidden bg-black/40 lg:hidden" onclick="closeSheet()"></div>
+
+<div id="sheet-panel" class="fixed inset-x-0 bottom-16 z-[95] hidden max-h-[70vh] translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
+  <div class="flex items-center justify-between border-b border-line px-4 py-3">
+    <h3 id="sheet-title" class="text-sm font-bold">دسته‌بندی‌ها</h3>
+    <button onclick="closeSheet()" class="rounded-full p-2 text-foreground/80 hover:bg-surface-muted" aria-label="بستن">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="sheet-body" class="max-h-[calc(70vh-52px)] overflow-y-auto p-4"></div>
+</div>
+
+<nav class="fixed inset-x-0 bottom-0 z-[96] border-t border-line bg-surface/95 backdrop-blur lg:hidden">
+  <div class="mx-auto grid max-w-md grid-cols-5">
+    <button onclick="closeSheet()" data-tab="home" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-emerald">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      خانه
+    </button>
+    <button onclick="openSheet('categories')" data-tab="categories" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      دسته‌ها
+    </button>
+    <button onclick="openSheet('search')" data-tab="search" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      جستجو
+    </button>
+    <button onclick="openSheet('cart')" data-tab="cart" class="bn-tab relative flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+      <span class="relative">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span data-cart-badge class="absolute -top-1 -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white" style="display:none">0</span>
+      </span>
+      سبد خرید
+    </button>
+    <button onclick="openSheet('menu')" data-tab="menu" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      منو
+    </button>
+  </div>
+</nav>
+
+<script src="js/api.js"></script>
+<script>
+/* ---------- toast + loading bar ---------- */
+window.addEventListener('load', () => {
+  const fill = document.getElementById('loading-bar-fill');
+  const bar = document.getElementById('loading-bar');
+  setTimeout(() => fill.style.width = '70%', 100);
+  setTimeout(() => fill.style.width = '100%', 400);
+  setTimeout(() => bar.style.display = 'none', 650);
+});
+
+function showToast(kind, message){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+  el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+  el.innerHTML = (kind === 'success'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+    + `<span>${message}</span>`;
+  root.appendChild(el);
+  requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+  setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+const spinnerSVG = '<svg class="animate-spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+
+/* ---------- back to top ---------- */
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('back-to-top');
+  const show = window.scrollY > 480;
+  btn.classList.toggle('opacity-0', !show);
+  btn.classList.toggle('pointer-events-none', !show);
+  btn.classList.toggle('translate-y-3', !show);
+  btn.classList.toggle('opacity-100', show);
+  btn.classList.toggle('translate-y-0', show);
+}, { passive: true });
+
+/* ---------- hero banner slider (حالا از API) ---------- */
+let bannerItems = [];
+let bannerIndex = 0;
+let bannerTimer = null;
+
+async function loadBanners(){
+  try {
+    bannerItems = await Api.getBanners();
+  } catch(e) {
+    bannerItems = [];
+  }
+  if(!bannerItems || bannerItems.length === 0){
+    // اگه هنوز بنری تو دیتابیس ثبت نشده، یه پس‌زمینه ساده نشون بده که خالی نمونه
+    bannerItems = [{ imageUrl: null, title: 'به آتلیه خوش آمدید', linkUrl: 'shop.html' }];
+  }
+  renderBanners();
+  resumeBanner();
+}
+
+function renderBanners(){
+  const wrap = document.getElementById('banner-slides');
+  wrap.innerHTML = bannerItems.map((b, i) => `
+    <a href="${b.linkUrl || '#'}" class="banner-slide absolute inset-0 block transition-opacity duration-700 ease-out" style="opacity:${i===0?1:0};">
+      ${b.imageUrl
+        ? `<img src="${b.imageUrl}" alt="${b.title || ''}" class="h-full w-full object-cover" />`
+        : `<div class="flex h-full w-full items-center justify-center bg-emerald-deep"><span class="text-xl font-extrabold text-white">${b.title || ''}</span></div>`}
+    </a>
+  `).join('');
+
+  const dots = document.getElementById('banner-dots');
+  dots.innerHTML = bannerItems.map((_, i) => `
+    <button onmouseenter="bannerGo(${i})" onclick="bannerGo(${i})" aria-label="بنر ${i+1}" data-dot="${i}"
+      class="h-1.5 rounded-full opacity-70 transition-all duration-300 hover:opacity-40 ${i===0 ? 'w-5 bg-white opacity-100' : 'w-1.5 bg-white/70'}"></button>
+  `).join('');
+}
+
+function bannerGo(i){
+  const count = bannerItems.length;
+  bannerIndex = (i + count) % count;
+  document.querySelectorAll('.banner-slide').forEach((el, idx) => { el.style.opacity = idx === bannerIndex ? '1' : '0'; });
+  document.querySelectorAll('[data-dot]').forEach((el, idx) => {
+    el.classList.toggle('w-5', idx === bannerIndex);
+    el.classList.toggle('bg-white', idx === bannerIndex);
+    el.classList.toggle('opacity-100', idx === bannerIndex);
+    el.classList.toggle('w-1.5', idx !== bannerIndex);
+    el.classList.toggle('bg-white/70', idx !== bannerIndex);
+  });
+}
+
+function pauseBanner(){ if(bannerTimer){ clearInterval(bannerTimer); bannerTimer = null; } }
+function resumeBanner(){
+  pauseBanner();
+  if(bannerItems.length > 1){
+    bannerTimer = setInterval(() => bannerGo(bannerIndex + 1), 5000);
+  }
+}
+
+/* ---------- دسته‌بندی‌ها (حالا از API) ---------- */
+let categoriesData = [];
+
+async function loadCategories(){
+  try {
+    const raw = await Api.getCategories();
+    categoriesData = raw.map(c => ({
+      id: c.slug,
+      title: c.name,
+      subtitle: `${c.productCount} کالای جدید`,
+      image: c.imageUrl
+    }));
+  } catch(e) {
+    categoriesData = [];
+  }
+  renderCategoryGrid();
+}
+
+function renderCategoryGrid(){
+  const grid = document.getElementById('category-grid');
+  if(categoriesData.length === 0){
+    grid.innerHTML = `<p class="col-span-2 lg:col-span-4 py-10 text-center text-sm text-muted">هنوز دسته‌بندی‌ای ثبت نشده است</p>`;
+    return;
+  }
+  grid.innerHTML = categoriesData.map((c, i) => `
+    <a href="shop.html?category=${c.id}" class="group relative overflow-hidden rounded-2xl ${i===0 ? 'col-span-2 row-span-2' : ''}">
+      <img src="${c.image}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+      <div class="absolute bottom-4 right-4 text-white">
+        <div class="${i===0 ? 'text-lg' : 'text-base'} font-bold">${c.title}</div>
+        <div class="mt-0.5 text-xs text-white/80">${c.subtitle}</div>
+      </div>
+    </a>
+  `).join('');
+}
+
+/* ---------- نوار برندها (حالا از API) ---------- */
+async function loadBrandStrip(){
+  const wrap = document.getElementById('brand-strip');
+  try {
+    const brands = await Api.getFeaturedBrands();
+    wrap.innerHTML = brands.map(b => `<span class="text-sm font-semibold text-muted">${b.name}</span>`).join('');
+  } catch(e) {
+    wrap.innerHTML = '';
+  }
+}
+
+/* ---------- mobile bottom sheet ---------- */
+const sheets = {
+  categories: () => categoriesSheetHTML(),
+  search: () => `<div class="flex items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-3">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-muted"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input autofocus type="text" placeholder="جستجوی کالا، برند..." class="w-full bg-transparent text-sm outline-none placeholder:text-muted" />
+    </div>`,
+  cart: () => `<div class="flex flex-col items-center gap-3 py-10 text-center">
+      <span class="flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </span>
+      <p class="text-sm text-muted">سبد خرید خود را در صفحه سبد خرید مشاهده کنید</p>
+      <a href="cart.html" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده سبد خرید</a>
+    </div>`,
+  menu: () => `<div class="flex flex-col gap-1">
+      ${[["صفحه اصلی","index.html"],["پوشاک","shop.html?category=fashion"],["دیجیتال","shop.html?category=digital"],["خانه و آشپزخانه","shop.html?category=home-kitchen"],["زیبایی","shop.html?category=beauty-health"],["وبلاگ","blog.html"]]
+        .map(([l,href])=>`<a href="${href}" class="rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted">${l}</a>`).join("")}
+    </div>`,
+};
+const sheetTitles = { categories: "دسته‌بندی‌ها", search: "جستجو", cart: "سبد خرید", menu: "منو" };
+let currentSheet = null;
+let currentCategory = null;
+
+function categoriesSheetHTML(){
+  if(categoriesData.length === 0){
+    return `<p class="py-10 text-center text-sm text-muted">هنوز دسته‌بندی‌ای ثبت نشده است</p>`;
+  }
+  if(!currentCategory){
+    return `<div class="grid grid-cols-2 gap-3">${categoriesData.map(c=>`
+      <a href="shop.html?category=${c.id}" class="group relative aspect-[4/3] overflow-hidden rounded-2xl text-right">
+        <img src="${c.image}" class="h-full w-full object-cover" alt="${c.title}" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+        <div class="absolute bottom-3 right-3 text-white">
+          <div class="text-sm font-bold">${c.title}</div>
+          <div class="text-[11px] text-white/80">${c.subtitle}</div>
+        </div>
+      </a>`).join("")}</div>`;
+  }
+  return '';
+}
+
+function setActiveTab(tab){
+  document.querySelectorAll('.bn-tab').forEach(btn=>{
+    const active = btn.dataset.tab === tab;
+    btn.classList.toggle('text-emerald', active);
+    btn.classList.toggle('text-muted', !active);
+  });
+}
+
+function openSheet(type){
+  if(currentSheet === type){ closeSheet(); return; }
+  currentSheet = type;
+  if(type !== 'categories') currentCategory = null;
+  document.getElementById('sheet-title').textContent = sheetTitles[type];
+  document.getElementById('sheet-body').innerHTML = sheets[type]();
+  document.getElementById('sheet-overlay').classList.remove('hidden');
+  const panel = document.getElementById('sheet-panel');
+  panel.classList.remove('hidden');
+  requestAnimationFrame(() => panel.classList.remove('translate-y-full'));
+  setActiveTab(type);
+}
+
+function closeSheet(){
+  currentSheet = null;
+  const panel = document.getElementById('sheet-panel');
+  panel.classList.add('translate-y-full');
+  document.getElementById('sheet-overlay').classList.add('hidden');
+  setTimeout(() => panel.classList.add('hidden'), 300);
+  setActiveTab('home');
+}
+
+/* ---------- newsletter (حالا واقعی) ---------- */
+async function submitNewsletter(e){
+  e.preventDefault();
+  const input = document.getElementById('newsletter-email');
+  const btn = document.getElementById('newsletter-btn');
+  if(btn.dataset.loading === '1' || !input.value.trim()) return false;
+
+  btn.dataset.loading = '1';
+  const original = btn.textContent;
+  btn.innerHTML = spinnerSVG;
+
+  try {
+    const res = await Api.subscribeNewsletter(input.value.trim());
+    input.value = '';
+    showToast('success', res?.message || 'با موفقیت در خبرنامه عضو شدید');
+  } catch(err) {
+    showToast('error', err.message || 'آدرس ایمیل معتبر نیست');
+  } finally {
+    btn.dataset.loading = '0';
+    btn.textContent = original;
+  }
+  return false;
+}
+
+/* ---------- کارت محصول (حالا از روی DTO واقعی API) ---------- */
+const badgeCls = {"جدید":"bg-emerald-soft text-emerald","پرفروش":"bg-gold-soft text-gold","پیشنهاد ویژه":"bg-danger/10 text-danger"};
+
+function card(p){
+  const badge = p.badge ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${badgeCls[p.badge] || 'bg-surface-muted text-muted'}">${p.badge}</span>` : "";
+  const old = p.discountPrice ? `<span class="ticker text-xs text-muted line-through">${formatPrice(p.price)}</span>` : "";
+  const mainPrice = p.discountPrice ?? p.price;
+  const outOfStock = !p.inStock ? `<div class="absolute inset-0 flex items-center justify-center bg-surface/80"><span class="rounded-full bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger">ناموجود</span></div>` : "";
+
+  return `<div class="tilt-card w-[220px] shrink-0 sm:w-[240px] rounded-2xl border border-line bg-surface p-3">
+    <a href="product.html?slug=${p.slug}" class="relative block aspect-square overflow-hidden rounded-xl bg-media">
+      <img src="${p.mainImageUrl}" class="h-full w-full object-cover" loading="lazy" />
+      ${badge}${outOfStock}
+    </a>
+    <button id="wish-${p.id}" onclick="toggleWishlist(${p.id})" class="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+    </button>
+    <div class="mt-3 px-1">
+      <div class="text-xs text-muted">${p.categoryName}</div>
+      <a href="product.html?slug=${p.slug}"><h3 class="mt-1 truncate text-sm font-semibold hover:text-emerald">${p.name}</h3></a>
+      <div class="mt-1.5 flex items-center gap-1 text-xs text-muted">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        <span class="ticker">${p.averageRating.toFixed(1)}</span><span>(${p.reviewCount})</span>
+      </div>
+      <div class="mt-2.5 flex items-baseline gap-2">
+        <span class="ticker text-[15px] font-bold">${formatPrice(mainPrice)}</span><span class="text-[11px] text-muted">تومان</span>${old}
+      </div>
+      <button id="cart-${p.id}" onclick="addToCart(${p.id})" ${!p.inStock ? 'disabled' : ''} class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald disabled:opacity-40">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        افزودن به سبد
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ---------- علاقه‌مندی (نیاز به لاگین) ---------- */
+async function toggleWishlist(productId){
+  if(!isLoggedIn()){
+    showToast('error', 'برای افزودن به علاقه‌مندی‌ها ابتدا وارد شوید');
+    setTimeout(() => { window.location.href = 'auth.html'; }, 900);
+    return;
+  }
+  const btn = document.getElementById(`wish-${productId}`);
+  if(btn.dataset.loading === '1') return;
+  btn.dataset.loading = '1';
+  const wasLiked = btn.dataset.liked === '1';
+  btn.innerHTML = spinnerSVG;
+
+  try {
+    if(wasLiked){
+      await Api.removeFromWishlist(productId);
+      btn.dataset.liked = '0';
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+      showToast('success', 'از علاقه‌مندی‌ها حذف شد');
+    } else {
+      await Api.addToWishlist(productId);
+      btn.dataset.liked = '1';
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-danger"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+      showToast('success', 'به علاقه‌مندی‌ها اضافه شد');
+    }
+  } catch(err) {
+    showToast('error', err.message);
+  } finally {
+    btn.dataset.loading = '0';
+  }
+}
+
+/* ---------- سبد خرید (کاربر مهمان یا لاگین‌کرده، هر دو با API واقعی) ---------- */
+const cartItemIdByProduct = {}; // productId -> cartItemId (برای PUT/DELETE)
+const cartQtyByProduct = {};    // productId -> quantity فعلی
+
+function renderCartButton(productId){
+  const btn = document.getElementById(`cart-${productId}`);
+  if(!btn) return;
+  const qty = cartQtyByProduct[productId] || 0;
+
+  if(qty === 0){
+    btn.onclick = () => addToCart(productId);
+    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>افزودن به سبد`;
+    return;
+  }
+
+  btn.onclick = null;
+  btn.innerHTML = `<div class="flex w-full flex-row-reverse items-center justify-between px-2">
+      <button onclick="decreaseCart(${productId}); event.stopImmediatePropagation()" class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-muted">
+        ${qty === 1 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>'}
+      </button>
+      <span class="font-bold text-sm">${qty}</span>
+      <button onclick="increaseCart(${productId}); event.stopImmediatePropagation()" class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-muted">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      </button>
+    </div>`;
+}
+
+function syncCartStateFromResponse(cart){
+  (cart?.items || []).forEach(item => {
+    cartItemIdByProduct[item.productId] = item.id;
+    cartQtyByProduct[item.productId] = item.quantity;
+  });
+}
+
+async function addToCart(productId){
+  const btn = document.getElementById(`cart-${productId}`);
+  if(btn) btn.innerHTML = spinnerSVG;
+  try {
+    const cart = await Api.addToCart(productId, 1);
+    syncCartStateFromResponse(cart);
+    renderCartButton(productId);
+    showToast('success', 'به سبد خرید اضافه شد');
+    updateCartBadge();
+  } catch(err) {
+    showToast('error', err.message);
+    renderCartButton(productId);
+  }
+}
+
+async function increaseCart(productId){
+  const cartItemId = cartItemIdByProduct[productId];
+  if(!cartItemId) return;
+  try {
+    const cart = await Api.updateCartItem(cartItemId, (cartQtyByProduct[productId] || 0) + 1);
+    syncCartStateFromResponse(cart);
+    renderCartButton(productId);
+    updateCartBadge();
+  } catch(err) {
+    showToast('error', err.message);
+  }
+}
+
+async function decreaseCart(productId){
+  const cartItemId = cartItemIdByProduct[productId];
+  if(!cartItemId) return;
+  const nextQty = (cartQtyByProduct[productId] || 0) - 1;
+  try {
+    const cart = await Api.updateCartItem(cartItemId, nextQty);
+    if(nextQty <= 0){
+      delete cartItemIdByProduct[productId];
+      delete cartQtyByProduct[productId];
+      showToast('success', 'از سبد خرید حذف شد');
+    } else {
+      syncCartStateFromResponse(cart);
+    }
+    renderCartButton(productId);
+    updateCartBadge();
+  } catch(err) {
+    showToast('error', err.message);
+  }
+}
+
+/* ---------- کروسل: fade لبه‌ها + پیکان‌ها + کشیدن با ماوس ---------- */
+function buildCarousel(containerId, items){
+  const wrap = document.getElementById(containerId);
+
+  if(!items || items.length === 0){
+    wrap.innerHTML = `<p class="py-10 text-center text-sm text-muted">فعلاً محصولی برای نمایش وجود ندارد</p>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+    <div class="fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+    <button class="arrow-next absolute left-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت بعدی">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="arrow-prev absolute right-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت قبلی">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="track flex cursor-grab gap-4 overflow-x-auto pb-2 select-none no-scrollbar"></div>
+  `;
+  const track = wrap.querySelector('.track');
+  track.innerHTML = items.map(p => `<div class="w-[220px] shrink-0 sm:w-[240px]">${card(p)}</div>`).join('');
+
+  // اعمال وضعیت اولیه علاقه‌مندی/سبد خرید روی کارت‌های تازه‌رندرشده
+  items.forEach(p => {
+    if(cartQtyByProduct[p.id]) renderCartButton(p.id);
+  });
+
+  const fadeRight = wrap.querySelector('.fade-right');
+  const fadeLeft = wrap.querySelector('.fade-left');
+  const arrowNext = wrap.querySelector('.arrow-next');
+  const arrowPrev = wrap.querySelector('.arrow-prev');
+
+  function scrollBy(dir){ track.scrollBy({ left: track.clientWidth * 0.7 * dir, behavior: 'smooth' }); }
+  arrowNext.addEventListener('click', () => scrollBy(-1));
+  arrowPrev.addEventListener('click', () => scrollBy(1));
+
+  function updateEdges(){
+    const scrolled = Math.abs(track.scrollLeft);
+    const max = track.scrollWidth - track.clientWidth;
+    const atStart = scrolled <= 4;
+    const atEnd = max <= 4 || scrolled >= max - 4;
+    fadeRight.style.opacity = atStart ? '0' : '1';
+    fadeLeft.style.opacity = atEnd ? '0' : '1';
+    arrowNext.style.display = atEnd ? 'none' : 'flex';
+    arrowPrev.style.display = atStart ? 'none' : 'flex';
+  }
+  track.addEventListener('scroll', updateEdges, { passive: true });
+  window.addEventListener('resize', updateEdges);
+  updateEdges();
+
+  let dragActive = false, lastX = 0, moved = false;
+  track.addEventListener('mousedown', (e) => { dragActive = true; lastX = e.pageX; moved = false; track.classList.add('cursor-grabbing'); });
+  track.addEventListener('mousemove', (e) => {
+    if(!dragActive) return;
+    const dx = e.pageX - lastX;
+    if(Math.abs(dx) > 2) moved = true;
+    track.scrollBy({ left: -dx });
+    lastX = e.pageX;
+  });
+  function endDrag(){ dragActive = false; track.classList.remove('cursor-grabbing'); }
+  track.addEventListener('mouseup', endDrag);
+  track.addEventListener('mouseleave', endDrag);
+  track.addEventListener('click', (e) => { if(moved){ e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+}
+
+/* ---------- بارگذاری محصولات ویژه و تخفیف‌دار از API ---------- */
+async function loadFeaturedProducts(){
+  try {
+    const result = await Api.getProducts('?sortBy=rating&pageSize=8');
+    buildCarousel('carousel-featured', result.items);
+  } catch(e) {
+    buildCarousel('carousel-featured', []);
+  }
+}
+
+async function loadDiscountedProducts(){
+  try {
+    // فیلتر «تخفیف‌دار» مستقیم تو API نیست، پس یه بچ بزرگ می‌گیریم و سمت کلاینت فیلتر می‌کنیم
+    const result = await Api.getProducts('?sortBy=newest&pageSize=50');
+    const discounted = result.items.filter(p => p.discountPrice != null).slice(0, 8);
+    buildCarousel('carousel-discount', discounted);
+  } catch(e) {
+    buildCarousel('carousel-discount', []);
+  }
+}
+
+/* ---------- شروع ---------- */
+(async function init(){
+  updateAuthUI();
+  updateCartBadge();
+
+  await Promise.all([
+    loadBanners(),
+    loadCategories(),
+    loadBrandStrip(),
+    loadFeaturedProducts(),
+    loadDiscountedProducts(),
+  ]);
+})();
+</script>
+
+</body>
+</html>

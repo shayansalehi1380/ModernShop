@@ -1,0 +1,41 @@
+<header class="sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+    <a href="index.html" class="flex items-center gap-2">
+      <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald text-sm font-bold text-white">آ</span>
+      <span class="text-lg font-extrabold tracking-tight">آتلیه</span>
+    </a>
+    <nav class="hidden items-center gap-7 lg:flex">
+      <a href="index.html" data-nav-link class="text-sm text-foreground/75 hover-emerald">صفحه اصلی</a>
+      <a href="shop.html?category=fashion" data-nav-link class="text-sm text-foreground/75 hover-emerald">پوشاک</a>
+      <a href="shop.html?category=digital" data-nav-link class="text-sm text-foreground/75 hover-emerald">دیجیتال</a>
+      <a href="shop.html?category=home-kitchen" data-nav-link class="text-sm text-foreground/75 hover-emerald">خانه و آشپزخانه</a>
+      <a href="shop.html?category=beauty-health" data-nav-link class="text-sm text-foreground/75 hover-emerald">زیبایی</a>
+      <a href="blog.html" data-nav-link class="text-sm text-foreground/75 hover-emerald">وبلاگ</a>
+    </nav>
+    <div class="hidden flex-1 max-w-xs lg:flex mx-2">
+      <div class="flex w-full items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-2.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted shrink-0"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="جستجوی کالا، برند..." class="w-full bg-transparent text-sm outline-none placeholder:text-muted" />
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="auth.html" data-auth-link data-auth-loggedin-text="حساب کاربری" data-auth-loggedout-text="ورود | ثبت‌نام"
+         class="hidden items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-medium text-foreground hover:border-emerald hover:text-emerald lg:inline-flex">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        ورود | ثبت‌نام
+      </a>
+      <a href="auth.html" data-auth-link data-auth-loggedin-text="حساب من" data-auth-loggedout-text="ورود"
+         class="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-2 text-sm font-medium text-foreground hover:border-emerald hover:text-emerald lg:hidden">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        ورود
+      </a>
+      <button onclick="document.documentElement.classList.toggle('dark')" class="rounded-full p-2.5 text-foreground hover:bg-surface-muted" aria-label="تغییر حالت شب و روز">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+      <a href="cart.html" class="relative hidden lg:inline-flex rounded-full p-2.5 text-foreground hover:bg-surface-muted" aria-label="سبد خرید">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span data-cart-badge class="absolute -top-0.5 -left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[10px] font-bold text-white" style="display:none">0</span>
+      </a>
+    </div>
+  </div>
+</header>

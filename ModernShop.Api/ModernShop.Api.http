@@ -1,0 +1,6 @@
+@ModernShop.Api_HostAddress = http://localhost:5000
+
+GET {{ModernShop.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
