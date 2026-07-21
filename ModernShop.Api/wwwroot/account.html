@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>آتلیه | حساب کاربری</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  :root{
+    --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
+    --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
+    --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
+  }
+  .dark{
+    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
+    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
+    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
+  }
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
+  .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
+  .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
+  .text-muted{color:var(--muted)} .text-emerald{color:var(--emerald)} .bg-emerald{background:var(--emerald)}
+  .bg-emerald-deep{background:var(--emerald-deep)} .text-emerald-deep{color:var(--emerald-deep)} .bg-emerald-soft{background:var(--emerald-soft)}
+  .text-gold{color:var(--gold)} .bg-gold-soft{background:var(--gold-soft)}
+  .text-danger{color:var(--danger)} .bg-danger\/10{background:color-mix(in srgb, var(--danger) 10%, transparent)}
+  .bg-media{background:var(--media)}
+  .border-emerald{border-color:var(--emerald)}
+  .hover\:bg-surface-muted:hover{background:var(--surface-muted)}
+  .hover\:border-emerald:hover{border-color:var(--emerald)}
+  .hover\:text-emerald:hover{color:var(--emerald)}
+  .bg-emerald-hover:hover{background:#195d4d}
+  .bg-danger-hover:hover{background:#933524}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .no-scrollbar{scrollbar-width:none}
+
+  input:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
+  .nav-item{transition:.15s}
+  .nav-item.active{background:var(--emerald-soft); color:var(--emerald)}
+  .nav-item.active .nav-icon{color:var(--emerald)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+  .order-status{padding:.3rem .7rem;border-radius:999px;font-size:11px;font-weight:600}
+  .status-delivered{background:var(--emerald-soft);color:var(--emerald)}
+  .status-processing{background:var(--gold-soft);color:var(--gold)}
+  .status-cancelled{background:color-mix(in srgb, var(--danger) 10%, transparent);color:var(--danger)}
+  .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
+  @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body class="bg-bg">
+
+<div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
+
+<div id="header-placeholder"></div>
+
+<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+  <!-- user header -->
+  <div class="flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 sm:p-6">
+    <div id="user-avatar" class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-xl font-extrabold text-emerald sm:h-20 sm:w-20 sm:text-2xl">-</div>
+    <div class="min-w-0">
+      <h1 id="user-name" class="truncate text-lg font-extrabold sm:text-xl">در حال بارگذاری...</h1>
+      <p id="user-phone" class="ticker mt-1 text-sm text-muted"></p>
+      <span id="loyalty-badge" class="mt-1.5 hidden items-center gap-1 rounded-full bg-gold-soft px-2.5 py-1 text-[11px] font-semibold text-gold">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        <span id="loyalty-text">مشتری طلایی</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-8">
+
+    <!-- sidebar nav -->
+    <aside class="lg:col-span-1">
+      <nav class="flex gap-2 overflow-x-auto rounded-2xl border border-line bg-surface p-2 no-scrollbar lg:flex-col lg:gap-1 lg:overflow-visible">
+        <button onclick="switchTab('profile')" data-tab="profile" class="nav-item active flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium">
+          <svg class="nav-icon shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          اطلاعات حساب کاربری
+        </button>
+        <button onclick="switchTab('orders')" data-tab="orders" class="nav-item flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground/80">
+          <svg class="nav-icon shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18l-1.5 12.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5L3 7Z"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg>
+          سفارش‌های من
+          <span class="ticker mr-auto rounded-full bg-surface-muted px-2 py-0.5 text-[11px]" id="orders-count">0</span>
+        </button>
+        <button onclick="switchTab('wishlist')" data-tab="wishlist" class="nav-item flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground/80">
+          <svg class="nav-icon shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+          علاقه‌مندی‌ها
+          <span class="ticker mr-auto rounded-full bg-surface-muted px-2 py-0.5 text-[11px]" id="wishlist-count">0</span>
+        </button>
+        <div class="my-1 hidden h-px bg-line lg:block"></div>
+        <button onclick="openLogoutModal()" data-tab="logout" class="nav-item flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-danger">
+          <svg class="nav-icon shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          خروج از حساب کاربری
+        </button>
+      </nav>
+    </aside>
+
+    <!-- content -->
+    <div class="lg:col-span-3">
+
+      <!-- ============ PROFILE ============ -->
+      <section id="tab-profile" class="tab-panel active rounded-3xl border border-line bg-surface p-6">
+        <h2 class="text-base font-bold">اطلاعات حساب کاربری</h2>
+        <p class="mt-1 text-xs text-muted">اطلاعات خود را ویرایش کنید</p>
+
+        <div id="profile-loading" class="mt-6 space-y-4">
+          <div class="skeleton h-12 rounded-xl"></div>
+          <div class="skeleton h-12 rounded-xl"></div>
+        </div>
+
+        <form id="profile-form" class="mt-6 hidden grid-cols-1 gap-4 sm:grid-cols-2" onsubmit="return saveProfile(event)">
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-muted">نام</label>
+            <input id="p-firstname" type="text" class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-muted">نام خانوادگی</label>
+            <input id="p-lastname" type="text" class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-muted">شماره موبایل</label>
+            <input id="p-phone" type="tel" disabled class="ticker w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm text-left text-muted" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-muted">ایمیل</label>
+            <input id="p-email" type="email" placeholder="example@email.com" class="ticker w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm text-left transition placeholder:text-muted" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-muted">تاریخ تولد</label>
+            <input id="p-birthdate" type="date" class="ticker w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm text-left transition" />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-muted">جنسیت</label>
+            <select id="p-gender" class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition">
+              <option value="0">ترجیح می‌دهم نگویم</option>
+              <option value="1">زن</option>
+              <option value="2">مرد</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <button id="save-profile-btn" type="submit" class="flex items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover px-7 py-3 text-sm font-bold text-white transition-colors duration-200">
+              ذخیره تغییرات
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============ ORDERS ============ -->
+      <section id="tab-orders" class="tab-panel">
+        <div id="orders-loading" class="flex flex-col gap-4">
+          <div class="skeleton h-24 rounded-2xl"></div>
+          <div class="skeleton h-24 rounded-2xl"></div>
+        </div>
+        <div id="orders-list" class="hidden flex-col gap-4"></div>
+        <div id="orders-empty" class="hidden flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface py-14 text-center">
+          <p class="text-sm text-muted">هنوز سفارشی ثبت نکرده‌اید</p>
+          <a href="shop.html" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده محصولات</a>
+        </div>
+      </section>
+
+      <!-- ============ WISHLIST ============ -->
+      <section id="tab-wishlist" class="tab-panel">
+        <div id="wishlist-loading" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div class="skeleton aspect-square rounded-2xl"></div>
+          <div class="skeleton aspect-square rounded-2xl"></div>
+          <div class="skeleton aspect-square rounded-2xl"></div>
+        </div>
+        <div id="wishlist-grid" class="hidden grid-cols-2 gap-4 sm:grid-cols-3"></div>
+        <div id="wishlist-empty" class="hidden flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface py-14 text-center">
+          <p class="text-sm text-muted">هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌اید</p>
+          <a href="shop.html" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده محصولات</a>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- logout confirm modal -->
+<div id="logout-overlay" class="fixed inset-0 z-[150] hidden items-center justify-center bg-black/40 px-4" onclick="closeLogoutModal(event)">
+  <div class="w-full max-w-sm rounded-3xl border border-line bg-surface p-6 text-center" onclick="event.stopPropagation()">
+    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-danger/10 text-danger">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+    </div>
+    <h3 class="mt-4 text-base font-bold">خروج از حساب کاربری</h3>
+    <p class="mt-1.5 text-sm text-muted">آیا مطمئن هستید که می‌خواهید از حساب کاربری خود خارج شوید؟</p>
+    <div class="mt-6 flex gap-3">
+      <button onclick="closeLogoutModal()" class="flex-1 rounded-2xl border border-line py-3 text-sm font-semibold hover:border-emerald hover:text-emerald">انصراف</button>
+      <button onclick="confirmLogout()" class="flex-1 rounded-2xl bg-danger bg-danger-hover py-3 text-sm font-bold text-white transition-colors duration-200">خروج</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script>
+const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+
+function showToast(kind, message){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+  el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+  el.innerHTML = (kind === 'success'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+    + `<span>${message}</span>`;
+  root.appendChild(el);
+  requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+  setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+/* ---------- گیت لاگین ---------- */
+if(!isLoggedIn()){
+  window.location.href = 'auth.html?redirect=account.html';
+}
+
+/* ---------- تب‌ها ---------- */
+let ordersLoaded = false, wishlistLoaded = false;
+
+function switchTab(name){
+  document.querySelectorAll('.nav-item[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
+  if(name === 'orders' && !ordersLoaded) loadOrders();
+  if(name === 'wishlist' && !wishlistLoaded) loadWishlist();
+}
+
+/* ---------- پروفایل ---------- */
+const LOYALTY_LABELS = { 0: null, 1: 'مشتری نقره‌ای', 2: 'مشتری طلایی', 3: 'مشتری الماسی' };
+
+async function loadProfile(){
+  try {
+    const profile = await Api.getProfile();
+
+    const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'کاربر آتلیه';
+    document.getElementById('user-name').textContent = fullName;
+    document.getElementById('user-phone').textContent = toFaDigits(profile.phoneNumber);
+    document.getElementById('user-avatar').textContent = initialsOf(profile.firstName, profile.lastName);
+
+    const loyaltyLabel = LOYALTY_LABELS[profile.loyaltyTier];
+    if(loyaltyLabel){
+      document.getElementById('loyalty-text').textContent = loyaltyLabel;
+      document.getElementById('loyalty-badge').classList.remove('hidden');
+      document.getElementById('loyalty-badge').classList.add('inline-flex');
+    }
+
+    document.getElementById('p-firstname').value = profile.firstName || '';
+    document.getElementById('p-lastname').value = profile.lastName || '';
+    document.getElementById('p-phone').value = toFaDigits(profile.phoneNumber);
+    document.getElementById('p-email').value = profile.email || '';
+    document.getElementById('p-birthdate').value = profile.birthDate ? profile.birthDate.split('T')[0] : '';
+    document.getElementById('p-gender').value = String(profile.gender ?? 0);
+
+    document.getElementById('profile-loading').classList.add('hidden');
+    const form = document.getElementById('profile-form');
+    form.classList.remove('hidden');
+    form.classList.add('grid');
+  } catch(err) {
+    showToast('error', err.message || 'خطا در بارگذاری اطلاعات حساب');
+  }
+}
+
+function initialsOf(first, last){
+  const a = (first || '').trim()[0] || '';
+  const b = (last || '').trim()[0] || '';
+  return (a + (b ? '.' + b : '')) || 'کا';
+}
+
+function toFaDigits(str){
+  const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  return String(str || '').replace(/[0-9]/g, d => faDigits[d]);
+}
+
+async function saveProfile(e){
+  e.preventDefault();
+  const btn = document.getElementById('save-profile-btn');
+  if(btn.dataset.loading === '1') return false;
+  btn.dataset.loading = '1';
+  const original = btn.textContent;
+  btn.innerHTML = spinnerSVG;
+
+  try {
+    await Api.updateProfile({
+      firstName: document.getElementById('p-firstname').value.trim() || null,
+      lastName: document.getElementById('p-lastname').value.trim() || null,
+      email: document.getElementById('p-email').value.trim() || null,
+      birthDate: document.getElementById('p-birthdate').value || null,
+      gender: parseInt(document.getElementById('p-gender').value, 10)
+    });
+    showToast('success', 'اطلاعات با موفقیت ذخیره شد');
+    loadProfile();
+  } catch(err) {
+    showToast('error', err.message || 'ذخیره اطلاعات ناموفق بود');
+  } finally {
+    btn.dataset.loading = '0';
+    btn.textContent = original;
+  }
+  return false;
+}
+
+/* ---------- سفارش‌ها ---------- */
+const STATUS_LABELS = {
+  0: { text: 'در انتظار پرداخت', cls: 'status-processing' },
+  1: { text: 'در حال پردازش', cls: 'status-processing' },
+  2: { text: 'ارسال شده', cls: 'status-processing' },
+  3: { text: 'تحویل شده', cls: 'status-delivered' },
+  4: { text: 'لغو شده', cls: 'status-cancelled' },
+  5: { text: 'ناموفق', cls: 'status-cancelled' },
+};
+
+async function loadOrders(){
+  try {
+    const orders = await Api.getMyOrders();
+    ordersLoaded = true;
+    document.getElementById('orders-count').textContent = orders.length;
+    document.getElementById('orders-loading').classList.add('hidden');
+
+    if(orders.length === 0){
+      document.getElementById('orders-empty').classList.remove('hidden');
+      document.getElementById('orders-empty').classList.add('flex');
+      return;
+    }
+
+    const list = document.getElementById('orders-list');
+    list.classList.remove('hidden');
+    list.classList.add('flex');
+    list.innerHTML = orders.map(o => {
+      const status = STATUS_LABELS[o.status] || { text: '-', cls: 'status-processing' };
+      return `
+      <div class="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-media">
+            <img src="${o.thumbnailImageUrl}" class="h-full w-full object-cover" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="ticker text-sm font-bold">${o.orderNumber}</span>
+              <span class="order-status ${status.cls}">${status.text}</span>
+            </div>
+            <p class="ticker mt-1 text-xs text-muted">${new Date(o.createdAt).toLocaleDateString('fa-IR')} &middot; ${o.itemCount} کالا</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-2">
+          <div class="text-left">
+            <span class="ticker text-sm font-extrabold">${formatPrice(o.totalAmount)}</span>
+            <span class="block text-[10px] text-muted">تومان</span>
+          </div>
+          <a href="order-complete.html?orderNumber=${encodeURIComponent(o.orderNumber)}" class="rounded-xl border border-line px-4 py-2 text-xs font-semibold hover:border-emerald hover:text-emerald">
+            مشاهده جزئیات
+          </a>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(err) {
+    showToast('error', err.message || 'خطا در بارگذاری سفارش‌ها');
+  }
+}
+
+/* ---------- علاقه‌مندی‌ها ---------- */
+async function loadWishlist(){
+  try {
+    const items = await Api.getWishlist();
+    wishlistLoaded = true;
+    document.getElementById('wishlist-count').textContent = items.length;
+    document.getElementById('wishlist-loading').classList.add('hidden');
+
+    if(items.length === 0){
+      document.getElementById('wishlist-empty').classList.remove('hidden');
+      document.getElementById('wishlist-empty').classList.add('flex');
+      return;
+    }
+
+    const grid = document.getElementById('wishlist-grid');
+    grid.classList.remove('hidden');
+    grid.classList.add('grid');
+    grid.innerHTML = items.map(p => `
+      <div class="group relative overflow-hidden rounded-2xl border border-line bg-surface" id="wish-card-${p.productId}">
+        <a href="${p.productSlug ? `product.html?slug=${p.productSlug}` : '#'}" class="relative block aspect-square overflow-hidden bg-media">
+          <img src="${p.imageUrl}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        </a>
+        <button onclick="removeWish(${p.productId})" class="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-danger" aria-label="حذف از علاقه‌مندی">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+        </button>
+        <div class="p-3">
+          <h3 class="truncate text-xs font-semibold sm:text-sm">${p.productName}</h3>
+          <span class="ticker mt-1 block text-xs font-bold sm:text-sm">${formatPrice(p.price)} <span class="text-[10px] font-normal text-muted">تومان</span></span>
+        </div>
+      </div>
+    `).join('');
+  } catch(err) {
+    showToast('error', err.message || 'خطا در بارگذاری علاقه‌مندی‌ها');
+  }
+}
+
+async function removeWish(productId){
+  const card = document.getElementById(`wish-card-${productId}`);
+  try {
+    await Api.removeFromWishlist(productId);
+    if(card){
+      card.style.transition = 'opacity .2s, transform .2s';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(.9)';
+      setTimeout(() => {
+        card.remove();
+        const remaining = document.querySelectorAll('#wishlist-grid > div').length;
+        document.getElementById('wishlist-count').textContent = remaining;
+        if(remaining === 0){
+          document.getElementById('wishlist-grid').classList.add('hidden');
+          document.getElementById('wishlist-empty').classList.remove('hidden');
+          document.getElementById('wishlist-empty').classList.add('flex');
+        }
+      }, 200);
+    }
+    showToast('success', 'از علاقه‌مندی‌ها حذف شد');
+  } catch(err) {
+    showToast('error', err.message);
+  }
+}
+
+/* ---------- خروج ---------- */
+function openLogoutModal(){
+  document.getElementById('logout-overlay').classList.remove('hidden');
+  document.getElementById('logout-overlay').classList.add('flex');
+}
+function closeLogoutModal(e){
+  if(e && e.target !== e.currentTarget) return;
+  document.getElementById('logout-overlay').classList.add('hidden');
+  document.getElementById('logout-overlay').classList.remove('flex');
+}
+function confirmLogout(){
+  closeLogoutModal();
+  clearToken();
+  showToast('success', 'با موفقیت از حساب کاربری خارج شدید');
+  setTimeout(() => { window.location.href = 'index.html'; }, 900);
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>
