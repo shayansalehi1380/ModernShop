@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>آتلیه | سبد خرید</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  :root{
+    --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
+    --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
+    --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
+  }
+  .dark{
+    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
+    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
+    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
+  }
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
+  .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
+  .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
+  .text-muted{color:var(--muted)} .text-emerald{color:var(--emerald)} .bg-emerald{background:var(--emerald)}
+  .bg-emerald-deep{background:var(--emerald-deep)} .text-emerald-deep{color:var(--emerald-deep)} .bg-emerald-soft{background:var(--emerald-soft)}
+  .text-gold{color:var(--gold)} .bg-gold-soft{background:var(--gold-soft)}
+  .text-danger{color:var(--danger)} .bg-danger\/10{background:color-mix(in srgb, var(--danger) 10%, transparent)}
+  .bg-media{background:var(--media)}
+  .hover-emerald:hover{color:var(--emerald)}
+  .border-emerald{border-color:var(--emerald)}
+  .bg-surface\/90{background:color-mix(in srgb, var(--surface) 90%, transparent)}
+  .hover\:bg-surface-muted:hover{background:var(--surface-muted)}
+  .hover\:border-emerald:hover{border-color:var(--emerald)}
+  .hover\:text-emerald:hover{color:var(--emerald)}
+  .bg-emerald-hover:hover{background:#195d4d}
+  .qty-btn:hover{color:var(--emerald)}
+  .promo-input:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
+  .item-row{transition:opacity .25s ease, transform .25s ease}
+  .item-row.removing{opacity:0; transform:translateX(12px)}
+  .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
+  @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body class="bg-bg">
+
+<div id="loading-bar" class="fixed inset-x-0 top-0 z-[210] h-0.5 overflow-hidden bg-transparent">
+  <div id="loading-bar-fill" class="h-full bg-emerald transition-all duration-300 ease-out" style="width:15%"></div>
+</div>
+<div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
+
+<div id="header-placeholder"></div>
+
+<!-- breadcrumb / step indicator -->
+<div class="border-b border-line bg-surface">
+  <div class="mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-4 text-xs font-medium sm:px-6 lg:px-8">
+    <span class="flex items-center gap-2 text-emerald">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald text-[11px] text-white">۱</span>
+      سبد خرید
+    </span>
+    <span class="h-px w-8 bg-line"></span>
+    <span class="flex items-center gap-2 text-muted">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full border border-line text-[11px]">۲</span>
+      تسویه‌حساب
+    </span>
+    <span class="h-px w-8 bg-line"></span>
+    <span class="flex items-center gap-2 text-muted">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full border border-line text-[11px]">۳</span>
+      تکمیل سفارش
+    </span>
+  </div>
+</div>
+
+<section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+  <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">سبد خرید</h1>
+  <p id="cart-count-text" class="mt-1.5 text-sm text-muted">در حال بارگذاری...</p>
+
+  <div class="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+
+    <!-- items -->
+    <div class="lg:col-span-2">
+      <div id="loading-items" class="flex flex-col gap-3">
+        <div class="skeleton h-28 rounded-2xl"></div>
+        <div class="skeleton h-28 rounded-2xl"></div>
+      </div>
+
+      <div id="cart-list" class="hidden flex-col gap-3"></div>
+
+      <div id="empty-cart" class="hidden flex-col items-center gap-4 rounded-2xl border border-dashed border-line bg-surface py-16 text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </span>
+        <p class="text-sm text-muted">سبد خرید شما خالی است</p>
+        <a href="shop.html" class="rounded-full bg-emerald bg-emerald-hover px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200">مشاهده محصولات</a>
+      </div>
+
+      <a href="shop.html" class="mt-6 inline-flex items-center gap-2 text-sm font-medium text-emerald hover:underline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+        بازگشت به فروشگاه و افزودن کالای بیشتر
+      </a>
+    </div>
+
+    <!-- summary -->
+    <aside class="lg:col-span-1">
+      <div class="rounded-3xl border border-line bg-surface p-6">
+        <h2 class="text-base font-bold">خلاصه سفارش</h2>
+
+        <div class="mt-5 space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-muted">جمع کالاها</span>
+            <span class="ticker font-semibold" id="sum-subtotal">۰</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-muted">هزینه ارسال</span>
+            <span class="ticker font-semibold" id="sum-shipping">۰</span>
+          </div>
+          <div class="flex items-center justify-between" id="sum-discount-row" style="display:none">
+            <span class="text-muted">تخفیف (<span id="applied-code"></span>)</span>
+            <span class="ticker font-semibold text-danger" id="sum-discount">۰</span>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center gap-2">
+          <input id="promo-input" type="text" placeholder="کد تخفیف" class="promo-input w-full rounded-xl border border-line bg-surface-muted px-3.5 py-2.5 text-sm outline-none transition placeholder:text-muted" />
+          <button id="promo-apply" class="shrink-0 rounded-xl border border-emerald px-4 py-2.5 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال</button>
+        </div>
+        <p id="promo-msg" class="mt-2 min-h-[16px] text-xs"></p>
+
+        <div class="mt-5 flex items-baseline justify-between border-t border-line pt-5">
+          <span class="text-sm font-bold">مبلغ نهایی</span>
+          <span class="ticker text-xl font-extrabold text-emerald" id="sum-total">۰</span>
+        </div>
+        <p class="mt-0.5 text-left text-[11px] text-muted">تومان</p>
+
+        <button id="go-checkout" disabled class="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3.5 text-sm font-bold text-white transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40">
+          ادامه به تسویه‌حساب
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+
+        <div class="mt-5 flex items-center justify-center gap-4 border-t border-line pt-4 text-[11px] text-muted">
+          <span class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg>
+            پرداخت امن
+          </span>
+          <span class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            بازگشت تا ۷ روز
+          </span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script>
+const spinnerSVG = '<svg class="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+
+window.addEventListener('load', () => {
+  const fill = document.getElementById('loading-bar-fill');
+  const bar = document.getElementById('loading-bar');
+  setTimeout(() => fill.style.width = '70%', 100);
+  setTimeout(() => fill.style.width = '100%', 400);
+  setTimeout(() => bar.style.display = 'none', 650);
+});
+
+function showToast(kind, message){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+  el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+  el.innerHTML = (kind === 'success'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+    + `<span>${message}</span>`;
+  root.appendChild(el);
+  requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+  setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+/* ---------- کد تخفیف اعمال‌شده رو تو localStorage نگه می‌داریم تا checkout.html هم بتونه بخونتش ---------- */
+const DISCOUNT_STORAGE_KEY = 'atelier_discount_code';
+
+let currentCart = null;
+
+async function loadCart(){
+  try {
+    currentCart = await Api.getCart();
+    const storedCode = localStorage.getItem(DISCOUNT_STORAGE_KEY);
+    if(storedCode && currentCart.items.length > 0){
+      try {
+        currentCart = await Api.applyDiscount(storedCode);
+      } catch(e) {
+        localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+      }
+    }
+    renderAll();
+  } catch(err) {
+    showToast('error', err.message || 'خطا در بارگذاری سبد خرید');
+    document.getElementById('loading-items').classList.add('hidden');
+  }
+}
+
+function renderAll(){
+  document.getElementById('loading-items').classList.add('hidden');
+  renderCart();
+  renderSummary();
+}
+
+function renderCart(){
+  const list = document.getElementById('cart-list');
+  const empty = document.getElementById('empty-cart');
+  const countText = document.getElementById('cart-count-text');
+  const items = currentCart?.items || [];
+
+  if(items.length === 0){
+    list.classList.add('hidden');
+    list.classList.remove('flex');
+    empty.classList.remove('hidden');
+    empty.classList.add('flex');
+    countText.textContent = 'سبد خرید شما خالی است';
+  } else {
+    list.classList.remove('hidden');
+    list.classList.add('flex');
+    empty.classList.add('hidden');
+    empty.classList.remove('flex');
+    const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+    countText.textContent = `${totalQty} کالا در سبد شما`;
+  }
+
+  list.innerHTML = items.map(item => `
+    <div class="item-row flex gap-4 rounded-2xl border border-line bg-surface p-4" data-item-id="${item.id}">
+      <a href="product.html?slug=${item.productId}" class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-media sm:h-24 sm:w-24">
+        <img src="${item.imageUrl}" class="h-full w-full object-cover" />
+      </a>
+      <div class="flex flex-1 flex-col justify-between">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-sm font-semibold sm:text-[15px]">${item.productName}</h3>
+            ${item.variantLabel ? `<p class="mt-1 text-xs text-muted">${item.variantLabel}</p>` : ''}
+          </div>
+          <button onclick="removeItem(${item.id})" class="shrink-0 rounded-full p-1.5 text-muted hover:bg-danger/10 hover:text-danger" aria-label="حذف کالا">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+        <div class="mt-3 flex items-end justify-between">
+          <div class="flex items-center rounded-full border border-line">
+            <button onclick="changeQty(${item.id}, ${item.quantity + 1})" class="qty-btn flex h-8 w-8 items-center justify-center text-foreground" aria-label="افزایش تعداد">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            </button>
+            <span class="ticker w-7 text-center text-sm font-bold">${item.quantity}</span>
+            <button onclick="changeQty(${item.id}, ${item.quantity - 1})" class="qty-btn flex h-8 w-8 items-center justify-center text-foreground" aria-label="کاهش تعداد">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+            </button>
+          </div>
+          <div class="text-left">
+            <div class="ticker text-sm font-extrabold sm:text-base">${formatPrice(item.totalPrice)}</div>
+            <div class="text-[10px] text-muted">تومان</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSummary(){
+  const subtotal = currentCart?.subTotal || 0;
+  const shipping = currentCart?.shippingCost || 0;
+  const discount = currentCart?.discountAmount || 0;
+  const total = currentCart?.total || 0;
+
+  document.getElementById('sum-subtotal').textContent = formatPrice(subtotal);
+  document.getElementById('sum-shipping').textContent = shipping === 0 ? 'رایگان' : formatPrice(shipping);
+  document.getElementById('sum-total').textContent = formatPrice(total);
+
+  const discRow = document.getElementById('sum-discount-row');
+  if(discount > 0){
+    discRow.style.display = 'flex';
+    document.getElementById('sum-discount').textContent = '- ' + formatPrice(discount);
+    document.getElementById('applied-code').textContent = currentCart.appliedDiscountCode || '';
+  } else {
+    discRow.style.display = 'none';
+  }
+
+  document.getElementById('go-checkout').disabled = !currentCart || currentCart.items.length === 0;
+}
+
+async function changeQty(cartItemId, newQty){
+  try {
+    currentCart = await Api.updateCartItem(cartItemId, newQty);
+    // اگه کد تخفیفی اعمال شده بود، باید دوباره روی سبد به‌روزشده اعمالش کنیم
+    const storedCode = localStorage.getItem(DISCOUNT_STORAGE_KEY);
+    if(storedCode && currentCart.items.length > 0){
+      try { currentCart = await Api.applyDiscount(storedCode); } catch(e) { /* بی‌خیال */ }
+    }
+    renderAll();
+    updateCartBadge();
+  } catch(err) {
+    showToast('error', err.message);
+  }
+}
+
+async function removeItem(cartItemId){
+  const row = document.querySelector(`.item-row[data-item-id="${cartItemId}"]`);
+  if(row) row.classList.add('removing');
+  try {
+    currentCart = await Api.removeCartItem(cartItemId);
+    setTimeout(() => { renderAll(); }, row ? 200 : 0);
+    showToast('success', 'کالا از سبد خرید حذف شد');
+    updateCartBadge();
+  } catch(err) {
+    showToast('error', err.message);
+    if(row) row.classList.remove('removing');
+  }
+}
+
+document.getElementById('promo-apply').addEventListener('click', async () => {
+  const input = document.getElementById('promo-input');
+  const msg = document.getElementById('promo-msg');
+  const code = input.value.trim().toUpperCase();
+  if(!code){
+    msg.textContent = 'یک کد تخفیف وارد کنید';
+    msg.className = 'mt-2 min-h-[16px] text-xs text-danger';
+    return;
+  }
+  try {
+    currentCart = await Api.applyDiscount(code);
+    localStorage.setItem(DISCOUNT_STORAGE_KEY, code);
+    msg.textContent = 'کد تخفیف با موفقیت اعمال شد';
+    msg.className = 'mt-2 min-h-[16px] text-xs text-emerald';
+    showToast('success', 'کد تخفیف اعمال شد');
+    renderSummary();
+  } catch(err) {
+    localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+    msg.textContent = err.message || 'کد تخفیف نامعتبر است';
+    msg.className = 'mt-2 min-h-[16px] text-xs text-danger';
+  }
+});
+
+document.getElementById('go-checkout').addEventListener('click', () => {
+  if(!currentCart || currentCart.items.length === 0) return;
+  if(!isLoggedIn()){
+    window.location.href = 'auth.html?redirect=checkout.html';
+    return;
+  }
+  window.location.href = 'checkout.html';
+});
+
+loadCart();
+</script>
+
+</body>
+</html>
