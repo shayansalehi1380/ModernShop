@@ -153,6 +153,7 @@ public class AccountController : ControllerBase
             {
                 ProductId = w.ProductId,
                 ProductName = w.Product.Name,
+                ProductSlug = w.Product.Slug,
                 ImageUrl = w.Product.Images.Where(i => i.IsMain).Select(i => i.ImageUrl).FirstOrDefault()
                            ?? w.Product.Images.Select(i => i.ImageUrl).FirstOrDefault() ?? "",
                 Price = w.Product.DiscountPrice ?? w.Product.Price

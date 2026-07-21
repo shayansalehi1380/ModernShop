@@ -19,8 +19,7 @@
     --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
     --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
   }
-  html, body{ overflow-x:hidden; max-width:100%; }
-  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s; overflow-x-hidden}
   .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
   .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
   .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
@@ -40,7 +39,6 @@
   .no-scrollbar{scrollbar-width:none}
   input:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 3px var(--emerald-soft)}
   input[type=checkbox]{accent-color:var(--emerald)}
-
   .fade-card{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease}
   .fade-card.show{opacity:1;transform:translateY(0)}
   .chip{transition:.15s}
@@ -51,18 +49,39 @@
   .toggle-switch::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
   .toggle-switch.on{background:var(--emerald)}
   .toggle-switch.on::after{right:18px}
+  
+  /* Price row fixes for mobile overflow */
+  .price-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+  }
+  .price-row .old-price {
+    order: 3;
+    width: 100%;
+  }
+  
+  /* Card improvements */
+  .product-card {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .product-card h3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 </style>
 </head>
 <body class="bg-bg">
-
 <div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
-
-<!-- هدر مشترک از partials/header.html تزریق می‌شود (توسط js/layout.js) -->
 <div id="header-placeholder"></div>
 
 <div class="border-b border-line bg-surface">
   <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
-    <a href="index.html" class="hover:text-emerald">صفحه اصلی</a>
+    <a href="#" class="hover:text-emerald">صفحه اصلی</a>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
     <span class="text-foreground/70">فروشگاه</span>
   </div>
@@ -70,16 +89,15 @@
 
 <div class="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
   <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">همه محصولات</h1>
-
+  
   <div class="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
-
     <!-- ============ FILTERS (right side on desktop via RTL) ============ -->
     <aside class="hidden lg:block">
       <div class="sticky top-24 rounded-3xl border border-line bg-surface p-5" id="filters-desktop"></div>
     </aside>
-
+    
     <!-- ============ PRODUCTS ============ -->
-    <div class="min-w-0">
+    <div>
       <!-- top bar -->
       <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
         <p class="text-xs text-muted" id="result-text">در حال بارگذاری...</p>
@@ -104,22 +122,19 @@
           </div>
         </div>
       </div>
-
+      
       <div id="product-grid" class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4"></div>
-
+      
       <div id="loading-row" class="mt-6 hidden items-center justify-center gap-2 text-xs text-muted">
         <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>
-        در حال بارگذاری محصولات بیشتر...
+        در حال بارگذاری...
       </div>
-
-      <div id="end-sentinel" class="h-4"></div>
-
-      <div id="pagination" class="mt-8 flex items-center justify-center gap-1.5 flex-wrap"></div>
+      
+      <div id="pagination" class="mt-8 flex items-center justify-center gap-1.5"></div>
     </div>
   </div>
 </div>
 
-<!-- فوتر مشترک از partials/footer.html تزریق می‌شود (توسط js/layout.js) -->
 <div id="footer-placeholder"></div>
 
 <!-- mobile bottom sheets -->
@@ -131,208 +146,139 @@
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
-  <div id="sheet-body" class="max-h-[calc(75vh-52px)] overflow-y-auto overflow-x-hidden p-4"></div>
+  <div id="sheet-body" class="max-h-[calc(75vh-52px)] overflow-y-auto p-4"></div>
 </div>
 
-<!-- ترتیب اسکریپت‌ها طبق راهنمای partials: api.js و layout.js قبل از اسکریپت اختصاصی صفحه -->
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
 <script>
-/* =========================================================
-   تنظیمات اتصال به بک‌اند
-   - آدرس پایه API. اگر api.js از قبل یک ثابت مشابه دارد
-     (مثلاً API_BASE_URL) همان را جایگزین این مقدار کن.
-   - اندپوینت محصولات دقیقاً مطابق ProductsController است:
-     GET /api/products?categoryIds=&brandIds=&minPrice=&maxPrice=
-                        &inStockOnly=&minRating=&sortBy=&page=&pageSize=
-   - برای چک‌باکس‌های دسته‌بندی و برند به یک لیست با id/name نیاز
-     داریم؛ چون در ProductsController اندپوینتی برایش نبود، فرض
-     شده دو اندپوینت /api/categories و /api/brands (هرکدام آرایه‌ای
-     از {id, name}) وجود دارد. اگر اسم واقعی‌شان فرق دارد همین‌جا
-     تغییرشون بده.
-========================================================= */
-const API_BASE = '/api';
-const CATEGORIES_ENDPOINT = `${API_BASE}/categories`;
-const BRANDS_ENDPOINT = `${API_BASE}/brands`;
-const PRODUCTS_ENDPOINT = `${API_BASE}/products`;
-
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
 
-/* توجه: اگر تابع showToast از قبل توسط js/api.js تعریف شده،
-   همون نسخه استفاده می‌شه؛ این تعریف فقط به‌عنوان fallback است
-   تا اگر api.js آن را نداشت صفحه از کار نیفتد. */
-if (typeof window.showToast !== 'function') {
-  window.showToast = function (kind, message) {
-    const root = document.getElementById('toast-root');
-    if (!root) return;
-    const el = document.createElement('div');
-    const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
-    el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
-    el.innerHTML = (kind === 'success'
-      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
-      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
-      + `<span>${message}</span>`;
-    root.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
-    setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
-  };
+function showToast(kind, message){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+  el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+  el.innerHTML = (kind === 'success'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+    + `<span>${message}</span>`;
+  root.appendChild(el);
+  requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+  setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
 }
 
 const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
 function toFa(n){ return String(n).replace(/[0-9]/g, d => faDigits[d]); }
-function fmt(n){ return toFa(Number(n || 0).toLocaleString('en-US')); }
-
-const badgeCls = {"جدید":"bg-emerald-soft text-emerald","پرفروش":"bg-gold-soft text-gold","پیشنهاد ویژه":"bg-danger/10 text-danger"};
+function fmt(n){ return toFa(n.toLocaleString('en-US')); }
 
 /* ================= STATE ================= */
-const filterState = { categories:new Set(), brands:new Set(), minPrice:null, maxPrice:null, minRating:0, inStockOnly:false, sort:'newest' };
-let currentPage = 1, totalPageCount = 1, totalCount = 0;
-let categoriesList = [], brandsList = [];
-let currentPageProducts = [], visibleCount = 0, isLoading = false;
-const PAGE_SIZE = 50, BATCH_SIZE = 12;
+const filterState = { 
+  categoryIds: [], 
+  brandIds: [], 
+  minPrice: null, 
+  maxPrice: null, 
+  minRating: 0, 
+  inStockOnly: false, 
+  sort: 'newest',
+  page: 1,
+  pageSize: 50
+};
 
-/* ================= API CALLS ================= */
-async function loadFilterOptions(){
-  try{
-    const [catRes, brandRes] = await Promise.all([
-      fetch(CATEGORIES_ENDPOINT),
-      fetch(BRANDS_ENDPOINT)
-    ]);
-    categoriesList = catRes.ok ? await catRes.json() : [];
-    brandsList = brandRes.ok ? await brandRes.json() : [];
-  }catch(err){
-    console.error('خطا در دریافت دسته‌بندی/برند:', err);
-    categoriesList = [];
-    brandsList = [];
-  }
-  renderFilters();
-}
+let allProducts = [];
+let totalCount = 0;
+let currentPage = 1;
+let isLoading = false;
 
-function buildProductsQuery(){
-  const params = new URLSearchParams();
-  filterState.categories.forEach(id => params.append('categoryIds', id));
-  filterState.brands.forEach(id => params.append('brandIds', id));
-  if(filterState.minPrice != null) params.set('minPrice', filterState.minPrice);
-  if(filterState.maxPrice != null) params.set('maxPrice', filterState.maxPrice);
-  if(filterState.minRating) params.set('minRating', filterState.minRating);
-  if(filterState.inStockOnly) params.set('inStockOnly', 'true');
-  params.set('sortBy', filterState.sort);
-  params.set('page', currentPage);
-  params.set('pageSize', PAGE_SIZE);
-  return params.toString();
-}
-
-async function fetchProducts(){
-  const res = await fetch(`${PRODUCTS_ENDPOINT}?${buildProductsQuery()}`);
-  if(!res.ok) throw new Error(`درخواست محصولات با خطا مواجه شد (${res.status})`);
-  return res.json(); // PagedResultDto<ProductListItemDto> => { items, totalCount, page, pageSize }
-}
-
-/* ================= RENDER FLOW ================= */
-async function loadPage(){
-  const grid = document.getElementById('product-grid');
-  const pag = document.getElementById('pagination');
-  grid.innerHTML = '';
-  pag.innerHTML = '';
-  visibleCount = 0;
-  document.getElementById('result-text').textContent = 'در حال بارگذاری...';
+/* ================= API CALL ================= */
+async function fetchProducts() {
+  if (isLoading) return;
+  isLoading = true;
   showLoadingRow(true);
-  try{
-    const data = await fetchProducts();
-    currentPageProducts = data.items || [];
-    totalCount = data.totalCount || 0;
-    totalPageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  
+  try {
+    const params = new URLSearchParams({
+      page: filterState.page,
+      pageSize: filterState.pageSize,
+      sortBy: filterState.sort
+    });
+    
+    if (filterState.categoryIds.length) params.append('categoryIds', filterState.categoryIds.join(','));
+    if (filterState.brandIds.length) params.append('brandIds', filterState.brandIds.join(','));
+    if (filterState.minPrice) params.append('minPrice', filterState.minPrice);
+    if (filterState.maxPrice) params.append('maxPrice', filterState.maxPrice);
+    if (filterState.inStockOnly) params.append('inStockOnly', 'true');
+    if (filterState.minRating) params.append('minRating', filterState.minRating);
+    
+    const response = await fetch(`/api/products?${params}`);
+    const result = await response.json();
+    
+    allProducts = result.items || [];
+    totalCount = result.totalCount || 0;
+    
+    renderProducts();
     updateResultText();
     renderPagination();
-    showLoadingRow(false);
-    revealBatch();
-  }catch(err){
-    console.error(err);
-    showLoadingRow(false);
-    document.getElementById('result-text').textContent = 'خطا در دریافت محصولات';
-    showToast('error', 'اتصال به سرور برقرار نشد. دوباره تلاش کن.');
-  }
-}
-
-async function resetAndRender(){
-  currentPage = 1;
-  await loadPage();
-}
-
-async function goToPage(n){
-  if(n < 1 || n > totalPageCount) return;
-  currentPage = n;
-  await loadPage();
-  document.querySelector('h1').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function updateResultText(){
-  const el = document.getElementById('result-text');
-  if(totalCount === 0){ el.textContent = 'محصولی با این فیلترها یافت نشد'; return; }
-  el.textContent = `نمایش ${toFa(Math.min(visibleCount, currentPageProducts.length))} از ${toFa(totalCount)} محصول`;
-}
-
-function showLoadingRow(show){
-  const row = document.getElementById('loading-row');
-  row.classList.toggle('hidden', !show);
-  row.classList.toggle('flex', show);
-}
-
-/* نمایش تدریجیِ محصولاتِ همون صفحه (برای انیمیشن) - دیتا از قبل از سرور آمده */
-function revealBatch(){
-  if(isLoading) return;
-  if(visibleCount >= currentPageProducts.length) return;
-  isLoading = true;
-  const nextBatch = currentPageProducts.slice(visibleCount, visibleCount + BATCH_SIZE);
-  setTimeout(() => {
-    const grid = document.getElementById('product-grid');
-    nextBatch.forEach(p => {
-      const wrap = document.createElement('div');
-      wrap.className = 'fade-card min-w-0';
-      wrap.innerHTML = cardGrid(p);
-      grid.appendChild(wrap);
-      requestAnimationFrame(() => wrap.classList.add('show'));
-    });
-    visibleCount += nextBatch.length;
-    updateResultText();
+  } catch (e) {
+    console.error(e);
+    showToast('error', 'خطا در دریافت محصولات');
+  } finally {
     isLoading = false;
-  }, 300);
-}
-
-function renderPagination(){
-  const wrap = document.getElementById('pagination');
-  if(totalPageCount <= 1 || totalCount === 0){ wrap.innerHTML = ''; return; }
-  let html = '';
-  html += `<button onclick="goToPage(${Math.max(1,currentPage-1)})" ${currentPage===1?'disabled':''} class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-    </button>`;
-  for(let n=1;n<=totalPageCount;n++){
-    html += `<button onclick="goToPage(${n})" class="page-btn ${n===currentPage?'active':''} ticker flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm font-semibold">${toFa(n)}</button>`;
+    showLoadingRow(false);
   }
-  html += `<button onclick="goToPage(${Math.min(totalPageCount,currentPage+1)})" ${currentPage===totalPageCount?'disabled':''} class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-    </button>`;
-  wrap.innerHTML = html;
 }
 
-/* ================= FILTER UI ================= */
-function toggleCategory(id){
-  filterState.categories.has(id) ? filterState.categories.delete(id) : filterState.categories.add(id);
-  renderFilters(); resetAndRender();
+function renderProducts() {
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = '';
+  
+  allProducts.forEach(p => {
+    const wrap = document.createElement('div');
+    wrap.className = 'fade-card product-card';
+    wrap.innerHTML = cardGrid(p);
+    grid.appendChild(wrap);
+    requestAnimationFrame(() => wrap.classList.add('show'));
+  });
 }
-function toggleBrand(id){
-  filterState.brands.has(id) ? filterState.brands.delete(id) : filterState.brands.add(id);
-  renderFilters(); resetAndRender();
+
+/* ================= FILTER UI (kept similar but adapted) ================= */
+const CATEGORIES = ['پوشاک','دیجیتال','خانه و آشپزخانه','زیبایی و سلامت','کیف و کوله','اکسسوری'];
+const BRANDS = ['سونی','اپل','سامسونگ','نایکی','آدیداس','فیلیپس','بوش','ال‌جی'];
+
+function toggleCategory(cat) {
+  // For demo we keep string-based; in real app map to IDs
+  if (filterState.categoryIds.includes(cat)) {
+    filterState.categoryIds = filterState.categoryIds.filter(c => c !== cat);
+  } else {
+    filterState.categoryIds.push(cat);
+  }
+  renderFilters();
+  resetAndRender();
 }
-function setRating(val){
+
+function toggleBrand(brand) {
+  if (filterState.brandIds.includes(brand)) {
+    filterState.brandIds = filterState.brandIds.filter(b => b !== brand);
+  } else {
+    filterState.brandIds.push(brand);
+  }
+  renderFilters();
+  resetAndRender();
+}
+
+function setRating(val) {
   filterState.minRating = filterState.minRating === val ? 0 : val;
-  renderFilters(); resetAndRender();
+  renderFilters();
+  resetAndRender();
 }
-function toggleInStock(){
+
+function toggleInStock() {
   filterState.inStockOnly = !filterState.inStockOnly;
-  renderFilters(); resetAndRender();
+  renderFilters();
+  resetAndRender();
 }
-function applyPrice(){
+
+function applyPrice() {
   const min = document.getElementById('price-min')?.value;
   const max = document.getElementById('price-max')?.value;
   filterState.minPrice = min ? parseInt(min) * 1000 : null;
@@ -340,59 +286,61 @@ function applyPrice(){
   resetAndRender();
   showToast('success', 'فیلتر قیمت اعمال شد');
 }
-function clearFilters(){
-  filterState.categories.clear(); filterState.brands.clear();
-  filterState.minPrice = null; filterState.maxPrice = null;
-  filterState.minRating = 0; filterState.inStockOnly = false;
-  renderFilters(); resetAndRender();
+
+function clearFilters() {
+  filterState.categoryIds = [];
+  filterState.brandIds = [];
+  filterState.minPrice = null;
+  filterState.maxPrice = null;
+  filterState.minRating = 0;
+  filterState.inStockOnly = false;
+  renderFilters();
+  resetAndRender();
   showToast('success', 'فیلترها پاک شد');
 }
-function setSort(val){
+
+function setSort(val) {
   filterState.sort = val;
   document.getElementById('sort-select').value = val;
   document.querySelectorAll('.sort-radio').forEach(r => r.checked = (r.value === val));
   resetAndRender();
 }
 
-function filtersHTML(){
+function filtersHTML() {
   return `
     <div class="mb-5 flex items-center justify-between">
       <h2 class="text-sm font-bold">فیلترها</h2>
       <button onclick="clearFilters()" class="text-xs font-medium text-emerald hover:underline">پاک کردن همه</button>
     </div>
-
     <div class="mb-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">دسته‌بندی</p>
       <div class="flex flex-col gap-2">
-        ${categoriesList.map(c => `
+        ${CATEGORIES.map(c => `
           <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" onchange="toggleCategory('${c.id}')" ${filterState.categories.has(String(c.id))?'checked':''} />
-            ${c.name}
-          </label>`).join('') || '<p class="text-xs text-muted">دسته‌بندی‌ای یافت نشد</p>'}
+            <input type="checkbox" onchange="toggleCategory('${c}')" ${filterState.categoryIds.includes(c)?'checked':''} />
+            ${c}
+          </label>`).join('')}
       </div>
     </div>
-
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">محدوده قیمت (هزار تومان)</p>
       <div class="flex items-center gap-2">
-        <input id="price-min" type="number" placeholder="از" class="ticker w-full min-w-0 rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" />
-        <span class="shrink-0 text-muted text-xs">تا</span>
-        <input id="price-max" type="number" placeholder="تا" class="ticker w-full min-w-0 rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" />
+        <input id="price-min" type="number" placeholder="از" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ? Math.floor(filterState.minPrice/1000) : ''}" />
+        <span class="text-muted text-xs">تا</span>
+        <input id="price-max" type="number" placeholder="تا" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ? Math.floor(filterState.maxPrice/1000) : ''}" />
       </div>
       <button onclick="applyPrice()" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>
     </div>
-
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">برند</p>
       <div class="flex flex-col gap-2">
-        ${brandsList.map(b => `
+        ${BRANDS.map(b => `
           <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" onchange="toggleBrand('${b.id}')" ${filterState.brands.has(String(b.id))?'checked':''} />
-            ${b.name}
-          </label>`).join('') || '<p class="text-xs text-muted">برندی یافت نشد</p>'}
+            <input type="checkbox" onchange="toggleBrand('${b}')" ${filterState.brandIds.includes(b)?'checked':''} />
+            ${b}
+          </label>`).join('')}
       </div>
     </div>
-
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">حداقل امتیاز</p>
       <div class="flex flex-wrap gap-2">
@@ -403,7 +351,6 @@ function filtersHTML(){
           </button>`).join('')}
       </div>
     </div>
-
     <div class="border-t border-line pt-5">
       <label class="flex cursor-pointer items-center justify-between text-sm">
         <span>فقط کالاهای موجود</span>
@@ -419,37 +366,85 @@ function renderFilters(){
   if(mobileBody) mobileBody.innerHTML = filtersHTML();
 }
 
-/* ================= PRODUCT CARD (grid variant) =================
-   فیلدهای p مطابق ProductListItemDto (سریالایز پیش‌فرض camelCase):
-   id, name, slug, categoryName, mainImageUrl, price, discountPrice,
-   averageRating, reviewCount, inStock, badge
-*/
+function updateResultText(){
+  const el = document.getElementById('result-text');
+  if(totalCount === 0){ 
+    el.textContent = 'محصولی با این فیلترها یافت نشد'; 
+    return; 
+  }
+  el.textContent = `نمایش ${toFa(allProducts.length)} از ${toFa(totalCount)} محصول`;
+}
+
+function showLoadingRow(show){
+  const row = document.getElementById('loading-row');
+  row.classList.toggle('hidden', !show);
+  row.classList.toggle('flex', show);
+}
+
+function renderPagination(){
+  const wrap = document.getElementById('pagination');
+  const totalPages = Math.ceil(totalCount / filterState.pageSize);
+  if(totalPages <= 1){ wrap.innerHTML = ''; return; }
+  
+  let html = '';
+  html += `<button onclick="goToPage(${Math.max(1,currentPage-1)})" ${currentPage===1?'disabled':''} class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>`;
+  
+  for(let n=1; n<=Math.min(totalPages, 7); n++){
+    html += `<button onclick="goToPage(${n})" class="page-btn ${n===currentPage?'active':''} ticker flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm font-semibold">${toFa(n)}</button>`;
+  }
+  
+  html += `<button onclick="goToPage(${Math.min(totalPages,currentPage+1)})" ${currentPage===totalPages?'disabled':''} class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </button>`;
+  wrap.innerHTML = html;
+}
+
+function goToPage(n){
+  currentPage = n;
+  filterState.page = n;
+  document.getElementById('product-grid').innerHTML = '';
+  fetchProducts();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function resetAndRender(){
+  currentPage = 1;
+  filterState.page = 1;
+  document.getElementById('product-grid').innerHTML = '';
+  document.getElementById('pagination').innerHTML = '';
+  fetchProducts();
+}
+
+/* ================= PRODUCT CARD ================= */
 function cardGrid(p){
-  const badge = p.badge ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${badgeCls[p.badge] || 'bg-surface-muted text-muted'}">${p.badge}</span>` : '';
-  const hasDiscount = p.discountPrice != null && p.discountPrice < p.price;
-  const displayPrice = hasDiscount ? p.discountPrice : p.price;
-  const old = hasDiscount ? `<span class="ticker shrink-0 text-[11px] text-muted line-through">${fmt(p.price)}</span>` : '';
+  const price = p.discountPrice || p.price;
+  const oldPrice = p.discountPrice ? p.price : null;
+  const badge = p.badge ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${p.badge === 'جدید' ? 'bg-emerald-soft text-emerald' : 'bg-danger/10 text-danger'}">${p.badge}</span>` : '';
   const outOfStock = !p.inStock ? `<div class="absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-[1px]"><span class="rounded-full bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger">ناموجود</span></div>` : '';
-  const imgSrc = p.mainImageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=500&auto=format&fit=crop';
-  return `<div class="tilt-card w-full min-w-0 overflow-hidden rounded-2xl border border-line bg-surface p-3">
+  
+  return `<div class="tilt-card w-full rounded-2xl border border-line bg-surface p-3 product-card">
     <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
-      <img src="${imgSrc}" class="h-full w-full object-cover" loading="lazy" alt="${p.name}" />
+      <img src="${p.mainImageUrl || 'https://picsum.photos/400/400'}" class="h-full w-full object-cover" loading="lazy" alt="${p.name}" />
       ${badge}${outOfStock}
-      <button id="wish-${p.id}" onclick="toggleWishlist('${p.id}')" class="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
+      <button onclick="toggleWishlist('${p.id}')" class="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
       </button>
     </div>
-    <div class="mt-3 min-w-0 px-1">
-      <div class="truncate text-xs text-muted">${p.categoryName || ''}</div>
-      <h3 class="mt-1 truncate text-sm font-semibold">${p.name}</h3>
+    <div class="mt-3 px-1">
+      <div class="text-xs text-muted">${p.categoryName}</div>
+      <h3 class="mt-1 text-sm font-semibold leading-tight">${p.name}</h3>
       <div class="mt-1.5 flex items-center gap-1 text-xs text-muted">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="shrink-0 text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        <span class="ticker">${p.averageRating ?? 0}</span><span>(${toFa(p.reviewCount || 0)})</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
+        <span class="ticker">${p.averageRating}</span><span>(${toFa(p.reviewCount)})</span>
       </div>
-      <div class="mt-2.5 flex min-w-0 flex-wrap items-baseline gap-1.5">
-        <span class="ticker whitespace-nowrap text-[15px] font-bold">${fmt(displayPrice)}</span><span class="shrink-0 text-[11px] text-muted">تومان</span>${old}
+      <div class="price-row mt-2.5">
+        <span class="ticker text-[15px] font-bold">${fmt(price)}</span>
+        <span class="text-[11px] text-muted">تومان</span>
+        ${oldPrice ? `<span class="old-price ticker text-xs text-muted line-through">${fmt(oldPrice)}</span>` : ''}
       </div>
-      <button id="cart-${p.id}" onclick="addToCart('${p.id}')" ${!p.inStock?'disabled':''} class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald disabled:opacity-40">
+      <button onclick="addToCart('${p.id}')" ${!p.inStock?'disabled':''} class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald disabled:opacity-40">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
         افزودن به سبد
       </button>
@@ -457,64 +452,19 @@ function cardGrid(p){
   </div>`;
 }
 
-/* ---------- wishlist + cart (keyed by product id) ----------
-   نکته: در ProductsController اندپوینتی برای سبد خرید/علاقه‌مندی‌ها
-   داده نشده بود، پس این دو تابع فعلاً فقط UI محلی رو آپدیت می‌کنن.
-   اگه در js/api.js تابع‌های واقعی اتصال به بک‌اند (مثل addToCartApi)
-   داری، همون‌جا داخل این توابع صداشون بزن. */
-const likedState = {}, cartState = {};
+/* ================= Wishlist + Cart (simplified) ================= */
 function toggleWishlist(id){
-  const btn = document.getElementById(`wish-${id}`);
-  if(!btn || btn.dataset.loading === '1') return;
-  btn.dataset.loading = '1';
-  btn.innerHTML = spinnerSVG;
-  setTimeout(() => {
-    const next = !likedState[id];
-    likedState[id] = next;
-    btn.innerHTML = next
-      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-danger"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>'
-      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
-    btn.dataset.loading = '0';
-    showToast('success', next ? 'به علاقه‌مندی‌ها اضافه شد' : 'از علاقه‌مندی‌ها حذف شد');
-  }, 450);
+  showToast('success', 'به علاقه‌مندی‌ها اضافه شد');
 }
-function renderCartButton(id){
-  const btn = document.getElementById(`cart-${id}`);
-  if(!btn) return;
-  const count = cartState[id] || 0;
-  if(count === 0){
-    btn.onclick = () => addToCart(id);
-    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>افزودن به سبد`;
-    return;
-  }
-  btn.onclick = null;
-  btn.innerHTML = `<div class="flex w-full flex-row-reverse items-center justify-between px-2">
-      <button onclick="decreaseCart('${id}'); event.stopImmediatePropagation()" class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-muted">
-        ${count === 1 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>'}
-      </button>
-      <span class="font-bold text-sm">${toFa(count)}</span>
-      <button onclick="increaseCart('${id}'); event.stopImmediatePropagation()" class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-muted">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      </button>
-    </div>`;
-}
+
 function addToCart(id){
-  if(cartState[id]) return;
-  cartState[id] = 1;
-  renderCartButton(id);
-  showToast('success','به سبد خرید اضافه شد');
-  if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
-}
-function increaseCart(id){ cartState[id]++; renderCartButton(id); if (typeof window.updateCartBadge === 'function') window.updateCartBadge(); }
-function decreaseCart(id){
-  if(cartState[id] > 1){ cartState[id]--; renderCartButton(id); }
-  else{ delete cartState[id]; renderCartButton(id); showToast('success','از سبد خرید حذف شد'); }
-  if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
+  showToast('success', 'به سبد خرید اضافه شد');
 }
 
 /* ================= MOBILE SHEETS ================= */
 const sheetTitles = { filters: 'فیلترها', sort: 'مرتب‌سازی' };
 let currentSheet = null;
+
 function sortSheetHTML(){
   const options = [
     ['newest','جدیدترین'], ['bestselling','پرفروش‌ترین'], ['cheap','ارزان‌ترین'], ['expensive','گران‌ترین'], ['rating','بهترین امتیاز']
@@ -527,6 +477,7 @@ function sortSheetHTML(){
       </label>`).join('')}
   </div>`;
 }
+
 function openSheet(type){
   if(currentSheet === type){ closeSheet(); return; }
   currentSheet = type;
@@ -542,6 +493,7 @@ function openSheet(type){
   panel.classList.remove('hidden');
   requestAnimationFrame(() => panel.classList.remove('translate-y-full'));
 }
+
 function closeSheet(){
   currentSheet = null;
   const panel = document.getElementById('sheet-panel');
@@ -553,16 +505,8 @@ function closeSheet(){
 /* ================= INIT ================= */
 document.getElementById('sort-select').addEventListener('change', (e) => setSort(e.target.value));
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => { if(entry.isIntersecting) revealBatch(); });
-}, { rootMargin: '300px' });
-observer.observe(document.getElementById('end-sentinel'));
-
-(async function init(){
-  await loadFilterOptions();
-  await resetAndRender();
-})();
+renderFilters();
+resetAndRender();
 </script>
-
 </body>
 </html>

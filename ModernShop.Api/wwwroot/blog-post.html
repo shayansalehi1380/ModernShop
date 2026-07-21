@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title id="page-title">آتلیه | وبلاگ</title>
+<meta id="meta-description" name="description" content="" />
+<meta name="robots" content="index, follow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<script type="application/ld+json" id="jsonld-post"></script>
+
+<style>
+  :root{
+    --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
+    --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
+    --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
+  }
+  .dark{
+    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
+    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
+    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
+  }
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
+  .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
+  .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
+  .text-muted{color:var(--muted)} .text-emerald{color:var(--emerald)} .bg-emerald{background:var(--emerald)}
+  .bg-emerald-deep{background:var(--emerald-deep)} .text-emerald-deep{color:var(--emerald-deep)} .bg-emerald-soft{background:var(--emerald-soft)}
+  .text-gold{color:var(--gold)} .bg-gold-soft{background:var(--gold-soft)}
+  .bg-media{background:var(--media)}
+  .border-emerald{border-color:var(--emerald)}
+  .hover\:bg-surface-muted:hover{background:var(--surface-muted)}
+  .hover\:border-emerald:hover{border-color:var(--emerald)}
+  .hover\:text-emerald:hover{color:var(--emerald)}
+  .bg-emerald-hover:hover{background:#195d4d}
+  .prose-article :where(h2){scroll-margin-top:6rem; margin-top:2.5rem; margin-bottom:.75rem; font-size:1.25rem; font-weight:800}
+  .prose-article :where(p){margin-top:.75rem; line-height:2}
+  .prose-article :where(ul){margin-top:1rem; padding-right:1.25rem; list-style:disc}
+  .toc-link.active{color:var(--emerald); font-weight:700; border-color:var(--emerald)}
+  input:focus,textarea:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
+  .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
+  @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body class="bg-bg">
+
+<!-- reading progress bar -->
+<div class="fixed inset-x-0 top-0 z-[210] h-0.5 bg-transparent">
+  <div id="progress-fill" class="h-full bg-emerald transition-[width] duration-150 ease-out" style="width:0%"></div>
+</div>
+<div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
+
+<div id="header-placeholder"></div>
+
+<nav aria-label="مسیر صفحه" class="border-b border-line bg-surface">
+  <ol class="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
+    <li><a href="index.html" class="hover:text-emerald">صفحه اصلی</a></li>
+    <li aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></li>
+    <li><a href="blog.html" class="hover:text-emerald">وبلاگ</a></li>
+    <li aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></li>
+    <li id="breadcrumb-title" class="truncate text-foreground/70" aria-current="page">در حال بارگذاری...</li>
+  </ol>
+</nav>
+
+<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+  <!-- loading skeleton -->
+  <div id="loading-state" class="max-w-2xl space-y-4">
+    <div class="skeleton h-4 w-24 rounded"></div>
+    <div class="skeleton h-9 w-full rounded"></div>
+    <div class="skeleton mt-4 aspect-[16/9] w-full rounded-3xl"></div>
+  </div>
+
+  <div id="not-found-state" class="hidden py-24 text-center">
+    <p class="text-lg font-bold">این مطلب یافت نشد</p>
+    <a href="blog.html" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به وبلاگ</a>
+  </div>
+
+  <div id="post-content" class="hidden grid-cols-1 gap-10 lg:grid-cols-[1fr_260px]">
+
+    <!-- ============ ARTICLE ============ -->
+    <article class="prose-article min-w-0">
+      <header class="max-w-2xl">
+        <span id="post-category" class="text-xs font-semibold text-emerald"></span>
+        <h1 id="post-title" class="mt-2 text-2xl font-extrabold leading-snug sm:text-[32px] sm:leading-snug"></h1>
+
+        <div class="mt-5 flex flex-wrap items-center gap-4 border-y border-line py-4 text-xs text-muted">
+          <div class="flex items-center gap-2">
+            <span id="author-initials" class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-soft text-sm font-bold text-emerald"></span>
+            <div>
+              <div id="author-name" class="text-[13px] font-semibold text-foreground"></div>
+              <div>نویسنده وبلاگ آتلیه</div>
+            </div>
+          </div>
+          <span class="hidden sm:inline">·</span>
+          <time id="post-date"></time>
+          <span>·</span>
+          <span><span id="post-readtime"></span> دقیقه مطالعه</span>
+
+          <div class="flex items-center gap-1.5 sm:mr-auto">
+            <button onclick="copyLink()" class="flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 hover:border-emerald hover:text-emerald">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1-1"/></svg>
+              کپی لینک
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <figure class="mt-6">
+        <img id="post-image" src="" alt="" class="aspect-[16/9] w-full rounded-3xl object-cover" loading="eager" />
+      </figure>
+
+      <div id="post-body" class="mt-8 max-w-2xl text-[15px] text-foreground/85"></div>
+
+      <!-- author bio -->
+      <div id="author-bio-block" class="mt-12 hidden items-start gap-4 rounded-2xl border border-line bg-surface p-5">
+        <span id="author-bio-initials" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-base font-bold text-emerald"></span>
+        <div>
+          <div id="author-bio-name" class="text-sm font-bold"></div>
+          <p id="author-bio-text" class="mt-1 text-xs leading-6 text-muted"></p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ SIDEBAR: table of contents ============ -->
+    <aside id="toc-aside" class="hidden lg:block">
+      <nav aria-label="فهرست مطالب" class="sticky top-24 rounded-3xl border border-line bg-surface p-5">
+        <h2 class="text-xs font-bold text-muted">فهرست مطالب</h2>
+        <ul id="toc-list" class="mt-3 flex flex-col gap-1 border-r-2 border-line pr-3 text-sm"></ul>
+      </nav>
+    </aside>
+  </div>
+
+  <!-- ============ related posts ============ -->
+  <section id="related-section" class="mt-16 hidden border-t border-line pt-10">
+    <h2 class="text-xl font-extrabold">مطالب مرتبط</h2>
+    <div id="related-grid" class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
+  <!-- ============ comments ============ -->
+  <section id="comments-section" class="mt-16 hidden border-t border-line pt-10" aria-label="نظرات کاربران">
+    <h2 class="text-xl font-extrabold">نظرات (<span id="comment-count">0</span>)</h2>
+
+    <div id="comments-list" class="mt-6 flex flex-col gap-5"></div>
+    <p id="no-comments" class="mt-6 hidden text-sm text-muted">هنوز نظری برای این مطلب ثبت نشده است.</p>
+
+    <form class="mt-8 rounded-2xl border border-line bg-surface p-5" onsubmit="return submitComment(event)">
+      <label for="comment-text" class="mb-2 block text-sm font-bold">دیدگاه خود را بنویسید</label>
+      <textarea id="comment-text" rows="4" placeholder="نظر شما..." class="w-full resize-none rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition placeholder:text-muted"></textarea>
+      <button id="comment-btn" type="submit" class="mt-3 rounded-2xl bg-emerald bg-emerald-hover px-6 py-2.5 text-sm font-bold text-white transition-colors duration-200">ارسال دیدگاه</button>
+    </form>
+  </section>
+
+  <!-- ============ newsletter ============ -->
+  <div class="mt-14 flex flex-col items-center gap-6 rounded-3xl bg-emerald-deep px-6 py-12 text-center text-white sm:px-12">
+    <h2 class="text-2xl font-extrabold sm:text-3xl">مطالب جدید را از دست ندهید</h2>
+    <p class="mx-auto max-w-md text-sm text-white/70">عضو خبرنامه وبلاگ شوید و جدیدترین راهنماها و مطالب را زودتر از همه دریافت کنید.</p>
+    <form class="flex w-full max-w-md flex-col gap-3 sm:flex-row" onsubmit="return submitNewsletter(event)">
+      <label for="newsletter-email" class="sr-only">آدرس ایمیل</label>
+      <input id="newsletter-email" type="email" required placeholder="آدرس ایمیل شما" class="w-full rounded-full bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/50 outline-none ring-1 ring-white/20" />
+      <button id="newsletter-btn" type="submit" class="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-deep">عضویت</button>
+    </form>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script>
+function showToast(kind, message){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+  el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+  el.innerHTML = (kind === 'success'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+    + `<span>${message}</span>`;
+  root.appendChild(el);
+  requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+  setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+
+/* ---------- reading progress ---------- */
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const scrolled = h.scrollTop;
+  const max = h.scrollHeight - h.clientHeight;
+  document.getElementById('progress-fill').style.width = max > 0 ? `${(scrolled / max) * 100}%` : '0%';
+}, { passive: true });
+
+/* ---------- گرفتن slug و بارگذاری پست ---------- */
+const slug = new URLSearchParams(window.location.search).get('slug');
+let post = null;
+
+async function loadPost(){
+  if(!slug){ showNotFound(); return; }
+  try {
+    post = await Api.getBlogPost(slug);
+    renderPost();
+    loadRelated();
+  } catch(e) {
+    showNotFound();
+  }
+}
+
+function showNotFound(){
+  document.getElementById('loading-state').classList.add('hidden');
+  document.getElementById('not-found-state').classList.remove('hidden');
+}
+
+function initials(name){
+  const parts = (name || '').trim().split(' ');
+  return parts.map(p => p[0]).slice(0, 2).join('.');
+}
+
+function renderPost(){
+  document.getElementById('loading-state').classList.add('hidden');
+  const content = document.getElementById('post-content');
+  content.classList.remove('hidden');
+  content.classList.add('grid');
+  document.getElementById('related-section').classList.remove('hidden');
+  document.getElementById('comments-section').classList.remove('hidden');
+
+  document.getElementById('page-title').textContent = `${post.title} | وبلاگ آتلیه`;
+  document.getElementById('meta-description').setAttribute('content', stripHtml(post.content).slice(0, 160));
+  document.getElementById('breadcrumb-title').textContent = post.title;
+
+  document.getElementById('post-category').textContent = post.categoryName;
+  document.getElementById('post-title').textContent = post.title;
+  document.getElementById('author-initials').textContent = initials(post.authorName);
+  document.getElementById('author-name').textContent = post.authorName;
+  document.getElementById('post-date').textContent = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : '';
+  document.getElementById('post-readtime').textContent = post.readTimeMinutes;
+  document.getElementById('post-image').src = post.featuredImageUrl || '';
+  document.getElementById('post-image').alt = post.title;
+
+  // بدنه مقاله + ساخت فهرست مطالب پویا از روی H2 های موجود تو محتوا
+  const bodyEl = document.getElementById('post-body');
+  bodyEl.innerHTML = post.content;
+  buildTocFromContent(bodyEl);
+
+  // بایو نویسنده
+  if(post.authorBio){
+    document.getElementById('author-bio-block').classList.remove('hidden');
+    document.getElementById('author-bio-block').classList.add('flex');
+    document.getElementById('author-bio-initials').textContent = initials(post.authorName);
+    document.getElementById('author-bio-name').textContent = post.authorName;
+    document.getElementById('author-bio-text').textContent = post.authorBio;
+  }
+
+  // نظرات
+  renderComments();
+
+  // JSON-LD ساختاریافته مخصوص همین مقاله
+  document.getElementById('jsonld-post').textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    image: post.featuredImageUrl,
+    datePublished: post.publishedAt,
+    author: { '@type': 'Person', name: post.authorName },
+    articleSection: post.categoryName,
+    inLanguage: 'fa-IR'
+  });
+}
+
+function stripHtml(html){
+  const div = document.createElement('div');
+  div.innerHTML = html || '';
+  return div.textContent || '';
+}
+
+/* ---------- فهرست مطالب پویا ---------- */
+function buildTocFromContent(bodyEl){
+  const headings = bodyEl.querySelectorAll('h2');
+  const asideEl = document.getElementById('toc-aside');
+  const listEl = document.getElementById('toc-list');
+
+  if(headings.length === 0){
+    asideEl.classList.add('hidden');
+    return;
+  }
+
+  asideEl.classList.remove('hidden');
+  listEl.innerHTML = '';
+
+  const usedIds = new Set();
+  headings.forEach((h, i) => {
+    let id = h.id || slugify(h.textContent) || `section-${i}`;
+    while(usedIds.has(id)) id += '-' + i;
+    usedIds.add(id);
+    h.id = id;
+
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#${id}" class="toc-link block border-r-2 border-transparent py-1.5 pr-3 -mr-[2px] text-foreground/75">${h.textContent}</a>`;
+    listEl.appendChild(li);
+  });
+
+  const tocLinks = Array.from(listEl.querySelectorAll('.toc-link'));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        const id = '#' + entry.target.id;
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  headings.forEach(h => observer.observe(h));
+}
+
+function slugify(text){
+  return (text || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0600-\u06FF-]/g, '');
+}
+
+/* ---------- کپی لینک ---------- */
+function copyLink(){
+  const url = window.location.href;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(() => showToast('success', 'لینک مطلب کپی شد'));
+  } else {
+    showToast('success', 'لینک مطلب کپی شد');
+  }
+}
+
+/* ---------- نظرات ---------- */
+function renderComments(){
+  const list = document.getElementById('comments-list');
+  const comments = post.comments || [];
+  document.getElementById('comment-count').textContent = comments.length;
+
+  if(comments.length === 0){
+    document.getElementById('no-comments').classList.remove('hidden');
+    list.innerHTML = '';
+    return;
+  }
+
+  document.getElementById('no-comments').classList.add('hidden');
+  list.innerHTML = comments.map(c => `
+    <div class="flex gap-3">
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-sm font-bold text-emerald">${initials(c.userFullName)}</span>
+      <div class="flex-1 rounded-2xl border border-line bg-surface p-4">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-bold">${c.userFullName}</span>
+          <span class="text-[11px] text-muted">${new Date(c.createdAt).toLocaleDateString('fa-IR')}</span>
+        </div>
+        <p class="mt-2 text-sm leading-6 text-foreground/80">${c.content}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function submitComment(e){
+  e.preventDefault();
+  if(!isLoggedIn()){
+    showToast('error', 'برای ثبت دیدگاه ابتدا وارد شوید');
+    setTimeout(() => { window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`; }, 900);
+    return false;
+  }
+
+  const textarea = document.getElementById('comment-text');
+  const btn = document.getElementById('comment-btn');
+  if(!textarea.value.trim()){ showToast('error', 'لطفاً متن دیدگاه را وارد کنید'); return false; }
+  if(btn.dataset.loading === '1') return false;
+
+  btn.dataset.loading = '1';
+  const original = btn.textContent;
+  btn.innerHTML = spinnerSVG;
+
+  try {
+    const res = await Api.addComment(post.id, textarea.value.trim());
+    textarea.value = '';
+    showToast('success', res?.message || 'دیدگاه شما ثبت شد و پس از تایید نمایش داده می‌شود');
+  } catch(err) {
+    showToast('error', err.message || 'ثبت دیدگاه ناموفق بود');
+  } finally {
+    btn.dataset.loading = '0';
+    btn.textContent = original;
+  }
+  return false;
+}
+
+/* ---------- مطالب مرتبط ---------- */
+async function loadRelated(){
+  try {
+    const result = await Api.getBlogPosts('?pageSize=6');
+    const related = result.items.filter(p => p.id !== post.id).slice(0, 3);
+    const grid = document.getElementById('related-grid');
+    if(related.length === 0){
+      grid.innerHTML = `<p class="text-sm text-muted">مطلب مرتبطی یافت نشد</p>`;
+      return;
+    }
+    grid.innerHTML = related.map(p => `
+      <article class="group overflow-hidden rounded-2xl border border-line bg-surface">
+        <a href="blog-post.html?slug=${p.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media">
+          <img src="${p.featuredImageUrl || ''}" alt="${p.title}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
+        </a>
+        <div class="p-4">
+          <span class="text-[11px] font-semibold text-emerald">${p.categoryName}</span>
+          <h3 class="mt-1.5 text-sm font-bold leading-snug"><a href="blog-post.html?slug=${p.slug}" class="hover:text-emerald">${p.title}</a></h3>
+          <time class="mt-2 block text-[11px] text-muted">${p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('fa-IR') : ''}</time>
+        </div>
+      </article>
+    `).join('');
+  } catch(e) {
+    document.getElementById('related-grid').innerHTML = '';
+  }
+}
+
+/* ---------- newsletter ---------- */
+async function submitNewsletter(e){
+  e.preventDefault();
+  const input = document.getElementById('newsletter-email');
+  const btn = document.getElementById('newsletter-btn');
+  if(btn.dataset.loading === '1' || !input.value.trim()) return false;
+  btn.dataset.loading = '1';
+  const original = btn.textContent;
+  btn.innerHTML = spinnerSVG;
+  try {
+    const res = await Api.subscribeNewsletter(input.value.trim());
+    input.value = '';
+    showToast('success', res?.message || 'با موفقیت در خبرنامه عضو شدید');
+  } catch(err) {
+    showToast('error', err.message || 'آدرس ایمیل معتبر نیست');
+  } finally {
+    btn.dataset.loading = '0';
+    btn.textContent = original;
+  }
+  return false;
+}
+
+loadPost();
+</script>
+
+</body>
+</html>
