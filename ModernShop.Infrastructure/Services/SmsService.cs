@@ -14,6 +14,10 @@ public class SmsSettings
     public string TemplateName { get; set; } = "SendOTPLogin";
 
     public string ApiBaseUrl { get; set; } = "https://api.kavenegar.com";
+
+    // شماره خط ارسال‌کننده برای پیامک‌های اطلاع‌رسانی معمولی (SendAsync)، نه پیامک OTP.
+    // پیش‌فرض همون خط آزمایشی کاوه‌نگار (فقط برای تست، حتما قبل از production با خط واقعی خودت عوضش کن).
+    public string Sender { get; set; } = "2000660110";
 }
 
 /// <summary>
@@ -51,6 +55,26 @@ public class SmsService : ISmsService
             // کاوه‌نگار برای خطاهایی مثل اعتبار ناکافی (418)، الگوی نامعتبر (424) و ... کد HTTP غیر ۲xx برمی‌گردونه
             var message = TryExtractKavenegarMessage(body) ?? "ارسال پیامک کد تایید با خطا مواجه شد";
             throw new InvalidOperationException(message);
+        }
+    }
+
+    // مربوط به اطلاع‌رسانی تغییر وضعیت سفارش تو پنل مدیریت (مثلا «سفارش ارسال شد»)
+    public async Task SendAsync(string phoneNumber, string message)
+    {
+        var receptor = Uri.EscapeDataString(phoneNumber);
+        var text = Uri.EscapeDataString(message);
+        var sender = Uri.EscapeDataString(_settings.Sender);
+
+        var url = $"{_settings.ApiBaseUrl}/v1/{_settings.ApiKey}/sms/send.json" +
+                  $"?receptor={receptor}&message={text}&sender={sender}";
+
+        var response = await _httpClient.GetAsync(url);
+        var body = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorMessage = TryExtractKavenegarMessage(body) ?? "ارسال پیامک با خطا مواجه شد";
+            throw new InvalidOperationException(errorMessage);
         }
     }
 

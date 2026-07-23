@@ -16,6 +16,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("Admin"));
 
 // ===== احراز هویت با JWT =====
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -37,7 +38,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // فقط توکن‌هایی که JwtTokenService.GenerateAdminToken تولید کرده (پنل مدیریت) اجازه دارن
+    options.AddPolicy("AdminOnly", policy => policy.RequireClaim("scope", "admin"));
+});
 
 // ===== CORS: چون فرانت (فایل‌های HTML) روی دامنه/پورت جدا اجرا می‌شه =====
 builder.Services.AddCors(options =>

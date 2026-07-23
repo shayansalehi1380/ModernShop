@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Atelier.Api.Controllers;
+namespace ModernShop.Api.Controllers;
 
 [ApiController]
 [Route("api/account")]

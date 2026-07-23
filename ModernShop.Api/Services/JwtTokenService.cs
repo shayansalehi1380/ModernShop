@@ -32,6 +32,27 @@ public class JwtTokenService
             new(ClaimTypes.MobilePhone, user.PhoneNumber)
         };
 
+        return WriteToken(claims);
+    }
+
+    /// <summary>
+    /// توکن مخصوص پنل مدیریت (admin.html). چون ادمین یک کاربر واقعی تو جدول Users نیست،
+    /// این توکن هیچ NameIdentifier ای نداره؛ فقط با claim اختصاصی "scope"="admin" مشخص می‌شه
+    /// و AdminOnly policy تو Program.cs دقیقاً همین رو چک می‌کنه.
+    /// </summary>
+    public string GenerateAdminToken()
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, "admin"),
+            new("scope", "admin")
+        };
+
+        return WriteToken(claims);
+    }
+
+    private string WriteToken(List<Claim> claims)
+    {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

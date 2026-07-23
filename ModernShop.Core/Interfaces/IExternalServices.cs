@@ -6,6 +6,12 @@ namespace ModernShop.Core.Interfaces;
 public interface ISmsService
 {
     Task SendOtpAsync(string phoneNumber, string code);
+
+    /// <summary>
+    /// ارسال پیامک اطلاع‌رسانی ساده (مثلا تغییر وضعیت سفارش)، بر خلاف SendOtpAsync که مخصوص کد تایید
+    /// و از متد Verify Lookup کاوه‌نگار استفاده می‌کنه.
+    /// </summary>
+    Task SendAsync(string phoneNumber, string message);
 }
 
 /// <summary>
