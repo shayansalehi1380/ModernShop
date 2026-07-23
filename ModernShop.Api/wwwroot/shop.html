@@ -171,6 +171,18 @@ const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
 function toFa(n){ return String(n).replace(/[0-9]/g, d => faDigits[d]); }
 function fmt(n){ return toFa(n.toLocaleString('en-US')); }
 
+// خیلی از کیبوردهای فارسی موبایل، تو input عددی هم ارقام فارسی/عربی (۰۱۲... یا ٠١٢...) می‌فرستن؛
+// parseInt این ارقام رو نمی‌فهمه و بی‌سروصدا NaN برمی‌گردونه، پس فیلتر قیمت اصلاً اعمال نمی‌شد.
+function toEnDigits(str){
+  const fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩';
+  return String(str ?? '').replace(/[۰-۹٠-٩]/g, ch => {
+    const i = fa.indexOf(ch);
+    if (i > -1) return String(i);
+    const j = ar.indexOf(ch);
+    return j > -1 ? String(j) : ch;
+  });
+}
+
 /* ================= STATE ================= */
 const filterState = {
   categoryIds: [],
@@ -251,48 +263,54 @@ async function loadCategoriesAndBrands() {
   }
 }
 
-function toggleCategory(id) {
+// رو دسکتاپ هر تغییر فوراً اعمال می‌شه (فیلتر کناری زنده‌ست)، ولی رو موبایل فقط وضعیت و
+// ظاهر تیک‌ها به‌روز می‌شه و فچ واقعی فقط با زدن دکمه‌ی «اعمال فیلترها» انجام می‌شه
+function toggleCategory(id, scope) {
   if (filterState.categoryIds.includes(id)) {
     filterState.categoryIds = filterState.categoryIds.filter(c => c !== id);
   } else {
     filterState.categoryIds.push(id);
   }
   renderFilters();
-  resetAndRender();
+  if (scope === 'desktop') resetAndRender();
 }
 
-function toggleBrand(id) {
+function toggleBrand(id, scope) {
   if (filterState.brandIds.includes(id)) {
     filterState.brandIds = filterState.brandIds.filter(b => b !== id);
   } else {
     filterState.brandIds.push(id);
   }
   renderFilters();
-  resetAndRender();
+  if (scope === 'desktop') resetAndRender();
 }
 
-function setRating(val) {
+function setRating(val, scope) {
   filterState.minRating = filterState.minRating === val ? 0 : val;
   renderFilters();
-  resetAndRender();
+  if (scope === 'desktop') resetAndRender();
 }
 
-function toggleInStock() {
+function toggleInStock(scope) {
   filterState.inStockOnly = !filterState.inStockOnly;
   renderFilters();
-  resetAndRender();
+  if (scope === 'desktop') resetAndRender();
 }
 
+// این فقط رو دسکتاپ استفاده می‌شه (دکمه‌ی «اعمال قیمت» کنار خودِ فیلد قیمت)؛ رو موبایل قیمت
+// هم مثل بقیه‌ی فیلترها با دکمه‌ی مشترک «اعمال فیلترها» اعمال می‌شه (applyFiltersFromSheet)
 function applyPrice(scope) {
-  const min = document.getElementById(`${scope}-price-min`)?.value;
-  const max = document.getElementById(`${scope}-price-max`)?.value;
+  const min = toEnDigits(document.getElementById(`${scope}-price-min`)?.value);
+  const max = toEnDigits(document.getElementById(`${scope}-price-max`)?.value);
   filterState.minPrice = min ? parseInt(min) * 1000 : null;
   filterState.maxPrice = max ? parseInt(max) * 1000 : null;
   resetAndRender();
   showToast('success', 'فیلتر قیمت اعمال شد');
 }
 
-function clearFilters() {
+// رو دسکتاپ فوراً اعمال می‌شه؛ رو موبایل (لینک «پاک کردن همه» بالای شیت) فقط پاک می‌کنه و
+// می‌ذاره شیت باز بمونه، دقیقاً مثل دکمه‌ی «حذف فیلترها» پایین شیت
+function clearFilters(scope) {
   filterState.categoryIds = [];
   filterState.brandIds = [];
   filterState.minPrice = null;
@@ -300,8 +318,22 @@ function clearFilters() {
   filterState.minRating = 0;
   filterState.inStockOnly = false;
   renderFilters();
+  if (scope === 'desktop') {
+    resetAndRender();
+    showToast('success', 'فیلترها پاک شد');
+  }
+}
+
+// دکمه‌ی «اعمال فیلترها» پایین شیت موبایل: قیمت رو هم از فیلد می‌خونه، همه‌چیز رو یک‌جا
+// اعمال می‌کنه و بعد شیت رو می‌بنده
+function applyFiltersFromSheet() {
+  const min = toEnDigits(document.getElementById('mobile-price-min')?.value);
+  const max = toEnDigits(document.getElementById('mobile-price-max')?.value);
+  filterState.minPrice = min ? parseInt(min) * 1000 : null;
+  filterState.maxPrice = max ? parseInt(max) * 1000 : null;
   resetAndRender();
-  showToast('success', 'فیلترها پاک شد');
+  closeSheet();
+  showToast('success', 'فیلترها اعمال شد');
 }
 
 function clearSearch() {
@@ -318,20 +350,21 @@ function setSort(val) {
   document.getElementById('sort-select').value = val;
   document.querySelectorAll('.sort-radio').forEach(r => r.checked = (r.value === val));
   resetAndRender();
+  closeSheet(); // رو موبایل، بعد از انتخاب گزینه مرتب‌سازی، شیت خودش بسته بشه
 }
 
 function filtersHTML(scope) {
   return `
     <div class="mb-5 flex items-center justify-between">
       <h2 class="text-sm font-bold">فیلترها</h2>
-      <button onclick="clearFilters()" class="text-xs font-medium text-emerald hover:underline">پاک کردن همه</button>
+      <button onclick="clearFilters('${scope}')" class="text-xs font-medium text-emerald hover:underline">پاک کردن همه</button>
     </div>
     <div class="mb-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">دسته‌بندی</p>
       <div class="flex flex-col gap-2">
         ${CATEGORIES.length ? CATEGORIES.map(c => `
           <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" onchange="toggleCategory(${c.id})" ${filterState.categoryIds.includes(c.id)?'checked':''} />
+            <input type="checkbox" onchange="toggleCategory(${c.id}, '${scope}')" ${filterState.categoryIds.includes(c.id)?'checked':''} />
             ${c.name}
           </label>`).join('') : '<p class="text-xs text-muted">دسته‌بندی‌ای یافت نشد</p>'}
       </div>
@@ -343,14 +376,14 @@ function filtersHTML(scope) {
         <span class="text-muted text-xs">تا</span>
         <input id="${scope}-price-max" type="number" placeholder="تا" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ? Math.floor(filterState.maxPrice/1000) : ''}" />
       </div>
-      <button onclick="applyPrice('${scope}')" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>
+      ${scope === 'desktop' ? `<button onclick="applyPrice('desktop')" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>` : ''}
     </div>
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">برند</p>
       <div class="flex flex-col gap-2">
         ${BRANDS.length ? BRANDS.map(b => `
           <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" onchange="toggleBrand(${b.id})" ${filterState.brandIds.includes(b.id)?'checked':''} />
+            <input type="checkbox" onchange="toggleBrand(${b.id}, '${scope}')" ${filterState.brandIds.includes(b.id)?'checked':''} />
             ${b.name}
           </label>`).join('') : '<p class="text-xs text-muted">برندی یافت نشد</p>'}
       </div>
@@ -359,7 +392,7 @@ function filtersHTML(scope) {
       <p class="mb-2.5 text-xs font-semibold text-muted">حداقل امتیاز</p>
       <div class="flex flex-wrap gap-2">
         ${[4,3,2].map(r => `
-          <button onclick="setRating(${r})" class="rating-btn ${filterState.minRating===r?'active':''} flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs font-medium">
+          <button onclick="setRating(${r}, '${scope}')" class="rating-btn ${filterState.minRating===r?'active':''} flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs font-medium">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
             ${toFa(r)}+
           </button>`).join('')}
@@ -368,9 +401,14 @@ function filtersHTML(scope) {
     <div class="border-t border-line pt-5">
       <label class="flex cursor-pointer items-center justify-between text-sm">
         <span>فقط کالاهای موجود</span>
-        <span onclick="toggleInStock()" class="toggle-switch ${filterState.inStockOnly?'on':''}"></span>
+        <span onclick="toggleInStock('${scope}')" class="toggle-switch ${filterState.inStockOnly?'on':''}"></span>
       </label>
     </div>
+    ${scope === 'mobile' ? `
+    <div class="sticky bottom-0 -mx-4 -mb-4 mt-5 flex items-center gap-2 border-t border-line bg-surface px-4 py-3">
+      <button onclick="clearFilters('mobile')" class="flex-1 rounded-xl border border-line py-2.5 text-xs font-semibold hover:border-danger hover:text-danger">حذف فیلترها</button>
+      <button onclick="applyFiltersFromSheet()" class="flex-1 rounded-xl bg-emerald py-2.5 text-xs font-semibold text-white hover:bg-emerald-deep">اعمال فیلترها</button>
+    </div>` : ''}
   `;
 }
 

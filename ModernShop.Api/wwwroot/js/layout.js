@@ -11,7 +11,9 @@ async function loadPartial(url, mountSelector) {
   if (!mount) return;
 
   try {
-    const res = await fetch(url);
+    // no-store تا مرورگر (خصوصاً بعضی مرورگرهای موبایل) یک نسخه‌ی قدیمی/کش‌شده‌ی این partial رو
+    // به‌جای نسخه‌ی واقعی سرو نکنه - این فایل روی هر صفحه‌ای جدا fetch می‌شه، پس باید همیشه تازه باشه
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`دریافت ${url} با خطا مواجه شد`);
     mount.outerHTML = await res.text();
   } catch (e) {

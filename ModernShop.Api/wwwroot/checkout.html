@@ -147,14 +147,14 @@
                 <span class="block text-xs text-muted">پرداخت امن از طریق درگاه بانکی</span>
               </span>
             </label>
-            <label class="pay-opt flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-pay="cod">
-              <input type="radio" name="pay" value="cod" class="h-4 w-4 accent-emerald" />
+            <label class="pay-opt flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-pay="mellat">
+              <input type="radio" name="pay" value="mellat" class="h-4 w-4 accent-emerald" />
               <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-soft text-emerald">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><path d="M2 7h20v5H2z"/><path d="M12 12v8"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
               </span>
               <span class="flex-1">
-                <span class="block text-sm font-semibold">پرداخت در محل</span>
-                <span class="block text-xs text-muted">پرداخت نقدی یا کارتخوان هنگام تحویل</span>
+                <span class="block text-sm font-semibold">درگاه پرداخت ملت</span>
+                <span class="block text-xs text-muted">پرداخت امن از طریق درگاه بانک ملت</span>
               </span>
             </label>
           </div>
@@ -179,10 +179,16 @@
             <span class="ticker font-semibold" id="sum-shipping">۰</span>
           </div>
           <div class="flex items-center justify-between" id="sum-discount-row" style="display:none">
-            <span class="text-muted">تخفیف</span>
+            <span class="text-muted">تخفیف (<span id="applied-code"></span>)</span>
             <span class="ticker font-semibold text-danger" id="sum-discount">۰</span>
           </div>
         </div>
+
+        <div class="mt-4 flex items-center gap-2 border-t border-line pt-4">
+          <input id="promo-input" type="text" placeholder="کد تخفیف" class="w-full rounded-xl border border-line bg-surface-muted px-3.5 py-2.5 text-sm outline-none transition placeholder:text-muted" />
+          <button id="promo-apply" type="button" class="shrink-0 rounded-xl border border-emerald px-4 py-2.5 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال</button>
+        </div>
+        <p id="promo-msg" class="mt-2 min-h-[16px] text-xs"></p>
 
         <div class="mt-4 flex items-baseline justify-between border-t border-line pt-4">
           <span class="text-sm font-bold">مبلغ نهایی</span>
@@ -250,6 +256,18 @@ async function init(){
       return;
     }
 
+    // اگه از قبل کد تخفیفی ثبت شده بود (localStorage)، همین‌جا دوباره روی سبد فعلی اعمالش
+    // می‌کنیم تا مبلغ نهایی روی همین فاکتور، قبل از پرداخت، درست و با تخفیف نشون داده بشه
+    const storedCode = localStorage.getItem(DISCOUNT_STORAGE_KEY);
+    if(storedCode){
+      try {
+        currentCart = await Api.applyDiscount(storedCode);
+        document.getElementById('promo-input').value = storedCode;
+      } catch(e) {
+        localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+      }
+    }
+
     prefillAddress(addresses);
     renderSummary();
 
@@ -290,11 +308,38 @@ function renderSummary(){
   document.getElementById('sum-shipping').textContent = currentCart.shippingCost === 0 ? 'رایگان' : formatPrice(currentCart.shippingCost);
   document.getElementById('sum-total').textContent = formatPrice(currentCart.total);
 
+  const discRow = document.getElementById('sum-discount-row');
   if(currentCart.discountAmount > 0){
-    document.getElementById('sum-discount-row').style.display = 'flex';
+    discRow.style.display = 'flex';
     document.getElementById('sum-discount').textContent = '- ' + formatPrice(currentCart.discountAmount);
+    document.getElementById('applied-code').textContent = currentCart.appliedDiscountCode || '';
+  } else {
+    discRow.style.display = 'none';
   }
 }
+
+document.getElementById('promo-apply').addEventListener('click', async () => {
+  const input = document.getElementById('promo-input');
+  const msg = document.getElementById('promo-msg');
+  const code = input.value.trim().toUpperCase();
+  if(!code){
+    msg.textContent = 'یک کد تخفیف وارد کنید';
+    msg.className = 'mt-2 min-h-[16px] text-xs text-danger';
+    return;
+  }
+  try {
+    currentCart = await Api.applyDiscount(code);
+    localStorage.setItem(DISCOUNT_STORAGE_KEY, code);
+    msg.textContent = 'کد تخفیف با موفقیت اعمال شد';
+    msg.className = 'mt-2 min-h-[16px] text-xs text-emerald';
+    showToast('success', 'کد تخفیف اعمال شد');
+    renderSummary();
+  } catch(err) {
+    localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+    msg.textContent = err.message || 'کد تخفیف نامعتبر است';
+    msg.className = 'mt-2 min-h-[16px] text-xs text-danger';
+  }
+});
 
 /* ---------- payment option styling ---------- */
 document.querySelectorAll('.pay-opt').forEach(opt => {
@@ -352,8 +397,9 @@ document.getElementById('submit-order').addEventListener('click', async () => {
     };
     const savedAddress = await Api.upsertAddress(addressPayload);
 
-    const paymentMethodValue = document.querySelector('input[name="pay"]:checked').value;
-    const paymentMethod = paymentMethodValue === 'online' ? 0 : 1; // Online=0, CashOnDelivery=1
+    // هر دو گزینه (پرداخت آنلاین / درگاه ملت) از یک مسیر واحد آنلاین رد می‌شن؛ فعلاً فقط یک
+    // درگاه پرداخت (Zarinpal، سندباکس) پیاده‌سازی شده و کارت «ملت» صرفاً یک برچسب/ظاهر جداست
+    const paymentMethod = 0; // Online
 
     const discountCode = localStorage.getItem(DISCOUNT_STORAGE_KEY) || null;
 

@@ -18,6 +18,7 @@ const ProductCard = (function () {
   const PENDING_WISHLIST_KEY = 'atelier_pending_wishlist';
 
   let cartState = new Map();      // productId -> { totalQuantity, cartItemId (فقط وقتی lineCount===1 معتبره), lineCount }
+  let variantCartQty = new Map(); // productVariantId -> تعدادی که از همین تنوع دقیق از قبل در سبد هست
   let wishlistState = new Set();  // productId
   let productMeta = new Map();    // productId -> { isVariable, slug } — برای این‌که پاپ‌آپ انتخاب تنوع بدونه چی رو بگیره
   const productDetailCache = new Map(); // slug -> ProductDetailDto (تنوع‌ها فقط موقع باز شدن پاپ‌آپ، یک‌بار گرفته می‌شه)
@@ -39,6 +40,7 @@ const ProductCard = (function () {
   // (وگرنه معلوم نیست +/- باید کدوم تنوع رو تغییر بده)
   function buildCartStateFromItems(items) {
     const map = new Map();
+    variantCartQty = new Map();
     (items || []).forEach(i => {
       const existing = map.get(i.productId);
       if (existing) {
@@ -47,6 +49,9 @@ const ProductCard = (function () {
         existing.cartItemId = null;
       } else {
         map.set(i.productId, { totalQuantity: i.quantity, cartItemId: i.id, lineCount: 1 });
+      }
+      if (i.productVariantId) {
+        variantCartQty.set(i.productVariantId, (variantCartQty.get(i.productVariantId) || 0) + i.quantity);
       }
     });
     return map;
@@ -297,8 +302,10 @@ const ProductCard = (function () {
     if (!quickAdd || !quickAdd.detail) return;
     const variant = (quickAdd.detail.variants || []).find(v => v.id === quickAdd.selectedVariantId);
     const stock = variant ? variant.stockQuantity : 0;
+    const alreadyInCart = variantCartQty.get(quickAdd.selectedVariantId) || 0;
+    const maxAddable = Math.max(stock - alreadyInCart, 0);
     const next = quickAdd.qty + delta;
-    if (next < 1 || next > stock) return;
+    if (next < 1 || next > maxAddable) return;
     quickAdd.qty = next;
     renderQuickAddBody();
   }
@@ -343,12 +350,39 @@ const ProductCard = (function () {
     });
     const colors = [...variantsByColor.keys()];
 
+    // برای هر رنگ، جمع تعداد همه‌ی تنوع‌های همون رنگ که از قبل تو سبد هستن (برای نشون‌دادن
+    // نشان کوچیک رو دایره‌ی رنگ) — تا کاربر بدون باز کردن هرکدوم، ببینه از کدوم رنگ قبلاً چیزی
+    // تو سبدش داره
+    const colorCartQty = new Map();
+    colors.forEach(c => {
+      const total = (variantsByColor.get(c) || []).reduce((sum, v) => sum + (variantCartQty.get(v.id) || 0), 0);
+      colorCartQty.set(c, total);
+    });
+
     const sizesForColor = (variantsByColor.get(quickAdd.selectedColor) || []).filter(v => v.size && v.size !== '-');
     const currentVariant = variants.find(v => v.id === quickAdd.selectedVariantId) || null;
     const stock = currentVariant ? currentVariant.stockQuantity : 0;
+    const alreadyInCart = currentVariant ? (variantCartQty.get(currentVariant.id) || 0) : 0;
+    const maxAddable = Math.max(stock - alreadyInCart, 0);
     const basePrice = detail.discountPrice || detail.price;
     const finalPrice = basePrice + (currentVariant?.priceAdjustment || 0);
     const mainImage = (detail.images || []).find(i => i.isMain) || detail.images?.[0];
+
+    const qtyBlock = maxAddable > 0 ? `
+      <div class="mb-4 flex items-center justify-between rounded-xl border border-line px-3 py-2">
+        <span class="text-xs font-semibold text-muted">تعداد</span>
+        <div class="flex items-center gap-3">
+          <button type="button" data-pc-qa-qty="-1" class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-base font-bold leading-none disabled:opacity-40" ${quickAdd.qty <= 1 ? 'disabled' : ''}>−</button>
+          <span class="ticker w-6 text-center text-sm font-bold">${toFaPC(quickAdd.qty)}</span>
+          <button type="button" data-pc-qa-qty="1" class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-base font-bold leading-none disabled:opacity-40" ${quickAdd.qty >= maxAddable ? 'disabled' : ''}>+</button>
+        </div>
+      </div>` : '';
+
+    const confirmBlock = stock <= 0
+      ? `<button type="button" disabled class="w-full rounded-xl border border-line py-2.5 text-sm font-semibold opacity-40">این تنوع موجود نیست</button>`
+      : maxAddable <= 0
+        ? `<button type="button" disabled class="w-full rounded-xl border border-line py-2.5 text-sm font-semibold opacity-40">کل موجودی این تنوع را به سبد اضافه کرده‌اید</button>`
+        : `<button type="button" data-pc-qa-confirm class="w-full rounded-xl bg-emerald py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">افزودن به سبد</button>`;
 
     body.innerHTML = `
       <div class="mb-4 flex items-center gap-3">
@@ -364,8 +398,9 @@ const ProductCard = (function () {
         <p class="mb-2 text-xs font-semibold text-muted">رنگ: <span class="text-foreground">${escapeHtmlPC(quickAdd.selectedColor || '')}</span></p>
         <div class="flex flex-wrap items-center gap-2">
           ${colors.map(c => `
-            <button type="button" data-pc-qa-color="${escapeHtmlPC(c)}" class="flex h-9 w-9 items-center justify-center rounded-full border-2 p-0.5 ${c === quickAdd.selectedColor ? 'border-emerald' : 'border-transparent'}" aria-label="${escapeHtmlPC(c)}">
+            <button type="button" data-pc-qa-color="${escapeHtmlPC(c)}" class="relative flex h-9 w-9 items-center justify-center rounded-full border-2 p-0.5 ${c === quickAdd.selectedColor ? 'border-emerald' : 'border-transparent'}" aria-label="${escapeHtmlPC(c)}">
               <span class="block h-full w-full rounded-full border border-line" style="background:${ColorMap.hexFor(c)}"></span>
+              ${colorCartQty.get(c) > 0 ? `<span class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald px-1 text-[9px] font-bold text-white">${toFaPC(colorCartQty.get(c))}</span>` : ''}
             </button>`).join('')}
         </div>
       </div>` : ''}
@@ -374,23 +409,18 @@ const ProductCard = (function () {
       <div class="mb-4">
         <p class="mb-2 text-xs font-semibold text-muted">سایز</p>
         <div class="flex flex-wrap gap-2">
-          ${sizesForColor.map(v => `
-            <button type="button" data-pc-qa-variant="${v.id}" class="rounded-xl border-2 px-3.5 py-1.5 text-xs font-semibold ${v.id === quickAdd.selectedVariantId ? 'border-emerald text-emerald' : 'border-line'}">${escapeHtmlPC(v.size)}</button>`).join('')}
+          ${sizesForColor.map(v => {
+            const q = variantCartQty.get(v.id) || 0;
+            return `<button type="button" data-pc-qa-variant="${v.id}" class="rounded-xl border-2 px-3.5 py-1.5 text-xs font-semibold ${v.id === quickAdd.selectedVariantId ? 'border-emerald text-emerald' : 'border-line'}">${escapeHtmlPC(v.size)}${q > 0 ? ` <span class="text-emerald">(${toFaPC(q)})</span>` : ''}</button>`;
+          }).join('')}
         </div>
       </div>` : ''}
 
-      <div class="mb-4 flex items-center justify-between rounded-xl border border-line px-3 py-2">
-        <span class="text-xs font-semibold text-muted">تعداد</span>
-        <div class="flex items-center gap-3">
-          <button type="button" data-pc-qa-qty="-1" class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-base font-bold leading-none disabled:opacity-40" ${quickAdd.qty <= 1 ? 'disabled' : ''}>−</button>
-          <span class="ticker w-6 text-center text-sm font-bold">${toFaPC(quickAdd.qty)}</span>
-          <button type="button" data-pc-qa-qty="1" class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-base font-bold leading-none disabled:opacity-40" ${quickAdd.qty >= stock ? 'disabled' : ''}>+</button>
-        </div>
-      </div>
+      ${alreadyInCart > 0 ? `<p class="mb-3 -mt-1 text-xs text-muted">در حال حاضر <span class="font-bold text-emerald-deep">${toFaPC(alreadyInCart)} عدد</span> از همین تنوع در سبد شما هست</p>` : ''}
 
-      ${stock <= 0
-        ? `<button type="button" disabled class="w-full rounded-xl border border-line py-2.5 text-sm font-semibold opacity-40">این تنوع موجود نیست</button>`
-        : `<button type="button" data-pc-qa-confirm class="w-full rounded-xl bg-emerald py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">افزودن به سبد</button>`}
+      ${qtyBlock}
+
+      ${confirmBlock}
     `;
   }
 
