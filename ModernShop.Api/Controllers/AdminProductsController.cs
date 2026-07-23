@@ -117,9 +117,11 @@ public class AdminProductsController : ControllerBase
         product.DiscountPrice = request.DiscountPrice;
         product.IsActive = request.IsActive;
 
-        product.Variants.Clear();
         product.Specifications.Clear();
-        ApplyVariantsSpecsAndStock(product, request);
+        foreach (var spec in BuildSpecifications(request))
+            product.Specifications.Add(spec);
+
+        await ReconcileVariantsAsync(product, request);
 
         product.Images.Clear();
         ApplyImages(product, request.ImageUrl, request.GalleryImageUrls);
@@ -238,17 +240,84 @@ public class AdminProductsController : ControllerBase
 
         foreach (var variant in variants) product.Variants.Add(variant);
 
-        var specs = (request.Specifications ?? new List<AdminProductSpecDto>())
-            .Where(s => !string.IsNullOrWhiteSpace(s.Key) && !string.IsNullOrWhiteSpace(s.Value))
-            .Select((s, index) => new ProductSpecification { Key = s.Key.Trim(), Value = s.Value.Trim(), DisplayOrder = index })
-            .ToList();
-
-        foreach (var spec in specs) product.Specifications.Add(spec);
+        foreach (var spec in BuildSpecifications(request)) product.Specifications.Add(spec);
 
         // اگه محصول تنوع (رنگ/سایز) داره، موجودی کل رو خودمون از مجموع موجودی تنوع‌ها حساب می‌کنیم
         // تا هیچ‌وقت با موجودی تک‌تک تنوع‌ها ناهماهنگ نشه؛ فقط برای محصول ساده مقدار ورودی فرم رو می‌ذاریم.
         product.StockQuantity = variants.Count > 0 ? variants.Sum(v => v.StockQuantity) : request.StockQuantity;
     }
+
+    private static List<ProductSpecification> BuildSpecifications(SaveProductRequestDto request) =>
+        (request.Specifications ?? new List<AdminProductSpecDto>())
+            .Where(s => !string.IsNullOrWhiteSpace(s.Key) && !string.IsNullOrWhiteSpace(s.Value))
+            .Select((s, index) => new ProductSpecification { Key = s.Key.Trim(), Value = s.Value.Trim(), DisplayOrder = index })
+            .ToList();
+
+    // موقع ویرایش یک محصول، به‌جای پاک‌کردن کامل تنوع‌های قبلی و ساختنشون از صفر (کاری که این
+    // متد قبلا با Clear()+ApplyVariantsSpecsAndStock انجام می‌داد)، تنوع‌هایی که هنوز با همون
+    // رنگ/سایز تو درخواست جدید هم هستن رو سرجاشون آپدیت می‌کنیم، نه این‌که حذف و دوباره اضافه
+    // بشن. چرا؟ چون اگه یکی از تنوع‌های قدیمی همین الان تو سبد خرید یک مشتری باشه
+    // (CartItem.ProductVariantId بهش اشاره می‌کنه)، حذف واقعی اون ردیف از دیتابیس با خطای
+    // FK_CartItems_ProductVariants_ProductVariantId شکست می‌خورد و کل ذخیره محصول کرش می‌کرد —
+    // حتی برای ویرایش‌های کاملاً بی‌ربط به تنوع‌ها (مثل تغییر توضیحات محصول).
+    // فقط تنوع‌هایی که واقعاً از فرم ادمین حذف شدن (دیگه تو درخواست نیستن) حذف می‌شن؛ برای
+    // اون‌ها هم اول هر سبد خریدی که بهشون اشاره کرده پاک می‌شه تا خطای FK پیش نیاد.
+    private async Task ReconcileVariantsAsync(Product product, SaveProductRequestDto request)
+    {
+        var incoming = (request.Variants ?? new List<AdminProductVariantDto>())
+            .Where(v => !string.IsNullOrWhiteSpace(v.Color) || !string.IsNullOrWhiteSpace(v.Size))
+            .ToList();
+
+        var existingByKey = product.Variants
+            .GroupBy(v => VariantKey(v.Color, v.Size))
+            .ToDictionary(g => g.Key, g => g.First());
+        var matchedKeys = new HashSet<string>();
+
+        foreach (var dto in incoming)
+        {
+            var key = VariantKey(dto.Color, dto.Size);
+            matchedKeys.Add(key);
+
+            if (existingByKey.TryGetValue(key, out var existing))
+            {
+                existing.StockQuantity = dto.StockQuantity;
+                existing.PriceAdjustment = dto.PriceAdjustment;
+                existing.IncludedInDiscount = dto.IncludedInDiscount;
+            }
+            else
+            {
+                product.Variants.Add(new ProductVariant
+                {
+                    Color = string.IsNullOrWhiteSpace(dto.Color) ? null : dto.Color.Trim(),
+                    Size = string.IsNullOrWhiteSpace(dto.Size) ? "-" : dto.Size.Trim(),
+                    StockQuantity = dto.StockQuantity,
+                    PriceAdjustment = dto.PriceAdjustment,
+                    IncludedInDiscount = dto.IncludedInDiscount
+                });
+            }
+        }
+
+        var removedVariants = existingByKey
+            .Where(kv => !matchedKeys.Contains(kv.Key))
+            .Select(kv => kv.Value)
+            .ToList();
+
+        if (removedVariants.Count > 0)
+        {
+            var removedIds = removedVariants.Select(v => v.Id).ToList();
+            var staleCartItems = await _db.CartItems
+                .Where(ci => ci.ProductVariantId != null && removedIds.Contains(ci.ProductVariantId.Value))
+                .ToListAsync();
+            if (staleCartItems.Count > 0) _db.CartItems.RemoveRange(staleCartItems);
+
+            foreach (var variant in removedVariants) product.Variants.Remove(variant);
+        }
+
+        product.StockQuantity = product.Variants.Count > 0 ? product.Variants.Sum(v => v.StockQuantity) : request.StockQuantity;
+    }
+
+    private static string VariantKey(string? color, string? size) =>
+        $"{color?.Trim().ToLowerInvariant()}|{(string.IsNullOrWhiteSpace(size) ? "-" : size.Trim().ToLowerInvariant())}";
 
     private static void ApplyImages(Product product, string? mainImageUrl, List<string>? galleryImageUrls)
     {
