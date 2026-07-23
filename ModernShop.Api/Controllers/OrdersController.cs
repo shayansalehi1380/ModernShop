@@ -222,7 +222,7 @@ public class OrdersController : ControllerBase
             order.Status = OrderStatus.Failed;
             order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Failed, Note = "پرداخت توسط کاربر لغو شد" });
             await _db.SaveChangesAsync();
-            return Redirect($"/order-complete?status=failed&orderNumber={order.OrderNumber}");
+            return Redirect($"/order-complete.html?status=failed&orderNumber={order.OrderNumber}");
         }
 
         var verified = await _paymentGateway.VerifyPaymentAsync(Authority, order.TotalAmount);
@@ -244,7 +244,7 @@ public class OrdersController : ControllerBase
         await _db.SaveChangesAsync();
 
         var redirectStatus = verified ? "success" : "failed";
-        return Redirect($"/order-complete?status={redirectStatus}&orderNumber={order.OrderNumber}");
+        return Redirect($"/order-complete.html?status={redirectStatus}&orderNumber={order.OrderNumber}");
     }
 
     private static OrderDto MapToDto(Order order) => new()

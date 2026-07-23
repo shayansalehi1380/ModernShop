@@ -442,6 +442,10 @@ function confirmLogout(){
 }
 
 loadProfile();
+
+/* ---------- دیپ‌لینک به تب مشخص، مثلاً از order-complete.html?tab=orders ---------- */
+const initialTab = new URLSearchParams(window.location.search).get('tab');
+if(initialTab === 'orders' || initialTab === 'wishlist') switchTab(initialTab);
 </script>
 
 </body>
