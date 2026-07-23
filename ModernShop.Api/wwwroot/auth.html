@@ -14,12 +14,7 @@
     --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
     --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
   }
-  .dark{
-    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
-    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
-    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
-  }
-  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;color:var(--foreground);transition:.3s;background:radial-gradient(1100px 560px at 12% -8%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 55%),radial-gradient(1000px 560px at 100% 6%, color-mix(in srgb, var(--emerald) 7%, transparent), transparent 55%),var(--background);background-repeat:no-repeat;}
   .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
   .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
   .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
@@ -57,9 +52,6 @@
       <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald text-sm font-bold text-white">آ</span>
       <span class="text-lg font-extrabold tracking-tight">آتلیه</span>
     </a>
-    <button onclick="document.documentElement.classList.toggle('dark')" class="rounded-full p-2.5 text-foreground hover:bg-surface-muted" aria-label="تغییر حالت شب و روز">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
-    </button>
   </div>
 </header>
 
@@ -116,6 +108,9 @@
           <input data-idx="4" type="text" inputmode="numeric" maxlength="1" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
         </div>
         <p id="otp-error" class="mt-3 hidden text-center text-xs text-danger">کد وارد شده صحیح نیست</p>
+        <p id="otp-expiry" class="mt-3 text-center text-xs text-muted">
+          کد تا <span class="ticker font-semibold" id="otp-expiry-timer">۰۱:۳۰</span> دیگر معتبر است
+        </p>
 
         <button id="otp-confirm-btn" onclick="confirmOtp()" disabled
           class="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3.5 text-sm font-bold text-white opacity-40 transition-all duration-200">
@@ -131,18 +126,6 @@
             ارسال مجدد کد <span class="ticker" id="resend-timer">(۰۰:۳۰)</span>
           </button>
         </div>
-      </section>
-
-      <!-- ============ STEP 3: SUCCESS ============ -->
-      <section id="step-success" class="step step-hidden enter-from-right py-4 text-center">
-        <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-soft text-emerald">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>
-        </div>
-        <h1 class="text-xl font-extrabold">خوش آمدید!</h1>
-        <p class="mt-2 text-sm leading-6 text-muted">ورود شما با موفقیت انجام شد</p>
-        <a id="return-link" href="index.html" class="mt-7 flex w-full items-center justify-center rounded-2xl bg-emerald bg-emerald-hover py-3.5 text-sm font-bold text-white transition-colors duration-200">
-          بازگشت به فروشگاه
-        </a>
       </section>
 
     </div>
@@ -173,7 +156,6 @@ function showToast(kind, message){
 
 /* ---------- اگه از یه صفحه محافظت‌شده (مثل checkout) به اینجا هدایت شده، بعد از لاگین برگرده همونجا ---------- */
 const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
-document.getElementById('return-link').href = redirectTarget;
 
 /* ---------- اگه از قبل لاگین بوده، لازم نیست دوباره این صفحه رو ببینه ---------- */
 if(isLoggedIn()){
@@ -220,11 +202,12 @@ async function submitPhone(e){
   btn.innerHTML = spinnerSVG;
 
   try {
-    await Api.sendOtp(currentPhone);
+    const res = await Api.sendOtp(currentPhone);
     document.getElementById('otp-phone-display').textContent = toFa(currentPhone);
     showStep('step-otp');
     resetOtpBoxes();
     startResendTimer();
+    startOtpExpiryTimer(res.expiresInSeconds || 90);
     showToast('success', 'کد تایید ارسال شد');
   } catch(err) {
     showToast('error', err.message || 'ارسال کد تایید ناموفق بود، دوباره تلاش کنید');
@@ -238,7 +221,44 @@ async function submitPhone(e){
 function goToPhoneStep(){
   showStep('step-phone');
   clearInterval(resendInterval);
+  clearInterval(otpExpiryInterval);
   setTimeout(() => phoneInput.focus(), 350);
+}
+
+/* ---------- زمان اعتبار کد (۱ دقیقه و ۳۰ ثانیه) - جدا از تایمر «ارسال مجدد» ---------- */
+let otpExpiryInterval = null;
+function startOtpExpiryTimer(totalSeconds){
+  clearInterval(otpExpiryInterval);
+  let seconds = totalSeconds;
+
+  otpBoxes.forEach(b => b.disabled = false);
+  confirmBtn.dataset.expired = '0';
+  document.getElementById('otp-expiry').classList.remove('text-danger');
+  document.getElementById('otp-expiry').classList.add('text-muted');
+
+  const render = () => {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    document.getElementById('otp-expiry-timer').textContent = toFa(`${m}:${s}`);
+  };
+  render();
+
+  otpExpiryInterval = setInterval(() => {
+    seconds--;
+    if(seconds <= 0){
+      clearInterval(otpExpiryInterval);
+      render();
+      otpBoxes.forEach(b => b.disabled = true);
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('opacity-40');
+      confirmBtn.dataset.expired = '1';
+      document.getElementById('otp-expiry').classList.remove('text-muted');
+      document.getElementById('otp-expiry').classList.add('text-danger');
+      document.getElementById('otp-expiry-timer').textContent = 'منقضی شد';
+      return;
+    }
+    render();
+  }, 1000);
 }
 
 /* ---------- STEP 2: OTP boxes with auto-advance / auto-back ---------- */
@@ -306,9 +326,10 @@ async function confirmOtp(){
   try {
     const res = await Api.verifyOtp(currentPhone, code);
     setToken(res.token);
-    showStep('step-success');
-    // بعد از چند لحظه خودکار به مقصد برگرده
-    setTimeout(() => { window.location.href = redirectTarget; }, 1200);
+    clearInterval(otpExpiryInterval);
+    showToast('success', 'ورود با موفقیت انجام شد');
+    // به‌جای کارت خوش‌آمدگویی، فقط توست و انتقال به مقصد (index یا همون صفحه‌ای که ازش اومده، مثلا checkout)
+    setTimeout(() => { window.location.href = redirectTarget; }, 700);
   } catch(err) {
     otpBoxes.forEach(b => b.classList.add('border-danger', 'shake'));
     document.getElementById('otp-error').textContent = err.message || 'کد تایید نادرست است';
@@ -349,9 +370,10 @@ function startResendTimer(){
 async function resendCode(){
   if(document.getElementById('resend-btn').disabled) return;
   try {
-    await Api.sendOtp(currentPhone);
+    const res = await Api.sendOtp(currentPhone);
     resetOtpBoxes();
     startResendTimer();
+    startOtpExpiryTimer(res.expiresInSeconds || 90);
     showToast('success', 'کد تایید مجدد ارسال شد');
   } catch(err) {
     showToast('error', err.message || 'ارسال مجدد ناموفق بود');

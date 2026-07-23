@@ -14,12 +14,7 @@
     --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
     --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
   }
-  .dark{
-    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
-    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
-    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
-  }
-  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s; overflow-x-hidden}
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;color:var(--foreground);transition:.3s; overflow-x-hidden;background:radial-gradient(1100px 560px at 12% -8%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 55%),radial-gradient(1000px 560px at 100% 6%, color-mix(in srgb, var(--emerald) 7%, transparent), transparent 55%),var(--background);background-repeat:no-repeat;}
   .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
   .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
   .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
@@ -151,6 +146,8 @@
 
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
+<script src="js/search.js"></script>
+<script src="js/product-card.js"></script>
 <script>
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
 
@@ -173,13 +170,14 @@ function toFa(n){ return String(n).replace(/[0-9]/g, d => faDigits[d]); }
 function fmt(n){ return toFa(n.toLocaleString('en-US')); }
 
 /* ================= STATE ================= */
-const filterState = { 
-  categoryIds: [], 
-  brandIds: [], 
-  minPrice: null, 
-  maxPrice: null, 
-  minRating: 0, 
-  inStockOnly: false, 
+const filterState = {
+  categoryIds: [],
+  brandIds: [],
+  minPrice: null,
+  maxPrice: null,
+  minRating: 0,
+  inStockOnly: false,
+  search: '',
   sort: 'newest',
   page: 1,
   pageSize: 50
@@ -189,33 +187,36 @@ let allProducts = [];
 let totalCount = 0;
 let currentPage = 1;
 let isLoading = false;
+let CATEGORIES = [];   // [{id, name, slug}]
+let BRANDS = [];       // [{id, name}]
 
 /* ================= API CALL ================= */
 async function fetchProducts() {
   if (isLoading) return;
   isLoading = true;
   showLoadingRow(true);
-  
+
   try {
     const params = new URLSearchParams({
       page: filterState.page,
       pageSize: filterState.pageSize,
       sortBy: filterState.sort
     });
-    
+
     if (filterState.categoryIds.length) params.append('categoryIds', filterState.categoryIds.join(','));
     if (filterState.brandIds.length) params.append('brandIds', filterState.brandIds.join(','));
     if (filterState.minPrice) params.append('minPrice', filterState.minPrice);
     if (filterState.maxPrice) params.append('maxPrice', filterState.maxPrice);
     if (filterState.inStockOnly) params.append('inStockOnly', 'true');
     if (filterState.minRating) params.append('minRating', filterState.minRating);
-    
-    const response = await fetch(`/api/products?${params}`);
-    const result = await response.json();
-    
+    if (filterState.search) params.append('search', filterState.search);
+
+    const result = await Api.getProducts(`?${params}`);
+
     allProducts = result.items || [];
     totalCount = result.totalCount || 0;
-    
+
+    await ProductCard.loadState();
     renderProducts();
     updateResultText();
     renderPagination();
@@ -230,37 +231,39 @@ async function fetchProducts() {
 
 function renderProducts() {
   const grid = document.getElementById('product-grid');
-  grid.innerHTML = '';
-  
-  allProducts.forEach(p => {
-    const wrap = document.createElement('div');
-    wrap.className = 'fade-card product-card';
-    wrap.innerHTML = cardGrid(p);
-    grid.appendChild(wrap);
-    requestAnimationFrame(() => wrap.classList.add('show'));
+  grid.innerHTML = allProducts.map(ProductCard.render).join('');
+  requestAnimationFrame(() => {
+    grid.querySelectorAll('.product-card').forEach(el => el.classList.add('show'));
   });
 }
 
-/* ================= FILTER UI (kept similar but adapted) ================= */
-const CATEGORIES = ['پوشاک','دیجیتال','خانه و آشپزخانه','زیبایی و سلامت','کیف و کوله','اکسسوری'];
-const BRANDS = ['سونی','اپل','سامسونگ','نایکی','آدیداس','فیلیپس','بوش','ال‌جی'];
+/* ================= FILTER UI (دسته‌بندی/برند واقعی از بک‌اند) ================= */
+async function loadCategoriesAndBrands() {
+  try {
+    const [cats, brands] = await Promise.all([Api.getCategories(), Api.getBrands()]);
+    CATEGORIES = cats.map(c => ({ id: c.id, name: c.name, slug: c.slug }));
+    BRANDS = brands.map(b => ({ id: b.id, name: b.name }));
+  } catch (e) {
+    CATEGORIES = [];
+    BRANDS = [];
+  }
+}
 
-function toggleCategory(cat) {
-  // For demo we keep string-based; in real app map to IDs
-  if (filterState.categoryIds.includes(cat)) {
-    filterState.categoryIds = filterState.categoryIds.filter(c => c !== cat);
+function toggleCategory(id) {
+  if (filterState.categoryIds.includes(id)) {
+    filterState.categoryIds = filterState.categoryIds.filter(c => c !== id);
   } else {
-    filterState.categoryIds.push(cat);
+    filterState.categoryIds.push(id);
   }
   renderFilters();
   resetAndRender();
 }
 
-function toggleBrand(brand) {
-  if (filterState.brandIds.includes(brand)) {
-    filterState.brandIds = filterState.brandIds.filter(b => b !== brand);
+function toggleBrand(id) {
+  if (filterState.brandIds.includes(id)) {
+    filterState.brandIds = filterState.brandIds.filter(b => b !== id);
   } else {
-    filterState.brandIds.push(brand);
+    filterState.brandIds.push(id);
   }
   renderFilters();
   resetAndRender();
@@ -299,6 +302,15 @@ function clearFilters() {
   showToast('success', 'فیلترها پاک شد');
 }
 
+function clearSearch() {
+  filterState.search = '';
+  const url = new URL(window.location.href);
+  url.searchParams.delete('search');
+  window.history.replaceState({}, '', url);
+  updateResultText();
+  resetAndRender();
+}
+
 function setSort(val) {
   filterState.sort = val;
   document.getElementById('sort-select').value = val;
@@ -315,11 +327,11 @@ function filtersHTML() {
     <div class="mb-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">دسته‌بندی</p>
       <div class="flex flex-col gap-2">
-        ${CATEGORIES.map(c => `
+        ${CATEGORIES.length ? CATEGORIES.map(c => `
           <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" onchange="toggleCategory('${c}')" ${filterState.categoryIds.includes(c)?'checked':''} />
-            ${c}
-          </label>`).join('')}
+            <input type="checkbox" onchange="toggleCategory(${c.id})" ${filterState.categoryIds.includes(c.id)?'checked':''} />
+            ${c.name}
+          </label>`).join('') : '<p class="text-xs text-muted">دسته‌بندی‌ای یافت نشد</p>'}
       </div>
     </div>
     <div class="mb-5 border-t border-line pt-5">
@@ -334,11 +346,11 @@ function filtersHTML() {
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">برند</p>
       <div class="flex flex-col gap-2">
-        ${BRANDS.map(b => `
+        ${BRANDS.length ? BRANDS.map(b => `
           <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" onchange="toggleBrand('${b}')" ${filterState.brandIds.includes(b)?'checked':''} />
-            ${b}
-          </label>`).join('')}
+            <input type="checkbox" onchange="toggleBrand(${b.id})" ${filterState.brandIds.includes(b.id)?'checked':''} />
+            ${b.name}
+          </label>`).join('') : '<p class="text-xs text-muted">برندی یافت نشد</p>'}
       </div>
     </div>
     <div class="mb-5 border-t border-line pt-5">
@@ -368,11 +380,14 @@ function renderFilters(){
 
 function updateResultText(){
   const el = document.getElementById('result-text');
-  if(totalCount === 0){ 
-    el.textContent = 'محصولی با این فیلترها یافت نشد'; 
-    return; 
+  const searchNote = filterState.search
+    ? `<span class="inline-flex items-center gap-1.5">نتایج جستجو برای «${filterState.search}»<button onclick="clearSearch()" class="text-emerald hover:underline">(پاک کردن)</button></span> — `
+    : '';
+  if(totalCount === 0){
+    el.innerHTML = searchNote + 'محصولی با این فیلترها یافت نشد';
+    return;
   }
-  el.textContent = `نمایش ${toFa(allProducts.length)} از ${toFa(totalCount)} محصول`;
+  el.innerHTML = searchNote + `نمایش ${toFa(allProducts.length)} از ${toFa(totalCount)} محصول`;
 }
 
 function showLoadingRow(show){
@@ -417,49 +432,7 @@ function resetAndRender(){
   fetchProducts();
 }
 
-/* ================= PRODUCT CARD ================= */
-function cardGrid(p){
-  const price = p.discountPrice || p.price;
-  const oldPrice = p.discountPrice ? p.price : null;
-  const badge = p.badge ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${p.badge === 'جدید' ? 'bg-emerald-soft text-emerald' : 'bg-danger/10 text-danger'}">${p.badge}</span>` : '';
-  const outOfStock = !p.inStock ? `<div class="absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-[1px]"><span class="rounded-full bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger">ناموجود</span></div>` : '';
-  
-  return `<div class="tilt-card w-full rounded-2xl border border-line bg-surface p-3 product-card">
-    <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
-      <img src="${p.mainImageUrl || 'https://picsum.photos/400/400'}" class="h-full w-full object-cover" loading="lazy" alt="${p.name}" />
-      ${badge}${outOfStock}
-      <button onclick="toggleWishlist('${p.id}')" class="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-      </button>
-    </div>
-    <div class="mt-3 px-1">
-      <div class="text-xs text-muted">${p.categoryName}</div>
-      <h3 class="mt-1 text-sm font-semibold leading-tight">${p.name}</h3>
-      <div class="mt-1.5 flex items-center gap-1 text-xs text-muted">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        <span class="ticker">${p.averageRating}</span><span>(${toFa(p.reviewCount)})</span>
-      </div>
-      <div class="price-row mt-2.5">
-        <span class="ticker text-[15px] font-bold">${fmt(price)}</span>
-        <span class="text-[11px] text-muted">تومان</span>
-        ${oldPrice ? `<span class="old-price ticker text-xs text-muted line-through">${fmt(oldPrice)}</span>` : ''}
-      </div>
-      <button onclick="addToCart('${p.id}')" ${!p.inStock?'disabled':''} class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald disabled:opacity-40">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
-        افزودن به سبد
-      </button>
-    </div>
-  </div>`;
-}
-
-/* ================= Wishlist + Cart (simplified) ================= */
-function toggleWishlist(id){
-  showToast('success', 'به علاقه‌مندی‌ها اضافه شد');
-}
-
-function addToCart(id){
-  showToast('success', 'به سبد خرید اضافه شد');
-}
+/* کارت محصول از کامپوننت مشترک js/product-card.js میاد (ProductCard.render/bind) */
 
 /* ================= MOBILE SHEETS ================= */
 const sheetTitles = { filters: 'فیلترها', sort: 'مرتب‌سازی' };
@@ -504,9 +477,29 @@ function closeSheet(){
 
 /* ================= INIT ================= */
 document.getElementById('sort-select').addEventListener('change', (e) => setSort(e.target.value));
+ProductCard.bind(document.getElementById('product-grid'));
 
-renderFilters();
-resetAndRender();
+async function init(){
+  await loadCategoriesAndBrands();
+
+  // اگه از صفحه اصلی روی یه دسته‌بندی کلیک شده (shop.html?category=fashion)، همون دسته تیک بخوره
+  const params = new URLSearchParams(window.location.search);
+  const categorySlug = params.get('category');
+  if(categorySlug){
+    const match = CATEGORIES.find(c => c.slug === categorySlug);
+    if(match) filterState.categoryIds = [match.id];
+  }
+
+  // اگه از جستجوی هدر با اینتر اومده (shop.html?search=...)
+  const searchTerm = params.get('search');
+  if(searchTerm) filterState.search = searchTerm;
+
+  renderFilters();
+  resetAndRender();
+  ProductCard.resolvePendingWishlist();
+}
+
+init();
 </script>
 </body>
 </html>

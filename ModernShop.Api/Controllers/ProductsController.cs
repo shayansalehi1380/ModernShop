@@ -25,6 +25,9 @@ public class ProductsController : ControllerBase
     {
         var query = _db.Products.Where(p => p.IsActive).AsQueryable();
 
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+            query = query.Where(p => p.Name.Contains(filter.Search));
+
         if (filter.CategoryIds is { Count: > 0 })
             query = query.Where(p => filter.CategoryIds.Contains(p.CategoryId));
 
@@ -88,6 +91,31 @@ public class ProductsController : ControllerBase
         });
     }
 
+    // مربوط به جستجوی زنده تو هدر (پیشنهاد لحظه‌ای همراه با عکس، حداکثر ۶ مورد)
+    [HttpGet("search-suggestions")]
+    public async Task<ActionResult<List<ProductSearchSuggestionDto>>> GetSearchSuggestions([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+            return Ok(new List<ProductSearchSuggestionDto>());
+
+        var results = await _db.Products
+            .Where(p => p.IsActive && p.Name.Contains(q))
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(6)
+            .Select(p => new ProductSearchSuggestionDto
+            {
+                Name = p.Name,
+                Slug = p.Slug,
+                ImageUrl = p.Images.Where(i => i.IsMain).Select(i => i.ImageUrl).FirstOrDefault()
+                           ?? p.Images.Select(i => i.ImageUrl).FirstOrDefault() ?? "",
+                Price = p.Price,
+                DiscountPrice = p.DiscountPrice
+            })
+            .ToListAsync();
+
+        return Ok(results);
+    }
+
     // مربوط به product.html: گالری، رنگ، مشخصات فنی، نظرات
     [HttpGet("{slug}")]
     public async Task<ActionResult<ProductDetailDto>> GetBySlug(string slug)
@@ -136,6 +164,7 @@ public class ProductsController : ControllerBase
                     UserFullName = $"{r.User.FirstName} {r.User.LastName}".Trim(),
                     Rating = r.Rating,
                     Comment = r.Comment,
+                    AdminReply = r.AdminReply,
                     CreatedAt = r.CreatedAt
                 })
                 .ToList()

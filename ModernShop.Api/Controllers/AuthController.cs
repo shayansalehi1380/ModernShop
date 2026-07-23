@@ -33,18 +33,21 @@ public class AuthController : ControllerBase
 
         var code = Random.Shared.Next(10000, 99999).ToString();
 
+        // ۱ دقیقه و ۳۰ ثانیه فرصت برای وارد کردن کد؛ همینو تو verify-otp هم چک می‌کنیم
+        const int otpExpirySeconds = 90;
+
         _db.OtpCodes.Add(new OtpCode
         {
             PhoneNumber = request.PhoneNumber,
             Code = code,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(2),
+            ExpiresAt = DateTime.UtcNow.AddSeconds(otpExpirySeconds),
             IsUsed = false
         });
         await _db.SaveChangesAsync();
 
         await _smsService.SendOtpAsync(request.PhoneNumber, code);
 
-        return Ok(new { message = "کد تایید ارسال شد" });
+        return Ok(new { message = "کد تایید ارسال شد", expiresInSeconds = otpExpirySeconds });
     }
 
     // مرحله ۲ از auth.html: کد ۵ رقمی
@@ -56,8 +59,11 @@ public class AuthController : ControllerBase
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync();
 
-        if (otp is null || otp.Code != request.Code || otp.ExpiresAt < DateTime.UtcNow)
-            return BadRequest(new { message = "کد تایید نامعتبر یا منقضی‌شده است" });
+        if (otp is null || otp.Code != request.Code)
+            return BadRequest(new { message = "کد تایید اشتباه است" });
+
+        if (otp.ExpiresAt < DateTime.UtcNow)
+            return BadRequest(new { message = "زمان وارد کردن کد به پایان رسیده، دوباره درخواست کد کنید" });
 
         otp.IsUsed = true;
 

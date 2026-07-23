@@ -43,6 +43,40 @@ async function loadLayout() {
   // پس باید بعد از تزریق هدر صدا زده بشن نه قبلش
   if (typeof updateAuthUI === 'function') updateAuthUI();
   if (typeof updateCartBadge === 'function') updateCartBadge();
+
+  // جستجوی زنده تو هدر دسکتاپ - بعد از تزریق هدر، چون قبلش این المان‌ها وجود ندارن
+  if (typeof AtelierSearch === 'object') {
+    AtelierSearch.attach(
+      document.getElementById('header-search-input'),
+      document.getElementById('header-search-dropdown'),
+      document.getElementById('header-search-wrap')
+    );
+  }
 }
 
 document.addEventListener('DOMContentLoaded', loadLayout);
+
+/* ---------- دراپ‌دان «حساب کاربری» تو هدر دسکتاپ ---------- */
+function toggleAccountMenu(e) {
+  if (e) e.stopPropagation();
+  if (!isLoggedIn()) {
+    window.location.href = 'auth.html';
+    return;
+  }
+  const dropdown = document.getElementById('account-menu-dropdown');
+  if (dropdown) dropdown.classList.toggle('hidden');
+}
+
+function handleHeaderLogout() {
+  clearToken();
+  window.location.href = 'index.html';
+}
+
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('account-menu-dropdown');
+  const btn = document.getElementById('account-menu-btn');
+  if (!dropdown || dropdown.classList.contains('hidden')) return;
+  if (!e.target.closest('#account-menu-dropdown') && !e.target.closest('#account-menu-btn')) {
+    dropdown.classList.add('hidden');
+  }
+});

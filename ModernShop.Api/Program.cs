@@ -59,7 +59,13 @@ builder.Services.AddCors(options =>
 });
 
 // ===== Controllers + Swagger =====
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    // همه‌ی تاریخ‌ها UtcNow ذخیره می‌شن؛ این کانورترها تضمین می‌کنن همیشه با "Z" سریالایز بشن
+    // تا فرانت (new Date(...)) درست به‌وقت محلی کاربر تبدیلشون کنه (نه چند ساعت جلو/عقب).
+    options.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+    options.JsonSerializerOptions.Converters.Add(new NullableUtcDateTimeConverter());
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

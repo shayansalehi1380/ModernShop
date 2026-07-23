@@ -170,4 +170,24 @@ namespace ModernShop.Core.DTOs
     {
         public OrderStatus Status { get; set; }
     }
+
+    // ---------------- نظرات ----------------
+
+    public class AdminReviewListItemDto
+    {
+        public int Id { get; set; }
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = null!;
+        public string UserFullName { get; set; } = null!;
+        public int Rating { get; set; }
+        public string? Comment { get; set; }
+        public bool IsApproved { get; set; }
+        public string? AdminReply { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class ReplyReviewRequestDto
+    {
+        public string? Reply { get; set; }
+    }
 }

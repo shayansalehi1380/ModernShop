@@ -14,12 +14,7 @@
     --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
     --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
   }
-  .dark{
-    --background:#12151A; --foreground:#EDEAE2; --surface:#191D24; --surface-muted:#1F242C;
-    --line:#2A2F38; --muted:#9AA1AC; --emerald:#3AA085; --emerald-deep:#1F6F5C;
-    --emerald-soft:#1B2B27; --gold:#D8B368; --gold-soft:#2B2416; --danger:#E0705A; --media:#0E1013;
-  }
-  body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--background);color:var(--foreground);transition:.3s}
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;color:var(--foreground);transition:.3s;background:radial-gradient(1100px 560px at 12% -8%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 55%),radial-gradient(1000px 560px at 100% 6%, color-mix(in srgb, var(--emerald) 7%, transparent), transparent 55%),var(--background);background-repeat:no-repeat;}
   .ticker{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;letter-spacing:-.02em}
   .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
   .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
@@ -137,6 +132,7 @@
 
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
+<script src="js/search.js"></script>
 <script>
 function showToast(kind, message){
   const root = document.getElementById('toast-root');

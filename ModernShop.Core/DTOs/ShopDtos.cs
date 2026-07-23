@@ -14,9 +14,19 @@ namespace ModernShop.Core.DTOs
         public decimal? MaxPrice { get; set; }
         public double? MinRating { get; set; }
         public bool InStockOnly { get; set; }
+        public string? Search { get; set; }             // جستجوی نام محصول - برای shop.html و جستجوی زنده هدر
         public string SortBy { get; set; } = "newest";  // newest | bestselling | cheap | expensive | rating
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 50;         // مطابق منطق فروشگاه: هر صفحه حداکثر ۵۰ محصول
+    }
+
+    public class ProductSearchSuggestionDto
+    {
+        public string Name { get; set; } = null!;
+        public string Slug { get; set; } = null!;
+        public string ImageUrl { get; set; } = null!;
+        public decimal Price { get; set; }
+        public decimal? DiscountPrice { get; set; }
     }
 
     public class PagedResultDto<T>

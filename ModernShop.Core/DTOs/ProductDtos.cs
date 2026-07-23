@@ -47,6 +47,7 @@ namespace ModernShop.Core.DTOs
         public string UserFullName { get; set; } = null!;
         public int Rating { get; set; }
         public string? Comment { get; set; }
+        public string? AdminReply { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 

@@ -58,6 +58,7 @@ const Api = {
   getCategories: () => apiFetch('/categories'),
   getFeaturedBrands: () => apiFetch('/brands?featuredOnly=true'),
   getProducts: (queryString = '') => apiFetch(`/products${queryString}`),
+  searchSuggestions: (q) => apiFetch(`/products/search-suggestions?q=${encodeURIComponent(q)}`),
   getProduct: (slug) => apiFetch(`/products/${encodeURIComponent(slug)}`),
   addReview: (productId, rating, comment) =>
     apiFetch('/products/reviews', { method: 'POST', body: JSON.stringify({ productId, rating, comment }) }),
@@ -119,6 +120,10 @@ function updateAuthUI() {
       el.setAttribute('href', 'auth.html');
     }
   });
+
+  // دکمه حساب کاربری تو هدر دسکتاپ (partials/header.html) - دراپ‌دان داره، پس جدا از data-auth-link مدیریت می‌شه
+  const menuLabel = document.getElementById('account-menu-label');
+  if (menuLabel) menuLabel.textContent = loggedIn ? 'حساب کاربری' : 'ورود | ثبت‌نام';
 }
 
 async function updateCartBadge() {

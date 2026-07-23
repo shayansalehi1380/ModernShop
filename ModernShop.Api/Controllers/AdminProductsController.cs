@@ -145,6 +145,19 @@ public class AdminProductsController : ControllerBase
         return NoContent();
     }
 
+    // برای برگردوندن محصولی که قبلا از پنل «حذف» (غیرفعال) شده
+    [HttpPut("{id}/reactivate")]
+    public async Task<IActionResult> Reactivate(int id)
+    {
+        var product = await _db.Products.FindAsync(id);
+        if (product is null) return NotFound();
+
+        product.IsActive = true;
+        await _db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private static AdminProductDetailDto MapToDetailDto(Product product) => new()
     {
         Id = product.Id,

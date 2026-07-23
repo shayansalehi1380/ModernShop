@@ -11,5 +11,6 @@ public class ProductReview
     public int Rating { get; set; }   // ۱ تا ۵
     public string? Comment { get; set; }
     public bool IsApproved { get; set; }
+    public string? AdminReply { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
