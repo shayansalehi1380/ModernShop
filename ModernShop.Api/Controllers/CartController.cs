@@ -38,14 +38,33 @@ public class CartController : ControllerBase
         var product = await _db.Products.FindAsync(request.ProductId);
         if (product is null) return NotFound(new { message = "محصول یافت نشد" });
 
+        ProductVariant? variant = null;
+        if (request.ProductVariantId.HasValue)
+        {
+            variant = await _db.ProductVariants.FindAsync(request.ProductVariantId.Value);
+            if (variant is null) return NotFound(new { message = "تنوع انتخاب‌شده یافت نشد" });
+        }
+        var availableStock = variant?.StockQuantity ?? product.StockQuantity;
+
         var cart = await GetOrCreateCartAsync();
 
         var existing = cart.Items.FirstOrDefault(i =>
             i.ProductId == request.ProductId && i.ProductVariantId == request.ProductVariantId);
 
+        var requestedTotal = (existing?.Quantity ?? 0) + request.Quantity;
+        if (requestedTotal > availableStock)
+        {
+            return BadRequest(new
+            {
+                message = availableStock <= 0
+                    ? "این محصول موجود نیست"
+                    : $"تنها {availableStock} عدد از این محصول موجود است"
+            });
+        }
+
         if (existing is not null)
         {
-            existing.Quantity += request.Quantity;
+            existing.Quantity = requestedTotal;
         }
         else
         {
@@ -55,7 +74,7 @@ public class CartController : ControllerBase
                 ProductId = request.ProductId,
                 ProductVariantId = request.ProductVariantId,
                 Quantity = request.Quantity,
-                UnitPrice = product.DiscountPrice ?? product.Price
+                UnitPrice = (variant?.PriceAdjustment ?? 0) + (product.DiscountPrice ?? product.Price)
             });
         }
 
@@ -74,9 +93,26 @@ public class CartController : ControllerBase
         if (item is null) return NotFound();
 
         if (request.Quantity <= 0)
+        {
             cart.Items.Remove(item);
+        }
         else
+        {
+            var availableStock = item.ProductVariantId.HasValue
+                ? (item.ProductVariant?.StockQuantity ?? 0)
+                : item.Product.StockQuantity;
+
+            if (request.Quantity > availableStock)
+            {
+                return BadRequest(new
+                {
+                    message = availableStock <= 0
+                        ? "این محصول موجود نیست"
+                        : $"تنها {availableStock} عدد از این محصول موجود است"
+                });
+            }
             item.Quantity = request.Quantity;
+        }
 
         await _db.SaveChangesAsync();
 
@@ -180,6 +216,7 @@ public class CartController : ControllerBase
         {
             Id = i.Id,
             ProductId = i.ProductId,
+            ProductVariantId = i.ProductVariantId,
             ProductName = i.Product.Name,
             ImageUrl = i.Product.Images.FirstOrDefault(im => im.IsMain)?.ImageUrl
                        ?? i.Product.Images.FirstOrDefault()?.ImageUrl ?? "",

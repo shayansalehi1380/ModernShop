@@ -112,11 +112,16 @@ function formatPrice(n) {
 function updateAuthUI() {
   const loggedIn = isLoggedIn();
   document.querySelectorAll('[data-auth-link]').forEach(el => {
+    // اگه یه span[data-auth-label] داخلش باشه (برای نگه‌داشتن آیکون کنار متن)، فقط متن همون span عوض می‌شه؛
+    // وگرنه (برای عناصر ساده‌ی بدون آیکون) کل textContent عوض می‌شه
+    const label = el.querySelector('[data-auth-label]');
     if (loggedIn) {
-      el.textContent = el.dataset.authLoggedinText || 'حساب کاربری';
+      const text = el.dataset.authLoggedinText || 'حساب کاربری';
+      if (label) label.textContent = text; else el.textContent = text;
       el.setAttribute('href', 'account.html');
     } else {
-      el.textContent = el.dataset.authLoggedoutText || el.textContent;
+      const text = el.dataset.authLoggedoutText || (label ? label.textContent : el.textContent);
+      if (label) label.textContent = text; else el.textContent = text;
       el.setAttribute('href', 'auth.html');
     }
   });
@@ -124,6 +129,10 @@ function updateAuthUI() {
   // دکمه حساب کاربری تو هدر دسکتاپ (partials/header.html) - دراپ‌دان داره، پس جدا از data-auth-link مدیریت می‌شه
   const menuLabel = document.getElementById('account-menu-label');
   if (menuLabel) menuLabel.textContent = loggedIn ? 'حساب کاربری' : 'ورود | ثبت‌نام';
+
+  // وقتی کاربر لاگین نکرده، دکمه فقط به auth.html می‌ره (دراپ‌دانی نداره)، پس فلش کشویی نمایش داده نشه
+  const menuArrow = document.getElementById('account-menu-arrow');
+  if (menuArrow) menuArrow.classList.toggle('hidden', !loggedIn);
 }
 
 async function updateCartBadge() {

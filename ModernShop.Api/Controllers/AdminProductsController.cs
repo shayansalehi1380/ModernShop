@@ -82,7 +82,7 @@ public class AdminProductsController : ControllerBase
         };
 
         ApplyVariantsSpecsAndStock(product, request);
-        ApplyImage(product, request.ImageUrl);
+        ApplyImages(product, request.ImageUrl, request.GalleryImageUrls);
 
         _db.Products.Add(product);
         await _db.SaveChangesAsync();
@@ -122,7 +122,7 @@ public class AdminProductsController : ControllerBase
         ApplyVariantsSpecsAndStock(product, request);
 
         product.Images.Clear();
-        ApplyImage(product, request.ImageUrl);
+        ApplyImages(product, request.ImageUrl, request.GalleryImageUrls);
 
         await _db.SaveChangesAsync();
 
@@ -158,6 +158,34 @@ public class AdminProductsController : ControllerBase
         return NoContent();
     }
 
+    // آپلود فایل عکس از پنل مدیریت (به‌جای وارد کردن لینک عکس)؛ فایل رو داخل wwwroot/uploads/products
+    // ذخیره می‌کنه و آدرس نسبی رو برمی‌گردونه تا تو همون فیلد آدرس تصویر استفاده بشه
+    [HttpPost("upload-image")]
+    [RequestSizeLimit(10_000_000)]
+    public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] IWebHostEnvironment env)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { message = "فایلی انتخاب نشده است" });
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(ext))
+            return BadRequest(new { message = "فقط فایل‌های تصویری (jpg, png, webp, gif) مجاز هستند" });
+
+        var uploadsDir = Path.Combine(env.WebRootPath, "uploads", "products");
+        Directory.CreateDirectory(uploadsDir);
+
+        var fileName = $"{Guid.NewGuid():N}{ext}";
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        return Ok(new { url = $"/uploads/products/{fileName}" });
+    }
+
     private static AdminProductDetailDto MapToDetailDto(Product product) => new()
     {
         Id = product.Id,
@@ -173,6 +201,11 @@ public class AdminProductsController : ControllerBase
         IsActive = product.IsActive,
         ImageUrl = product.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl
                    ?? product.Images.FirstOrDefault()?.ImageUrl,
+        GalleryImageUrls = product.Images
+            .Where(i => !i.IsMain)
+            .OrderBy(i => i.DisplayOrder)
+            .Select(i => i.ImageUrl)
+            .ToList(),
         Specifications = product.Specifications
             .OrderBy(s => s.DisplayOrder)
             .Select(s => new AdminProductSpecDto { Key = s.Key, Value = s.Value })
@@ -215,12 +248,14 @@ public class AdminProductsController : ControllerBase
         product.StockQuantity = variants.Count > 0 ? variants.Sum(v => v.StockQuantity) : request.StockQuantity;
     }
 
-    private static void ApplyImage(Product product, string? imageUrl)
+    private static void ApplyImages(Product product, string? mainImageUrl, List<string>? galleryImageUrls)
     {
-        if (!string.IsNullOrWhiteSpace(imageUrl))
-        {
-            product.Images.Add(new ProductImage { ImageUrl = imageUrl.Trim(), IsMain = true, DisplayOrder = 0 });
-        }
+        var order = 0;
+        if (!string.IsNullOrWhiteSpace(mainImageUrl))
+            product.Images.Add(new ProductImage { ImageUrl = mainImageUrl.Trim(), IsMain = true, DisplayOrder = order++ });
+
+        foreach (var url in (galleryImageUrls ?? new List<string>()).Where(u => !string.IsNullOrWhiteSpace(u)))
+            product.Images.Add(new ProductImage { ImageUrl = url.Trim(), IsMain = false, DisplayOrder = order++ });
     }
 
     private async Task<string> ResolveSlugAsync(string? requestedSlug, string name, int? excludingProductId)

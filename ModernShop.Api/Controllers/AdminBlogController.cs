@@ -75,6 +75,7 @@ public class AdminBlogController : ControllerBase
             FeaturedImageUrl = string.IsNullOrWhiteSpace(request.FeaturedImageUrl) ? null : request.FeaturedImageUrl.Trim(),
             BlogCategoryId = request.BlogCategoryId,
             AuthorId = authorId,
+            AuthorName = string.IsNullOrWhiteSpace(request.AuthorName) ? null : request.AuthorName.Trim(),
             ReadTimeMinutes = request.ReadTimeMinutes,
             IsPublished = request.IsPublished,
             PublishedAt = request.IsPublished ? DateTime.UtcNow : null
@@ -104,6 +105,7 @@ public class AdminBlogController : ControllerBase
         post.Content = request.Content.Trim();
         post.FeaturedImageUrl = string.IsNullOrWhiteSpace(request.FeaturedImageUrl) ? null : request.FeaturedImageUrl.Trim();
         post.BlogCategoryId = request.BlogCategoryId;
+        post.AuthorName = string.IsNullOrWhiteSpace(request.AuthorName) ? null : request.AuthorName.Trim();
         post.ReadTimeMinutes = request.ReadTimeMinutes;
 
         // اگه همین الان منتشر می‌شه و قبلا تاریخ انتشار نداشته، الان رو ثبت کن؛
@@ -140,6 +142,7 @@ public class AdminBlogController : ControllerBase
         Content = post.Content,
         FeaturedImageUrl = post.FeaturedImageUrl,
         BlogCategoryId = post.BlogCategoryId,
+        AuthorName = post.AuthorName,
         ReadTimeMinutes = post.ReadTimeMinutes,
         IsPublished = post.IsPublished
     };

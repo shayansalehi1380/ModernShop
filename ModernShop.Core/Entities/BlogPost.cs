@@ -13,6 +13,7 @@ public class BlogPost
     public BlogCategory BlogCategory { get; set; } = null!;
     public int AuthorId { get; set; }             // FK به User (نویسنده هم یک کاربره)
     public User Author { get; set; } = null!;
+    public string? AuthorName { get; set; }        // نام دلخواه ادمین برای نمایش؛ خالی = نام کاربر سیستمی نویسنده
 
     public int ReadTimeMinutes { get; set; }
     public bool IsPublished { get; set; }

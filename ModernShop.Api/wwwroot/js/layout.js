@@ -31,13 +31,28 @@ function highlightActiveNav() {
   });
 }
 
+/* تب فعال نوار پایین موبایل (partials/mobile-nav.html)، بر اساس اسم فایل صفحه فعلی */
+const MNAV_PAGE_KEY_MAP = { 'product.html': 'shop.html', 'checkout.html': 'cart.html' };
+function highlightActiveMobileNav() {
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  const activeKey = MNAV_PAGE_KEY_MAP[currentPath] || currentPath;
+
+  document.querySelectorAll('[data-mnav-key]').forEach(link => {
+    const isActive = link.dataset.mnavKey === activeKey;
+    link.classList.toggle('text-emerald', isActive);
+    link.classList.toggle('text-muted', !isActive);
+  });
+}
+
 async function loadLayout() {
   await Promise.all([
     loadPartial('partials/header.html', '#header-placeholder'),
     loadPartial('partials/footer.html', '#footer-placeholder'),
+    loadPartial('partials/mobile-nav.html', '#mobile-nav-placeholder'),
   ]);
 
   highlightActiveNav();
+  highlightActiveMobileNav();
 
   // این دو تابع تو api.js تعریف شدن و به المنت‌های داخل هدر (data-auth-link / data-cart-badge) نیاز دارن،
   // پس باید بعد از تزریق هدر صدا زده بشن نه قبلش

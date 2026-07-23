@@ -37,6 +37,7 @@ public class AdminReviewsController : ControllerBase
                 Id = r.Id,
                 ProductId = r.ProductId,
                 ProductName = r.Product.Name,
+                ProductSlug = r.Product.Slug,
                 UserFullName = $"{r.User.FirstName} {r.User.LastName}".Trim(),
                 Rating = r.Rating,
                 Comment = r.Comment,

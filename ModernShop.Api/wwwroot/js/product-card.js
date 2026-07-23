@@ -64,6 +64,25 @@ const ProductCard = (function () {
     </button>`;
   }
 
+  // نسخه‌ی بزرگ همون دکمه/استپر، برای صفحه‌ی محصول (دکمه‌ی اصلی + نوار چسبان موبایل)؛
+  // از همون کلاس‌های pc-add/pc-inc/pc-dec استفاده می‌کنه، پس با bind() یکسان کار می‌کنه
+  function cartAreaHTMLLarge(pid, qty, inStock) {
+    if (!inStock) {
+      return `<button disabled class="flex flex-1 w-full items-center justify-center gap-2 rounded-2xl border border-line py-3 text-sm font-bold opacity-40">ناموجود</button>`;
+    }
+    if (qty > 0) {
+      return `<div class="flex flex-1 items-center justify-between rounded-2xl border border-emerald bg-emerald-soft px-3 py-2">
+        <button type="button" class="pc-dec flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" data-pid="${pid}" aria-label="کم کردن">−</button>
+        <span class="ticker text-base font-bold text-emerald-deep" data-pc-qty="${pid}">${toFaPC(qty)}</span>
+        <button type="button" class="pc-inc flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" data-pid="${pid}" aria-label="زیاد کردن">+</button>
+      </div>`;
+    }
+    return `<button type="button" class="pc-add flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200" data-pid="${pid}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+      افزودن به سبد خرید
+    </button>`;
+  }
+
   function render(p) {
     const price = p.discountPrice || p.price;
     const oldPrice = p.discountPrice ? p.price : null;
@@ -106,8 +125,10 @@ const ProductCard = (function () {
 
   function refreshCartArea(pid) {
     const entry = cartState.get(pid);
+    const qty = entry ? entry.quantity : 0;
     document.querySelectorAll(`[data-pc-cart-area="${pid}"]`).forEach(el => {
-      el.innerHTML = cartAreaHTML(pid, entry ? entry.quantity : 0, true);
+      const render = el.dataset.pcSize === 'large' ? cartAreaHTMLLarge : cartAreaHTML;
+      el.innerHTML = render(pid, qty, true);
     });
   }
 

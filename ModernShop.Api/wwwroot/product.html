@@ -209,6 +209,12 @@
                         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>
                     </button>
                     <img id="main-image" src="" class="zoom-img h-full w-full object-cover" />
+                    <button onclick="galleryStep(1)" id="gallery-next" class="absolute left-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر بعدی">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+                    <button onclick="galleryStep(-1)" id="gallery-prev" class="absolute right-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر قبلی">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6" /></svg>
+                    </button>
                 </div>
                 <div id="thumb-row" class="mt-3 flex gap-3 overflow-x-auto no-scrollbar"></div>
             </div>
@@ -244,22 +250,14 @@
                     <div class="mb-2.5 text-sm font-semibold">رنگ: <span id="color-label" class="font-normal text-muted"></span></div>
                     <div id="color-swatches" class="flex flex-wrap items-center gap-2.5"></div>
                 </div>
+                <div id="size-block" class="mt-4 hidden">
+                    <div class="mb-2.5 text-sm font-semibold">سایز: <span id="size-label" class="font-normal text-muted"></span></div>
+                    <div id="size-swatches" class="flex flex-wrap items-center gap-2.5"></div>
+                </div>
 
-                <!-- quantity + add to cart -->
+                <!-- add to cart / qty stepper - دقیقاً همون رفتار کارت محصول تو بقیه‌ی سایت -->
                 <div class="mt-7 flex items-stretch gap-3">
-                    <div class="flex items-center rounded-2xl border border-line">
-                        <button onclick="changeQty(1)" class="flex h-full w-11 items-center justify-center text-foreground hover:text-emerald" aria-label="افزایش">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-                        </button>
-                        <span id="qty-value" class="ticker w-9 text-center text-sm font-bold">1</span>
-                        <button onclick="changeQty(-1)" class="flex h-full w-11 items-center justify-center text-foreground hover:text-emerald" aria-label="کاهش">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14" /></svg>
-                        </button>
-                    </div>
-                    <button id="pdp-cart-btn" onclick="addToCartPDP()" class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /></svg>
-                        افزودن به سبد خرید
-                    </button>
+                    <div class="flex-1" id="pdp-cart-area"></div>
                 </div>
 
                 <!-- trust strip -->
@@ -310,18 +308,18 @@
     </section>
 
     <div id="footer-placeholder"></div>
+    <div id="mobile-nav-placeholder"></div>
 
-    <!-- mobile sticky add-to-cart bar -->
-    <div id="mobile-cart-bar" class="fixed inset-x-0 bottom-0 z-[96] hidden items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+    <!-- mobile sticky add-to-cart bar - بالای نوار پایین موبایل قرار می‌گیره، نه روش -->
+    <div id="mobile-cart-bar" class="fixed inset-x-0 bottom-16 z-[97] hidden items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
         <div class="flex flex-col">
             <span class="ticker text-sm font-extrabold" id="mobile-price"></span>
             <span class="text-[10px] text-muted">تومان</span>
         </div>
-        <button onclick="addToCartPDP()" class="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /></svg>
-            افزودن به سبد خرید
-        </button>
+        <div class="flex-1" id="mobile-cart-area"></div>
     </div>
+    <!-- فاصله‌ی اضافه برای اینکه محتوای صفحه پشت این نوار و نوار پایین گم نشه -->
+    <div class="h-[76px] lg:hidden"></div>
 
 
     <script src="js/api.js"></script>
@@ -356,7 +354,6 @@
         const slug = new URLSearchParams(window.location.search).get('slug');
         let product = null;
         let selectedVariantId = null;
-        let qty = 1;
         let galleryLiked = false;
 
         async function loadProduct() {
@@ -366,6 +363,7 @@
             }
             try {
                 product = await Api.getProduct(slug);
+                await loadCartSnapshot();
                 renderProduct();
                 await checkWishlistState();
                 await resolvePendingGalleryWish();
@@ -425,24 +423,23 @@
             document.getElementById('tab-review-count').textContent = product.reviewCount;
             document.getElementById('sku-display').textContent = product.sku ? `کد کالا: ${product.sku}` : '';
 
-            // گالری
+            // گالری - تصویر شاخص همیشه پیش‌فرضه؛ فلش‌های راست/چپ بین تصاویر جابه‌جا می‌کنن
             const images = product.images.length ? product.images : [{ imageUrl: '', isMain: true }];
             const mainImg = images.find(i => i.isMain) || images[0];
+            galleryImages = images;
+            galleryIndex = Math.max(0, images.indexOf(mainImg));
             document.getElementById('main-image').src = mainImg.imageUrl;
             document.getElementById('thumb-row').innerHTML = images.map((img, i) => `
             <button onclick="setMainImage(this, '${img.imageUrl}')" class="thumb ${img.imageUrl === mainImg.imageUrl ? 'active' : ''} h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-line">
               <img src="${img.imageUrl}" class="h-full w-full object-cover" />
             </button>
           `).join('');
+            updateGalleryArrows();
 
-            // قیمت
-            const mainPrice = product.discountPrice ?? product.price;
-            document.getElementById('main-price').textContent = formatPrice(mainPrice);
-            document.getElementById('mobile-price').textContent = formatPrice(mainPrice);
+            // قیمت پایه (بدون احتساب اختلاف قیمت تنوع - اون تو updatePriceDisplay اعمال می‌شه)
             if (product.discountPrice) {
-                document.getElementById('old-price').textContent = formatPrice(product.price);
-                document.getElementById('old-price').classList.remove('hidden');
                 const pct = Math.round((1 - product.discountPrice / product.price) * 100);
+                document.getElementById('old-price').classList.remove('hidden');
                 const pctEl = document.getElementById('discount-pct');
                 pctEl.textContent = `${pct}٪ تخفیف`;
                 pctEl.classList.remove('hidden');
@@ -451,27 +448,8 @@
                 badge.classList.remove('hidden');
             }
 
-            // موجودی
-            const stockEl = document.getElementById('stock-status');
-            if (product.stockQuantity > 0) {
-                stockEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg><span class="text-emerald">موجود در انبار — ارسال ۲۴ ساعته</span>`;
-            } else {
-                stockEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-danger"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg><span class="text-danger">ناموجود</span>`;
-                document.getElementById('pdp-cart-btn').disabled = true;
-                document.getElementById('pdp-cart-btn').classList.add('opacity-40');
-            }
-
-            // رنگ‌بندی
-            if (product.variants && product.variants.length) {
-                document.getElementById('variant-block').classList.remove('hidden');
-                selectedVariantId = product.variants[0].id;
-                document.getElementById('color-label').textContent = product.variants[0].color || '';
-                document.getElementById('color-swatches').innerHTML = product.variants.map((v, i) => `
-              <button onclick="selectVariant(${v.id}, '${v.color || ''}', this)" class="color-swatch ${i === 0 ? 'active' : ''} h-9 w-9 rounded-full border-2 ${i === 0 ? '' : 'border-transparent'} p-0.5" aria-label="${v.color || ''}">
-                <span class="block h-full w-full rounded-full border border-line" style="background:${colorToHex(v.color)}"></span>
-              </button>
-            `).join('');
-            }
+            // رنگ/سایز، قیمت نهایی، موجودی و ناحیه‌ی افزودن به سبد - همه بر اساس تنوع انتخاب‌شده
+            initVariants();
 
             // توضیحات
             document.getElementById('tab-desc').innerHTML = product.description
@@ -546,10 +524,30 @@
         }
 
         /* ---------- گالری ---------- */
+        let galleryImages = [];
+        let galleryIndex = 0;
+
         function setMainImage(btn, url) {
             document.getElementById('main-image').src = url;
             document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
+            const idx = galleryImages.findIndex(img => img.imageUrl === url);
+            if (idx !== -1) galleryIndex = idx;
+        }
+
+        function galleryStep(dir) {
+            if (galleryImages.length < 2) return;
+            galleryIndex = (galleryIndex + dir + galleryImages.length) % galleryImages.length;
+            document.getElementById('main-image').src = galleryImages[galleryIndex].imageUrl;
+            document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === galleryIndex));
+        }
+
+        function updateGalleryArrows() {
+            const show = galleryImages.length > 1;
+            ['gallery-next', 'gallery-prev'].forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', !show);
+                document.getElementById(id).classList.toggle('flex', show);
+            });
         }
 
         async function toggleGalleryWish() {
@@ -578,37 +576,166 @@
             }
         }
 
-        /* ---------- رنگ‌بندی ---------- */
-        function selectVariant(variantId, colorName, btn) {
+        /* ---------- رنگ/سایز ----------
+           هر تنوع { id, color, size, stockQuantity, priceAdjustment } هست؛ اول بر اساس رنگ گروه‌بندی
+           می‌شیم، بعد سایزهای همون رنگ رو زیرش نشون می‌دیم. انتخاب نهایی همیشه یک variantId مشخص می‌شه
+           که قیمت نهایی، موجودی و ناحیه‌ی افزودن به سبد بر اساس همون به‌روز می‌شه. */
+        let variantsByColor = {};
+
+        function initVariants() {
+            if (!product.variants || !product.variants.length) {
+                document.getElementById('variant-block').classList.add('hidden');
+                document.getElementById('size-block').classList.add('hidden');
+                selectedVariantId = null;
+                onVariantSelected();
+                return;
+            }
+
+            document.getElementById('variant-block').classList.remove('hidden');
+            variantsByColor = {};
+            product.variants.forEach(v => {
+                const key = v.color || '—';
+                (variantsByColor[key] = variantsByColor[key] || []).push(v);
+            });
+
+            const colors = Object.keys(variantsByColor);
+            document.getElementById('color-swatches').innerHTML = colors.map((c, i) => `
+              <button onclick="selectColor('${c.replace(/'/g, "\\'")}', this)" class="color-swatch ${i === 0 ? 'active' : ''} h-9 w-9 rounded-full border-2 ${i === 0 ? '' : 'border-transparent'} p-0.5" aria-label="${c}">
+                <span class="block h-full w-full rounded-full border border-line" style="background:${colorToHex(c)}"></span>
+              </button>
+            `).join('');
+
+            selectColor(colors[0], document.querySelector('#color-swatches .color-swatch'));
+        }
+
+        function selectColor(color, btn) {
+            document.getElementById('color-label').textContent = color;
+            document.querySelectorAll('#color-swatches .color-swatch').forEach(s => { s.classList.remove('active'); s.classList.add('border-transparent'); });
+            if (btn) { btn.classList.add('active'); btn.classList.remove('border-transparent'); }
+
+            const sizes = variantsByColor[color].filter(v => v.size && v.size !== '-');
+            if (sizes.length) {
+                document.getElementById('size-block').classList.remove('hidden');
+                document.getElementById('size-swatches').innerHTML = sizes.map((v, i) => `
+                  <button onclick="selectSize(${v.id}, '${(v.size || '').replace(/'/g, "\\'")}', this)" class="size-swatch ${i === 0 ? 'active border-emerald text-emerald' : 'border-line'} rounded-xl border-2 px-3.5 py-1.5 text-xs font-semibold">${v.size}</button>
+                `).join('');
+                selectSize(sizes[0].id, sizes[0].size, document.querySelector('#size-swatches .size-swatch'));
+            } else {
+                document.getElementById('size-block').classList.add('hidden');
+                document.getElementById('size-label').textContent = '';
+                selectedVariantId = variantsByColor[color][0].id;
+                onVariantSelected();
+            }
+        }
+
+        function selectSize(variantId, sizeName, btn) {
             selectedVariantId = variantId;
-            document.querySelectorAll('.color-swatch').forEach(s => { s.classList.remove('active'); s.classList.add('border-transparent'); });
-            btn.classList.add('active');
-            btn.classList.remove('border-transparent');
-            document.getElementById('color-label').textContent = colorName;
+            document.getElementById('size-label').textContent = sizeName;
+            document.querySelectorAll('#size-swatches .size-swatch').forEach(s => { s.classList.remove('active', 'border-emerald', 'text-emerald'); s.classList.add('border-line'); });
+            if (btn) { btn.classList.add('active', 'border-emerald', 'text-emerald'); btn.classList.remove('border-line'); }
+            onVariantSelected();
         }
 
-        /* ---------- تعداد ---------- */
-        function changeQty(delta) {
-            qty = Math.min(10, Math.max(1, qty + delta));
-            document.getElementById('qty-value').textContent = qty;
+        function currentVariant() {
+            if (!product.variants || !product.variants.length) return null;
+            return product.variants.find(v => v.id === selectedVariantId) || null;
         }
 
-        /* ---------- افزودن به سبد خرید ---------- */
-        async function addToCartPDP() {
-            const btn = document.getElementById('pdp-cart-btn');
-            if (btn.dataset.loading === '1') return;
-            btn.dataset.loading = '1';
-            const original = btn.innerHTML;
-            btn.innerHTML = spinnerSVG;
+        function currentStock() {
+            const v = currentVariant();
+            return v ? v.stockQuantity : product.stockQuantity;
+        }
+
+        function onVariantSelected() {
+            updatePriceDisplay();
+            updateStockDisplay();
+            refreshPdpCartArea();
+        }
+
+        /* ---------- قیمت (بر اساس تنوع انتخاب‌شده) ---------- */
+        function updatePriceDisplay() {
+            const v = currentVariant();
+            const adj = v ? (v.priceAdjustment || 0) : 0;
+            const mainPrice = (product.discountPrice ?? product.price) + adj;
+            document.getElementById('main-price').textContent = formatPrice(mainPrice);
+            document.getElementById('mobile-price').textContent = formatPrice(mainPrice);
+            if (product.discountPrice) {
+                document.getElementById('old-price').textContent = formatPrice(product.price + adj);
+            }
+        }
+
+        /* ---------- موجودی (بر اساس تنوع انتخاب‌شده) ---------- */
+        function updateStockDisplay() {
+            const stockEl = document.getElementById('stock-status');
+            if (currentStock() > 0) {
+                stockEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z"/><path d="m9 12 2 2 4-4"/></svg><span class="text-emerald">موجود در انبار — ارسال ۲۴ ساعته</span>`;
+            } else {
+                stockEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-danger"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg><span class="text-danger">ناموجود</span>`;
+            }
+        }
+
+        /* ---------- افزودن به سبد / استپر تعداد ----------
+           دقیقاً همون رفتار کارت محصول تو بقیه‌ی سایت (index/shop/محصولات مرتبط): کلیک اول یه بار
+           «افزودن به سبد» رو صدا می‌زنه، بعدش دکمه به یه استپر +/- تبدیل می‌شه که با تعداد واقعی سبد
+           هماهنگه و بعد از رفرش کامل صفحه هم درست می‌مونه. چون محصول متغیره، سبد رو بر اساس
+           (شناسه محصول + شناسه تنوع انتخاب‌شده) پیدا می‌کنیم، نه فقط شناسه محصول. */
+        let cartSnapshot = null;
+
+        async function loadCartSnapshot() {
+            try { cartSnapshot = await Api.getCart(); } catch (e) { cartSnapshot = null; }
+        }
+
+        function findCartItemForSelection() {
+            if (!cartSnapshot) return null;
+            return cartSnapshot.items.find(i => i.productId === product.id && (i.productVariantId || null) === (selectedVariantId || null)) || null;
+        }
+
+        function pdpCartAreaHTML(qty, inStock) {
+            if (!inStock) {
+                return `<button disabled class="flex w-full items-center justify-center gap-2 rounded-2xl border border-line py-3 text-sm font-bold opacity-40">ناموجود</button>`;
+            }
+            if (qty > 0) {
+                return `<div class="flex items-center justify-between rounded-2xl border border-emerald bg-emerald-soft px-3 py-2">
+                  <button type="button" onclick="pdpChangeQty(-1)" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" aria-label="کم کردن">−</button>
+                  <span class="ticker text-base font-bold text-emerald-deep">${qty}</span>
+                  <button type="button" onclick="pdpChangeQty(1)" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" aria-label="زیاد کردن">+</button>
+                </div>`;
+            }
+            return `<button type="button" onclick="pdpAddToCart()" class="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+              افزودن به سبد خرید
+            </button>`;
+        }
+
+        function refreshPdpCartArea() {
+            const item = findCartItemForSelection();
+            const qty = item ? item.quantity : 0;
+            const html = pdpCartAreaHTML(qty, currentStock() > 0);
+            document.getElementById('pdp-cart-area').innerHTML = html;
+            document.getElementById('mobile-cart-area').innerHTML = html;
+        }
+
+        async function pdpAddToCart() {
             try {
-                await Api.addToCart(product.id, qty, selectedVariantId);
-                showToast('success', `${qty} عدد به سبد خرید اضافه شد`);
+                cartSnapshot = await Api.addToCart(product.id, 1, selectedVariantId);
+                refreshPdpCartArea();
                 updateCartBadge();
-            } catch (err) {
-                showToast('error', err.message);
-            } finally {
-                btn.dataset.loading = '0';
-                btn.innerHTML = original;
+                showToast('success', 'به سبد خرید اضافه شد');
+            } catch (e) {
+                showToast('error', e.message || 'خطا در افزودن به سبد خرید');
+            }
+        }
+
+        async function pdpChangeQty(delta) {
+            const item = findCartItemForSelection();
+            if (!item) return;
+            const newQty = item.quantity + delta;
+            try {
+                cartSnapshot = newQty <= 0 ? await Api.removeCartItem(item.id) : await Api.updateCartItem(item.id, newQty);
+                refreshPdpCartArea();
+                updateCartBadge();
+            } catch (e) {
+                showToast('error', e.message || 'خطا در بروزرسانی سبد خرید');
             }
         }
 

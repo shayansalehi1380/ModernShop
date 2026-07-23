@@ -33,6 +33,7 @@ namespace ModernShop.Core.DTOs
         public string? Color { get; set; }
         public string? Size { get; set; }
         public int StockQuantity { get; set; }
+        public decimal? PriceAdjustment { get; set; }
     }
 
     public class ProductSpecificationDto

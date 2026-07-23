@@ -36,6 +36,7 @@ namespace ModernShop.Core.DTOs
         public string OrderNumber { get; set; } = null!;
         public OrderStatus Status { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
+        public PaymentStatus? PaymentStatus { get; set; }
         public decimal SubTotal { get; set; }
         public decimal ShippingCost { get; set; }
         public decimal DiscountAmount { get; set; }

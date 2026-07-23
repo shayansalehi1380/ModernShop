@@ -150,7 +150,7 @@ public class ProductsController : ControllerBase
                 .Select(i => new ProductImageDto { ImageUrl = i.ImageUrl, IsMain = i.IsMain })
                 .ToList(),
             Variants = product.Variants
-                .Select(v => new ProductVariantDto { Id = v.Id, Color = v.Color, Size = v.Size, StockQuantity = v.StockQuantity })
+                .Select(v => new ProductVariantDto { Id = v.Id, Color = v.Color, Size = v.Size, StockQuantity = v.StockQuantity, PriceAdjustment = v.PriceAdjustment })
                 .ToList(),
             Specifications = product.Specifications
                 .OrderBy(s => s.DisplayOrder)

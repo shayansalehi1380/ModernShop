@@ -162,6 +162,7 @@
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
+<script src="js/product-card.js"></script>
 <script>
 /* ---------- toast + loading bar ---------- */
 window.addEventListener('load', () => {
@@ -389,195 +390,6 @@ async function submitNewsletter(e){
   return false;
 }
 
-/* ---------- کارت محصول (حالا از روی DTO واقعی API) ---------- */
-const badgeCls = {"جدید":"bg-emerald-soft text-emerald","پرفروش":"bg-gold-soft text-gold","پیشنهاد ویژه":"bg-danger/10 text-danger"};
-
-function card(p){
-  const badge = p.badge ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${badgeCls[p.badge] || 'bg-surface-muted text-muted'}">${p.badge}</span>` : "";
-  const old = p.discountPrice ? `<span class="ticker text-xs text-muted line-through">${formatPrice(p.price)}</span>` : "";
-  const mainPrice = p.discountPrice ?? p.price;
-  const outOfStock = !p.inStock ? `<div class="absolute inset-0 flex items-center justify-center bg-surface/80"><span class="rounded-full bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger">ناموجود</span></div>` : "";
-
-  return `<div class="tilt-card w-[220px] shrink-0 sm:w-[240px] rounded-2xl border border-line bg-surface p-3">
-    <a href="product.html?slug=${p.slug}" class="relative block aspect-square overflow-hidden rounded-xl bg-media">
-      <img src="${p.mainImageUrl}" class="h-full w-full object-cover" loading="lazy" />
-      ${badge}${outOfStock}
-    </a>
-    <button id="wish-${p.id}" onclick="toggleWishlist(${p.id})" class="absolute left-6 top-6 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-    </button>
-    <div class="mt-3 px-1">
-      <div class="text-xs text-muted">${p.categoryName}</div>
-      <a href="product.html?slug=${p.slug}"><h3 class="mt-1 truncate text-sm font-semibold hover:text-emerald">${p.name}</h3></a>
-      <div class="mt-1.5 flex items-center gap-1 text-xs text-muted">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
-        <span class="ticker">${p.averageRating.toFixed(1)}</span><span>(${p.reviewCount})</span>
-      </div>
-      <div class="mt-2.5 flex items-baseline gap-2">
-        <span class="ticker text-[15px] font-bold">${formatPrice(mainPrice)}</span><span class="text-[11px] text-muted">تومان</span>${old}
-      </div>
-      <button id="cart-${p.id}" onclick="addToCart(${p.id})" ${!p.inStock ? 'disabled' : ''} class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald disabled:opacity-40">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
-        افزودن به سبد
-      </button>
-    </div>
-  </div>`;
-}
-
-/* ---------- علاقه‌مندی (نیاز به لاگین) ---------- */
-const PENDING_WISHLIST_KEY = 'atelier_pending_wishlist';
-
-async function toggleWishlist(productId){
-  if(!isLoggedIn()){
-    // بعد از لاگین باید بلافاصله همین محصول به علاقه‌مندی‌ها اضافه بشه، نه فقط ریدایرکت ساده
-    localStorage.setItem(PENDING_WISHLIST_KEY, String(productId));
-    window.location.href = 'auth.html?redirect=' + encodeURIComponent('index.html');
-    return;
-  }
-  const btn = document.getElementById(`wish-${productId}`);
-  if(btn.dataset.loading === '1') return;
-  btn.dataset.loading = '1';
-  const wasLiked = btn.dataset.liked === '1';
-  btn.innerHTML = spinnerSVG;
-
-  try {
-    if(wasLiked){
-      await Api.removeFromWishlist(productId);
-      btn.dataset.liked = '0';
-      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
-      showToast('success', 'از علاقه‌مندی‌ها حذف شد');
-    } else {
-      await Api.addToWishlist(productId);
-      btn.dataset.liked = '1';
-      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-danger"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
-      showToast('success', 'به علاقه‌مندی‌ها اضافه شد');
-    }
-  } catch(err) {
-    showToast('error', err.message);
-  } finally {
-    btn.dataset.loading = '0';
-  }
-}
-
-/* ---------- سبد خرید (کاربر مهمان یا لاگین‌کرده، هر دو با API واقعی) ---------- */
-const cartItemIdByProduct = {}; // productId -> cartItemId (برای PUT/DELETE)
-const cartQtyByProduct = {};    // productId -> quantity فعلی
-const wishlistProductIds = new Set(); // برای این‌که بعد از رفرش صفحه، وضعیت واقعی نشون داده بشه
-
-async function loadShoppingState(){
-  try {
-    const cart = await Api.getCart();
-    syncCartStateFromResponse(cart);
-  } catch(e) { /* بی‌سروصدا رد شو */ }
-
-  if(isLoggedIn()){
-    try {
-      const items = await Api.getWishlist();
-      items.forEach(w => wishlistProductIds.add(w.productId));
-    } catch(e) { /* بی‌سروصدا رد شو */ }
-  }
-}
-
-// بعد از برگشتن از صفحه لاگین (که به‌خاطر زدن قلب علاقه‌مندی به اونجا فرستاده شده بود)
-async function resolvePendingWishlist(){
-  const pendingRaw = localStorage.getItem(PENDING_WISHLIST_KEY);
-  if(!pendingRaw) return;
-  localStorage.removeItem(PENDING_WISHLIST_KEY);
-  if(!isLoggedIn()) return;
-
-  const productId = parseInt(pendingRaw, 10);
-  if(!productId) return;
-
-  try {
-    await Api.addToWishlist(productId);
-    wishlistProductIds.add(productId);
-    const btn = document.getElementById(`wish-${productId}`);
-    if(btn){
-      btn.dataset.liked = '1';
-      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-danger"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
-    }
-    showToast('success', 'به علاقه‌مندی‌ها اضافه شد');
-  } catch(e) { /* بی‌سروصدا رد شو */ }
-}
-
-function renderCartButton(productId){
-  const btn = document.getElementById(`cart-${productId}`);
-  if(!btn) return;
-  const qty = cartQtyByProduct[productId] || 0;
-
-  if(qty === 0){
-    btn.onclick = () => addToCart(productId);
-    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>افزودن به سبد`;
-    return;
-  }
-
-  btn.onclick = null;
-  btn.innerHTML = `<div class="flex w-full flex-row-reverse items-center justify-between px-2">
-      <button onclick="decreaseCart(${productId}); event.stopImmediatePropagation()" class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-muted">
-        ${qty === 1 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>'}
-      </button>
-      <span class="font-bold text-sm">${qty}</span>
-      <button onclick="increaseCart(${productId}); event.stopImmediatePropagation()" class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-muted">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      </button>
-    </div>`;
-}
-
-function syncCartStateFromResponse(cart){
-  (cart?.items || []).forEach(item => {
-    cartItemIdByProduct[item.productId] = item.id;
-    cartQtyByProduct[item.productId] = item.quantity;
-  });
-}
-
-async function addToCart(productId){
-  const btn = document.getElementById(`cart-${productId}`);
-  if(btn) btn.innerHTML = spinnerSVG;
-  try {
-    const cart = await Api.addToCart(productId, 1);
-    syncCartStateFromResponse(cart);
-    renderCartButton(productId);
-    showToast('success', 'به سبد خرید اضافه شد');
-    updateCartBadge();
-  } catch(err) {
-    showToast('error', err.message);
-    renderCartButton(productId);
-  }
-}
-
-async function increaseCart(productId){
-  const cartItemId = cartItemIdByProduct[productId];
-  if(!cartItemId) return;
-  try {
-    const cart = await Api.updateCartItem(cartItemId, (cartQtyByProduct[productId] || 0) + 1);
-    syncCartStateFromResponse(cart);
-    renderCartButton(productId);
-    updateCartBadge();
-  } catch(err) {
-    showToast('error', err.message);
-  }
-}
-
-async function decreaseCart(productId){
-  const cartItemId = cartItemIdByProduct[productId];
-  if(!cartItemId) return;
-  const nextQty = (cartQtyByProduct[productId] || 0) - 1;
-  try {
-    const cart = await Api.updateCartItem(cartItemId, nextQty);
-    if(nextQty <= 0){
-      delete cartItemIdByProduct[productId];
-      delete cartQtyByProduct[productId];
-      showToast('success', 'از سبد خرید حذف شد');
-    } else {
-      syncCartStateFromResponse(cart);
-    }
-    renderCartButton(productId);
-    updateCartBadge();
-  } catch(err) {
-    showToast('error', err.message);
-  }
-}
-
 /* ---------- کروسل: fade لبه‌ها + پیکان‌ها + کشیدن با ماوس ---------- */
 function buildCarousel(containerId, items){
   const wrap = document.getElementById(containerId);
@@ -599,19 +411,10 @@ function buildCarousel(containerId, items){
     <div class="track flex cursor-grab gap-4 overflow-x-auto pb-2 select-none no-scrollbar"></div>
   `;
   const track = wrap.querySelector('.track');
-  track.innerHTML = items.map(p => `<div class="w-[220px] shrink-0 sm:w-[240px]">${card(p)}</div>`).join('');
-
-  // اعمال وضعیت اولیه علاقه‌مندی/سبد خرید روی کارت‌های تازه‌رندرشده (برای رفع مشکل رفرش صفحه)
-  items.forEach(p => {
-    if(cartQtyByProduct[p.id]) renderCartButton(p.id);
-    if(wishlistProductIds.has(p.id)){
-      const wishBtn = document.getElementById(`wish-${p.id}`);
-      if(wishBtn){
-        wishBtn.dataset.liked = '1';
-        wishBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="text-danger"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
-      }
-    }
-  });
+  // کارت محصول از کامپوننت مشترک js/product-card.js میاد (همون که تو shop.html و product.html استفاده می‌شه)
+  // تا رفتار و ظاهرش با بقیه‌ی سایت یکی باشه؛ وضعیت سبد/علاقه‌مندی هم همون‌جا موقع رندر اعمال می‌شه
+  track.innerHTML = items.map(p => `<div class="w-[220px] shrink-0 sm:w-[240px]">${ProductCard.render(p)}</div>`).join('');
+  ProductCard.bind(track);
 
   const fadeRight = wrap.querySelector('.fade-right');
   const fadeLeft = wrap.querySelector('.fade-left');
@@ -679,7 +482,7 @@ async function loadDiscountedProducts(){
 
   // باید قبل از ساخت کارت‌های محصول آماده باشه، وگرنه بعد از رفرش صفحه
   // دکمه‌ها همیشه «افزودن به سبد» خام نشون می‌دن حتی اگه محصول قبلا اضافه شده باشه
-  await loadShoppingState();
+  await ProductCard.loadState();
 
   await Promise.all([
     loadBanners(),
@@ -689,7 +492,7 @@ async function loadDiscountedProducts(){
     loadDiscountedProducts(),
   ]);
 
-  resolvePendingWishlist();
+  ProductCard.resolvePendingWishlist();
 })();
 </script>
 

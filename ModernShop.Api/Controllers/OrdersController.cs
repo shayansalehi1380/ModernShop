@@ -168,6 +168,7 @@ public class OrdersController : ControllerBase
         var order = await _db.Orders
             .Include(o => o.Items).ThenInclude(i => i.Product).ThenInclude(p => p.Images)
             .Include(o => o.StatusHistory)
+            .Include(o => o.Payments)
             .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber && o.UserId == userId);
 
         if (order is null) return NotFound();
@@ -253,6 +254,7 @@ public class OrdersController : ControllerBase
         OrderNumber = order.OrderNumber,
         Status = order.Status,
         PaymentMethod = order.PaymentMethod,
+        PaymentStatus = order.Payments.OrderByDescending(p => p.Id).FirstOrDefault()?.Status,
         SubTotal = order.SubTotal,
         ShippingCost = order.ShippingCost,
         DiscountAmount = order.DiscountAmount,

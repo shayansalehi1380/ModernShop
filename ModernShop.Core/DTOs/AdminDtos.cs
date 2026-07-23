@@ -51,6 +51,7 @@ namespace ModernShop.Core.DTOs
         public int StockQuantity { get; set; }
         public bool IsActive { get; set; }
         public string? ImageUrl { get; set; }
+        public List<string> GalleryImageUrls { get; set; } = new();
         public List<AdminProductSpecDto> Specifications { get; set; } = new();
         public List<AdminProductVariantDto> Variants { get; set; } = new();
     }
@@ -68,6 +69,7 @@ namespace ModernShop.Core.DTOs
         public int StockQuantity { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ImageUrl { get; set; }
+        public List<string>? GalleryImageUrls { get; set; }
         public List<AdminProductSpecDto> Specifications { get; set; } = new();
         public List<AdminProductVariantDto> Variants { get; set; } = new();
     }
@@ -94,6 +96,7 @@ namespace ModernShop.Core.DTOs
         public string Content { get; set; } = null!;
         public string? FeaturedImageUrl { get; set; }
         public int BlogCategoryId { get; set; }
+        public string? AuthorName { get; set; }
         public int ReadTimeMinutes { get; set; }
         public bool IsPublished { get; set; }
     }
@@ -106,6 +109,7 @@ namespace ModernShop.Core.DTOs
         public string Content { get; set; } = null!;
         public string? FeaturedImageUrl { get; set; }
         public int BlogCategoryId { get; set; }
+        public string? AuthorName { get; set; }
         public int ReadTimeMinutes { get; set; } = 1;
         public bool IsPublished { get; set; }
     }
@@ -178,6 +182,7 @@ namespace ModernShop.Core.DTOs
         public int Id { get; set; }
         public int ProductId { get; set; }
         public string ProductName { get; set; } = null!;
+        public string ProductSlug { get; set; } = null!;
         public string UserFullName { get; set; } = null!;
         public int Rating { get; set; }
         public string? Comment { get; set; }
@@ -189,5 +194,19 @@ namespace ModernShop.Core.DTOs
     public class ReplyReviewRequestDto
     {
         public string? Reply { get; set; }
+    }
+
+    // ---------------- نظرات وبلاگ ----------------
+
+    public class AdminBlogCommentListItemDto
+    {
+        public int Id { get; set; }
+        public int BlogPostId { get; set; }
+        public string BlogPostTitle { get; set; } = null!;
+        public string BlogPostSlug { get; set; } = null!;
+        public string UserFullName { get; set; } = null!;
+        public string Content { get; set; } = null!;
+        public bool IsApproved { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

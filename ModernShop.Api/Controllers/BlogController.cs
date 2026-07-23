@@ -56,7 +56,7 @@ public class BlogController : ControllerBase
                 Excerpt = p.Excerpt,
                 FeaturedImageUrl = p.FeaturedImageUrl,
                 CategoryName = p.BlogCategory.Name,
-                AuthorName = (p.Author.FirstName + " " + p.Author.LastName).Trim(),
+                AuthorName = !string.IsNullOrEmpty(p.AuthorName) ? p.AuthorName : (p.Author.FirstName + " " + p.Author.LastName).Trim(),
                 ReadTimeMinutes = p.ReadTimeMinutes,
                 PublishedAt = p.PublishedAt
             })
@@ -94,7 +94,7 @@ public class BlogController : ControllerBase
             Content = post.Content,
             FeaturedImageUrl = post.FeaturedImageUrl,
             CategoryName = post.BlogCategory.Name,
-            AuthorName = $"{post.Author.FirstName} {post.Author.LastName}".Trim(),
+            AuthorName = !string.IsNullOrEmpty(post.AuthorName) ? post.AuthorName : $"{post.Author.FirstName} {post.Author.LastName}".Trim(),
             AuthorBio = post.Author.Bio,
             ReadTimeMinutes = post.ReadTimeMinutes,
             PublishedAt = post.PublishedAt,

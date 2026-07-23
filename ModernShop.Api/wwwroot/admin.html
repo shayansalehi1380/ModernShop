@@ -333,6 +333,15 @@
     background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;
   }
   .dyn-row .rm:hover{opacity:0.8;}
+  .image-upload-row{display:flex;gap:9px;align-items:center;}
+  .image-upload-row .input{flex:1;}
+  .image-upload-btn{
+    display:inline-flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap;cursor:pointer;
+    border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 14px;height:44px;font-size:12.5px;font-weight:600;color:var(--text-soft);background:#FBFAF7;
+  }
+  .image-upload-btn:hover{border-color:var(--wine);color:var(--wine);}
+  .image-preview-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .image-preview-row img{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line);}
   .type-toggle{display:flex;gap:8px;margin-bottom:4px;}
   .type-opt{
     flex:1;border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px;text-align:center;
@@ -493,6 +502,10 @@ const Api = {
   approveReview: (id) => adminFetch(`/admin/reviews/${id}/approve`, { method:'PUT' }),
   rejectReview: (id) => adminFetch(`/admin/reviews/${id}/reject`, { method:'PUT' }),
   replyReview: (id, reply) => adminFetch(`/admin/reviews/${id}/reply`, { method:'PUT', body: JSON.stringify({ reply }) }),
+
+  getBlogComments: (approved) => adminFetch(`/admin/blog-comments${approved !== undefined && approved !== null ? `?approved=${approved}` : ''}`),
+  approveBlogComment: (id) => adminFetch(`/admin/blog-comments/${id}/approve`, { method:'PUT' }),
+  rejectBlogComment: (id) => adminFetch(`/admin/blog-comments/${id}/reject`, { method:'PUT' }),
 };
 
 /* ============ state ============ */
@@ -514,6 +527,9 @@ const state = {
   reviews: [],
   reviewsLoaded: false,
   reviewFilter: null, // null=همه، true=تایید شده، false=در انتظار تایید
+  reviewType: "product", // product | blog
+  blogComments: [],
+  blogCommentsLoaded: false,
 };
 
 /* ============ helpers ============ */
@@ -667,10 +683,12 @@ function handleLogout(){
   state.productsLoaded = false;
   state.blogPostsLoaded = false;
   state.reviewsLoaded = false;
+  state.blogCommentsLoaded = false;
   state.products = [];
   state.blogPosts = [];
   state.orders = [];
   state.reviews = [];
+  state.blogComments = [];
   renderApp();
 }
 
@@ -885,7 +903,7 @@ async function reactivateProduct(id){
 
 async function openProductForm(id){
   let p = { name:"", slug:"", sku:"", categoryId: state.categories[0]?.id || "", brandId:"", description:"",
-    price:"", discountPrice:"", stockQuantity:0, isActive:true, imageUrl:"", specifications:[], variants:[] };
+    price:"", discountPrice:"", stockQuantity:0, isActive:true, imageUrl:"", galleryImageUrls:[], specifications:[], variants:[] };
   let editing = false;
 
   if(id){
@@ -905,6 +923,7 @@ async function openProductForm(id){
 
   const specsRows = (p.specifications||[]).map(s => specRowHtml(s.key, s.value)).join("");
   const variantRows = (p.variants||[]).map(v => variantRowHtml(v.color, v.size, v.stockQuantity, v.priceAdjustment)).join("");
+  const galleryRows = (p.galleryImageUrls||[]).map(url => galleryRowHtml(url)).join("");
 
   openModalHtml(`
   <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
@@ -943,9 +962,29 @@ async function openProductForm(id){
             </div>
           </div>
           <div class="field">
-            <label>آدرس تصویر اصلی</label>
-            <input class="input" id="pf-image" value="${escapeHtml(p.imageUrl||"")}" placeholder="https://..." />
+            <label>تصویر اصلی محصول</label>
+            <div class="image-upload-row">
+              <input class="input" id="pf-image" oninput="refreshImagePreview('pf-image','pf-image-preview')" value="${escapeHtml(p.imageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadProductImage(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="pf-image-preview">${p.imageUrl ? `<img src="${escapeHtml(p.imageUrl)}" onerror="this.style.display='none'">` : ""}</div>
           </div>
+
+          <div class="subsection">
+            <div class="subsection-head">
+              <h4>گالری تصاویر محصول</h4>
+              <span onclick="pfAddGalleryRow()" style="cursor:pointer;color:var(--wine);font-weight:600;">${ICONS.plus} افزودن ردیف</span>
+            </div>
+            <div id="pf-gallery-list">${galleryRows}</div>
+            <label class="btn btn-ghost image-upload-btn" style="margin-top:6px;">
+              ${ICONS.plus} آپلود تصویر جدید از سیستم به گالری
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadGalleryImage(this)" />
+            </label>
+          </div>
+
           <div class="field">
             <label>توضیحات</label>
             <textarea class="textarea" id="pf-desc" placeholder="توضیح کوتاه محصول...">${escapeHtml(p.description||"")}</textarea>
@@ -1116,6 +1155,71 @@ function pfAddSpec(){
   document.getElementById("pf-specs-list").insertAdjacentHTML("beforeend", specRowHtml("",""));
 }
 
+/* ---------- گالری تصاویر محصول (آپلود از سیستم یا وارد کردن لینک) ---------- */
+function galleryRowHtml(url){
+  return `
+  <div class="dyn-row">
+    <input class="input" placeholder="آدرس تصویر" value="${escapeHtml(url||"")}" data-gfield="url">
+    <button type="button" class="rm" onclick="this.closest('.dyn-row').remove()">${ICONS.close}</button>
+  </div>`;
+}
+function pfAddGalleryRow(url){
+  document.getElementById("pf-gallery-list").insertAdjacentHTML("beforeend", galleryRowHtml(url||""));
+}
+
+function refreshImagePreview(inputId, previewId){
+  const url = document.getElementById(inputId).value.trim();
+  const preview = document.getElementById(previewId);
+  preview.innerHTML = url ? `<img src="${escapeHtml(url)}" onerror="this.style.display='none'">` : "";
+}
+
+async function uploadImageFile(fileInput){
+  const file = fileInput.files[0];
+  if(!file) return null;
+  const formData = new FormData();
+  formData.append("file", file);
+  const token = getAdminToken();
+  const res = await fetch(`${API_BASE}/admin/products/upload-image`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData
+  });
+  if(!res.ok){
+    let message = "آپلود تصویر ناموفق بود";
+    try{ const data = await res.json(); if(data?.message) message = data.message; }catch(e){}
+    throw new Error(message);
+  }
+  const data = await res.json();
+  return data.url;
+}
+
+async function uploadProductImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("pf-image").value = url;
+    refreshImagePreview("pf-image", "pf-image-preview");
+    toast("تصویر آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function uploadGalleryImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    pfAddGalleryRow(url);
+    toast("تصویر به گالری اضافه شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
 async function saveProduct(existingId){
   const name = document.getElementById("pf-name").value.trim();
   if(!name){ toast("نام محصول را وارد کنید.", "error"); return; }
@@ -1128,6 +1232,11 @@ async function saveProduct(existingId){
   const brandId = brandVal ? parseInt(brandVal) : null;
   const description = (pfDescEditor ? pfDescEditor.getData() : document.getElementById("pf-desc").value).trim();
   const imageUrl = document.getElementById("pf-image").value.trim();
+  const galleryImageUrls = [];
+  document.querySelectorAll("#pf-gallery-list .dyn-row").forEach(row=>{
+    const url = row.querySelector('[data-gfield="url"]').value.trim();
+    if(url) galleryImageUrls.push(url);
+  });
   const price = parseFloat(document.getElementById("pf-price").value) || 0;
   const discountVal = document.getElementById("pf-discount").value;
   const discountPrice = discountVal ? parseFloat(discountVal) : null;
@@ -1154,7 +1263,7 @@ async function saveProduct(existingId){
     if(key && value) specifications.push({ key, value });
   });
 
-  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, isActive, imageUrl, specifications, variants };
+  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, isActive, imageUrl, galleryImageUrls, specifications, variants };
 
   const btn = document.getElementById("product-save-btn");
   btn.disabled = true;
@@ -1251,7 +1360,7 @@ async function deleteBlogPost(id){
 }
 
 async function openBlogForm(id){
-  let b = { title:"", slug:"", excerpt:"", content:"", blogCategoryId: state.blogCategories[0]?.id || "", featuredImageUrl:"", readTimeMinutes:5, isPublished:false };
+  let b = { title:"", slug:"", excerpt:"", content:"", blogCategoryId: state.blogCategories[0]?.id || "", featuredImageUrl:"", authorName:"", readTimeMinutes:5, isPublished:false };
   let editing = false;
 
   if(id){
@@ -1299,9 +1408,15 @@ async function openBlogForm(id){
               <input class="input" id="bf-readtime" type="number" value="${b.readTimeMinutes}" />
             </div>
           </div>
-          <div class="field">
-            <label>تصویر شاخص (آدرس تصویر - اختیاری)</label>
-            <input class="input" id="bf-image" value="${escapeHtml(b.featuredImageUrl||"")}" placeholder="https://..." />
+          <div class="grid2">
+            <div class="field">
+              <label>نام نویسنده — اختیاری</label>
+              <input class="input" id="bf-author" value="${escapeHtml(b.authorName||"")}" placeholder="خالی = مدیر فروشگاه" />
+            </div>
+            <div class="field">
+              <label>تصویر شاخص (آدرس تصویر - اختیاری)</label>
+              <input class="input" id="bf-image" value="${escapeHtml(b.featuredImageUrl||"")}" placeholder="https://..." />
+            </div>
           </div>
           <div class="field">
             <label>خلاصه</label>
@@ -1345,12 +1460,13 @@ async function saveBlogPost(existingId){
   const slug = document.getElementById("bf-slug").value.trim() || null;
   const readTimeMinutes = parseInt(document.getElementById("bf-readtime").value) || 1;
   const featuredImageUrl = document.getElementById("bf-image").value.trim();
+  const authorName = document.getElementById("bf-author").value.trim() || null;
   const excerpt = document.getElementById("bf-excerpt").value.trim();
   const content = (bfContentEditor ? bfContentEditor.getData() : document.getElementById("bf-content").value).trim();
   if(!content){ toast("متن کامل مطلب را وارد کنید.", "error"); return; }
   const isPublished = document.getElementById("bf-published").checked;
 
-  const payload = { title, slug, excerpt, content, featuredImageUrl, blogCategoryId, readTimeMinutes, isPublished };
+  const payload = { title, slug, excerpt, content, featuredImageUrl, authorName, blogCategoryId, readTimeMinutes, isPublished };
 
   const btn = document.getElementById("blog-save-btn");
   btn.disabled = true;
@@ -1575,6 +1691,11 @@ const REVIEW_FILTERS = [
   { key: "true", label: "تایید شده" },
 ];
 
+function setReviewType(type){
+  state.reviewType = type;
+  loadReviews();
+}
+
 function setReviewFilter(key){
   state.reviewFilter = key === "null" ? null : key === "true";
   loadReviews();
@@ -1582,8 +1703,13 @@ function setReviewFilter(key){
 
 async function loadReviews(){
   try{
-    state.reviews = await Api.getReviews(state.reviewFilter);
-    state.reviewsLoaded = true;
+    if(state.reviewType === "blog"){
+      state.blogComments = await Api.getBlogComments(state.reviewFilter);
+      state.blogCommentsLoaded = true;
+    } else {
+      state.reviews = await Api.getReviews(state.reviewFilter);
+      state.reviewsLoaded = true;
+    }
     refreshView();
   }catch(e){
     if(e.message === 'unauthorized') return;
@@ -1597,12 +1723,58 @@ function starsHtml(rating){
 }
 
 function renderReviewsView(){
-  if(!state.reviewsLoaded) return loadingRow();
+  const loaded = state.reviewType === "blog" ? state.blogCommentsLoaded : state.reviewsLoaded;
+  if(!loaded) return loadingRow();
+
+  const typeToggle = `
+    <div class="type-toggle" style="max-width:320px;margin-bottom:14px;">
+      <div class="type-opt ${state.reviewType==="product"?"active":""}" onclick="setReviewType('product')">نظرات محصولات</div>
+      <div class="type-opt ${state.reviewType==="blog"?"active":""}" onclick="setReviewType('blog')">نظرات وبلاگ</div>
+    </div>
+  `;
 
   const filterKeyOf = (v) => v === null ? "null" : String(v);
   const filterChips = REVIEW_FILTERS.map(f => `
     <div class="filter-chip ${filterKeyOf(state.reviewFilter)===f.key?"active":""}" onclick="setReviewFilter('${f.key}')">${f.label}</div>
   `).join("");
+
+  if(state.reviewType === "blog"){
+    const pendingCount = state.blogComments.filter(c=>!c.isApproved).length;
+    const cards = state.blogComments.map(c => `
+      <div class="review-card">
+        <div class="review-head">
+          <div class="review-who">
+            <b>${escapeHtml(c.userFullName)}</b>
+            <div class="cell-sub">
+              <a href="/blog-post.html?slug=${encodeURIComponent(c.blogPostSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(c.blogPostTitle)}</a>
+              · ${faDate(c.createdAt)}
+            </div>
+          </div>
+          ${c.isApproved ? '<span class="badge badge-active"><span class="sw"></span>تایید شده</span>' : '<span class="badge badge-processing"><span class="sw"></span>در انتظار تایید</span>'}
+        </div>
+        <div class="review-comment">${escapeHtml(c.content)}</div>
+        <div class="review-actions">
+          ${c.isApproved
+            ? `<button class="btn btn-ghost" onclick="rejectBlogComment(${c.id})">${ICONS.close} رد کردن</button>`
+            : `<button class="btn btn-primary" onclick="approveBlogComment(${c.id})">${ICONS.check} تایید</button>`}
+        </div>
+      </div>
+    `).join("");
+
+    return `
+      <div class="view-head">
+        <div class="stat-row">
+          <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.blogComments.length.toLocaleString('fa-IR')} نظر</div>
+          <div class="stat-pill"><span class="sw" style="background:var(--amber)"></span>${pendingCount.toLocaleString('fa-IR')} در انتظار تایید</div>
+        </div>
+      </div>
+      ${typeToggle}
+      <div class="filter-row">${filterChips}</div>
+      <div class="card" style="padding:16px;">
+        ${state.blogComments.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+      </div>
+    `;
+  }
 
   const pendingCount = state.reviews.filter(r=>!r.isApproved).length;
 
@@ -1611,7 +1783,10 @@ function renderReviewsView(){
       <div class="review-head">
         <div class="review-who">
           <b>${escapeHtml(r.userFullName)}</b>
-          <div class="cell-sub">${escapeHtml(r.productName)} · ${faDate(r.createdAt)}</div>
+          <div class="cell-sub">
+            <a href="/product.html?slug=${encodeURIComponent(r.productSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(r.productName)}</a>
+            · ${faDate(r.createdAt)}
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           ${starsHtml(r.rating)}
@@ -1643,6 +1818,7 @@ function renderReviewsView(){
         <div class="stat-pill"><span class="sw" style="background:var(--amber)"></span>${pendingCount.toLocaleString('fa-IR')} در انتظار تایید</div>
       </div>
     </div>
+    ${typeToggle}
     <div class="filter-row">${filterChips}</div>
     <div class="card" style="padding:16px;">
       ${state.reviews.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
@@ -1687,6 +1863,28 @@ async function submitReviewReply(id){
   }catch(e){
     if(e.message === 'unauthorized') return;
     toast(e.message || 'ثبت پاسخ ناموفق بود', 'error');
+  }
+}
+
+async function approveBlogComment(id){
+  try{
+    await Api.approveBlogComment(id);
+    toast("نظر تایید شد و زیر مطلب وبلاگ نمایش داده می‌شود.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'تایید نظر ناموفق بود', 'error');
+  }
+}
+
+async function rejectBlogComment(id){
+  try{
+    await Api.rejectBlogComment(id);
+    toast("نظر رد شد و از وبلاگ پنهان می‌شود.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'رد نظر ناموفق بود', 'error');
   }
 }
 
