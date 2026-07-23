@@ -88,7 +88,7 @@
   <div class="mt-5 grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
     <!-- ============ FILTERS (right side on desktop via RTL) ============ -->
     <aside class="hidden lg:block">
-      <div class="sticky top-24 rounded-3xl border border-line bg-surface p-5" id="filters-desktop"></div>
+      <div class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-3xl border border-line bg-surface p-5" id="filters-desktop"></div>
     </aside>
     
     <!-- ============ PRODUCTS ============ -->
@@ -301,13 +301,22 @@ function toggleInStock(scope) {
 
 // این فقط رو دسکتاپ استفاده می‌شه (دکمه‌ی «اعمال قیمت» کنار خودِ فیلد قیمت)؛ رو موبایل قیمت
 // هم مثل بقیه‌ی فیلترها با دکمه‌ی مشترک «اعمال فیلترها» اعمال می‌شه (applyFiltersFromSheet)
-function applyPrice(scope) {
+// silent=true وقتی از روی تایپ زنده صدا زده می‌شه (بدون toast مزاحم به ازای هر رقم)
+function applyPrice(scope, silent) {
   const min = toEnDigits(document.getElementById(`${scope}-price-min`)?.value);
   const max = toEnDigits(document.getElementById(`${scope}-price-max`)?.value);
   filterState.minPrice = min ? parseInt(min) : null;
   filterState.maxPrice = max ? parseInt(max) : null;
   resetAndRender();
-  showToast('success', 'فیلتر قیمت اعمال شد');
+  if (!silent) showToast('success', 'فیلتر قیمت اعمال شد');
+}
+
+// رو دسکتاپ، به ازای هر رقمی که تایپ می‌شه (با کمی تاخیر تا فرصت تایپ کامل شماره داده بشه) یا
+// وقتی فیلد کاملاً خالی می‌شه، فیلتر بلافاصله و بدون نیاز به زدن دکمه اعمال می‌شه
+let priceDebounceTimer = null;
+function onDesktopPriceInput() {
+  clearTimeout(priceDebounceTimer);
+  priceDebounceTimer = setTimeout(() => applyPrice('desktop', true), 400);
 }
 
 // رو دسکتاپ فوراً اعمال می‌شه؛ رو موبایل (لینک «پاک کردن همه» بالای شیت) فقط پاک می‌کنه و
@@ -374,9 +383,9 @@ function filtersHTML(scope) {
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">محدوده قیمت (تومان)</p>
       <div class="flex items-center gap-2">
-        <input id="${scope}-price-min" type="number" placeholder="مثلاً ۵۰۰۰۰۰" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ?? ''}" />
+        <input id="${scope}-price-min" type="number" placeholder="مثلاً ۵۰۰۰۰۰" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ?? ''}" ${scope === 'desktop' ? 'oninput="onDesktopPriceInput()"' : ''} />
         <span class="text-muted text-xs">تا</span>
-        <input id="${scope}-price-max" type="number" placeholder="مثلاً ۵۰۰۰۰۰۰" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ?? ''}" />
+        <input id="${scope}-price-max" type="number" placeholder="مثلاً ۵۰۰۰۰۰۰" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ?? ''}" ${scope === 'desktop' ? 'oninput="onDesktopPriceInput()"' : ''} />
       </div>
       ${scope === 'desktop' ? `<button onclick="applyPrice('desktop')" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>` : ''}
     </div>

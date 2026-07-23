@@ -76,6 +76,7 @@ const Api = {
   // کاتالوگ
   getBanners: () => apiFetch('/banners'),
   getCategories: () => apiFetch('/categories'),
+  getBrands: () => apiFetch('/brands'),
   getFeaturedBrands: () => apiFetch('/brands?featuredOnly=true'),
   getProducts: (queryString = '') => apiFetch(`/products${queryString}`),
   searchSuggestions: (q) => apiFetch(`/products/search-suggestions?q=${encodeURIComponent(q)}`),
