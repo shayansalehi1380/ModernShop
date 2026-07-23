@@ -43,6 +43,9 @@ public class ProductsController : ControllerBase
         if (filter.InStockOnly)
             query = query.Where(p => p.StockQuantity > 0);
 
+        if (filter.OnSaleOnly)
+            query = query.Where(p => p.DiscountPrice != null);
+
         if (filter.MinRating.HasValue)
             query = query.Where(p => p.Reviews.Any() && p.Reviews.Average(r => r.Rating) >= filter.MinRating);
 

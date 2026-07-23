@@ -91,7 +91,7 @@
   <div class="flex items-end justify-between">
     <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">فرصت محدود</span>
       <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">تخفیف‌دارها</h2></div>
-    <a href="shop.html" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
+    <a href="shop.html?onSale=1" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
       مشاهده همه
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
     </a>
@@ -112,12 +112,6 @@
 
 <div id="footer-placeholder"></div>
 <div id="mobile-nav-placeholder"></div>
-
-<!-- back to top -->
-<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="بازگشت به بالای صفحه"
-  class="fixed bottom-20 right-4 z-[94] flex h-11 w-11 translate-y-3 items-center justify-center rounded-full border border-line bg-surface text-foreground opacity-0 shadow-lg backdrop-blur transition-all duration-300 pointer-events-none hover:border-emerald hover:text-emerald lg:bottom-6">
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
-</button>
 
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
@@ -149,17 +143,6 @@ function showToast(kind, message){
   setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
 }
 const spinnerSVG = '<svg class="animate-spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
-
-/* ---------- back to top ---------- */
-window.addEventListener('scroll', () => {
-  const btn = document.getElementById('back-to-top');
-  const show = window.scrollY > 480;
-  btn.classList.toggle('opacity-0', !show);
-  btn.classList.toggle('pointer-events-none', !show);
-  btn.classList.toggle('translate-y-3', !show);
-  btn.classList.toggle('opacity-100', show);
-  btn.classList.toggle('translate-y-0', show);
-}, { passive: true });
 
 /* ---------- hero banner slider (حالا از API) ---------- */
 let bannerItems = [];
@@ -323,7 +306,7 @@ function buildCarousel(containerId, items){
 /* ---------- بارگذاری محصولات ویژه و تخفیف‌دار از API ---------- */
 async function loadFeaturedProducts(){
   try {
-    const result = await Api.getProducts('?sortBy=rating&pageSize=8');
+    const result = await Api.getProducts('?sortBy=newest&pageSize=8');
     buildCarousel('carousel-featured', result.items);
   } catch(e) {
     buildCarousel('carousel-featured', []);

@@ -83,6 +83,7 @@ const Api = {
   getProduct: (slug) => apiFetch(`/products/${encodeURIComponent(slug)}`),
   addReview: (productId, rating, comment) =>
     apiFetch('/products/reviews', { method: 'POST', body: JSON.stringify({ productId, rating, comment }) }),
+  getStaticPage: (slug) => apiFetch(`/static-pages/${encodeURIComponent(slug)}`),
 
   // احراز هویت
   sendOtp: (phoneNumber) => apiFetch('/auth/send-otp', { method: 'POST', body: JSON.stringify({ phoneNumber }) }),

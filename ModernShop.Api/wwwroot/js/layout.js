@@ -33,6 +33,32 @@ function highlightActiveNav() {
   });
 }
 
+/* دکمه‌ی «بازگشت به بالا» - رو همه صفحات بجز auth/cart/checkout/account (طبق درخواست) */
+const BACK_TO_TOP_EXCLUDED_PAGES = ['auth.html', 'cart.html', 'checkout.html', 'account.html'];
+
+function initBackToTop() {
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  if (BACK_TO_TOP_EXCLUDED_PAGES.includes(currentPage)) return;
+  if (document.getElementById('back-to-top')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'back-to-top';
+  btn.setAttribute('aria-label', 'بازگشت به بالای صفحه');
+  btn.className = 'fixed bottom-20 right-4 z-[94] flex h-11 w-11 translate-y-3 items-center justify-center rounded-full border border-line bg-surface text-foreground opacity-0 shadow-lg backdrop-blur transition-all duration-300 pointer-events-none hover:border-emerald hover:text-emerald lg:bottom-6';
+  btn.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  document.body.appendChild(btn);
+
+  window.addEventListener('scroll', () => {
+    const show = window.scrollY > 480;
+    btn.classList.toggle('opacity-0', !show);
+    btn.classList.toggle('pointer-events-none', !show);
+    btn.classList.toggle('translate-y-3', !show);
+    btn.classList.toggle('opacity-100', show);
+    btn.classList.toggle('translate-y-0', show);
+  }, { passive: true });
+}
+
 async function loadLayout() {
   await Promise.all([
     loadPartial('partials/header.html', '#header-placeholder'),
@@ -40,6 +66,7 @@ async function loadLayout() {
     loadPartial('partials/mobile-nav.html', '#mobile-nav-placeholder'),
   ]);
 
+  initBackToTop();
   highlightActiveNav();
   // تب فعال + دیتای دسته‌بندی‌ها/شیت‌های منوی پایین موبایل از js/mobile-nav.js میاد
   if (typeof MobileNavSheet === 'object') MobileNavSheet.init();

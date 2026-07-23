@@ -193,6 +193,7 @@ const filterState = {
   maxPrice: null,
   minRating: 0,
   inStockOnly: false,
+  onSaleOnly: false,
   search: '',
   sort: 'newest',
   page: 1,
@@ -219,11 +220,12 @@ async function fetchProducts() {
       sortBy: filterState.sort
     });
 
-    if (filterState.categoryIds.length) params.append('categoryIds', filterState.categoryIds.join(','));
-    if (filterState.brandIds.length) params.append('brandIds', filterState.brandIds.join(','));
+    filterState.categoryIds.forEach(id => params.append('categoryIds', id));
+    filterState.brandIds.forEach(id => params.append('brandIds', id));
     if (filterState.minPrice) params.append('minPrice', filterState.minPrice);
     if (filterState.maxPrice) params.append('maxPrice', filterState.maxPrice);
     if (filterState.inStockOnly) params.append('inStockOnly', 'true');
+    if (filterState.onSaleOnly) params.append('onSaleOnly', 'true');
     if (filterState.minRating) params.append('minRating', filterState.minRating);
     if (filterState.search) params.append('search', filterState.search);
 
@@ -552,6 +554,9 @@ async function init(){
   // اگه از جستجوی هدر با اینتر اومده (shop.html?search=...)
   const searchTerm = params.get('search');
   if(searchTerm) filterState.search = searchTerm;
+
+  // اگه از بخش «تخفیف‌دارها»ی صفحه اصلی اومده (shop.html?onSale=1)، فقط تخفیف‌دارها نشون داده بشن
+  if(params.get('onSale') === '1') filterState.onSaleOnly = true;
 
   renderFilters();
   resetAndRender();

@@ -14,6 +14,7 @@ namespace ModernShop.Core.DTOs
         public decimal? MaxPrice { get; set; }
         public double? MinRating { get; set; }
         public bool InStockOnly { get; set; }
+        public bool OnSaleOnly { get; set; }             // فقط محصولات تخفیف‌دار - برای لینک «مشاهده همه» بخش تخفیف‌دارهای صفحه اصلی
         public string? Search { get; set; }             // جستجوی نام محصول - برای shop.html و جستجوی زنده هدر
         public string SortBy { get; set; } = "newest";  // newest | bestselling | cheap | expensive | rating
         public int Page { get; set; } = 1;

@@ -31,6 +31,7 @@ public class AppDbContext : DbContext
     public DbSet<BlogComment> BlogComments => Set<BlogComment>();
     public DbSet<NewsletterSubscriber> NewsletterSubscribers => Set<NewsletterSubscriber>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<StaticPage> StaticPages => Set<StaticPage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +69,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<DiscountCode>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<AppSetting>().HasIndex(x => x.Key).IsUnique();
         modelBuilder.Entity<NewsletterSubscriber>().HasIndex(x => x.Email).IsUnique();
+        modelBuilder.Entity<StaticPage>().HasIndex(x => x.Slug).IsUnique();
 
         // یک کاربر نمی‌تونه یک محصول رو دوبار به علاقه‌مندی‌ها اضافه کنه
         modelBuilder.Entity<WishlistItem>().HasIndex(x => new { x.UserId, x.ProductId }).IsUnique();

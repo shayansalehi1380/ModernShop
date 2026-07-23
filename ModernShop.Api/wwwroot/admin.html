@@ -509,6 +509,10 @@ const Api = {
   getBlogComments: (approved) => adminFetch(`/admin/blog-comments${approved !== undefined && approved !== null ? `?approved=${approved}` : ''}`),
   approveBlogComment: (id) => adminFetch(`/admin/blog-comments/${id}/approve`, { method:'PUT' }),
   rejectBlogComment: (id) => adminFetch(`/admin/blog-comments/${id}/reject`, { method:'PUT' }),
+
+  getStaticPages: () => adminFetch('/admin/static-pages'),
+  getStaticPage: (slug) => adminFetch(`/admin/static-pages/${slug}`),
+  updateStaticPage: (slug, data) => adminFetch(`/admin/static-pages/${slug}`, { method:'PUT', body: JSON.stringify(data) }),
 };
 
 /* ============ state ============ */
@@ -533,6 +537,8 @@ const state = {
   reviewType: "product", // product | blog
   blogComments: [],
   blogCommentsLoaded: false,
+  staticPages: [],
+  staticPagesLoaded: false,
 };
 
 /* ============ helpers ============ */
@@ -570,11 +576,13 @@ function toast(msg, kind){
 /* ---------- CKEditor 5 (توضیحات محصول و متن مطلب وبلاگ) ---------- */
 let pfDescEditor = null;
 let bfContentEditor = null;
+let spContentEditor = null;
 const CK_CONFIG = { language: { ui: 'fa', content: 'fa' }, toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'undo', 'redo'] };
 
 async function destroyRichEditors(){
   if(pfDescEditor){ try{ await pfDescEditor.destroy(); }catch(e){} pfDescEditor = null; }
   if(bfContentEditor){ try{ await bfContentEditor.destroy(); }catch(e){} bfContentEditor = null; }
+  if(spContentEditor){ try{ await spContentEditor.destroy(); }catch(e){} spContentEditor = null; }
 }
 
 function mountProductDescEditor(){
@@ -587,6 +595,12 @@ function mountBlogContentEditor(){
   const el = document.getElementById("bf-content");
   if(!el || typeof ClassicEditor === "undefined") return;
   ClassicEditor.create(el, CK_CONFIG).then(editor => { bfContentEditor = editor; }).catch(err => console.error(err));
+}
+
+function mountStaticPageEditor(){
+  const el = document.getElementById("sp-content");
+  if(!el || typeof ClassicEditor === "undefined") return;
+  ClassicEditor.create(el, CK_CONFIG).then(editor => { spContentEditor = editor; }).catch(err => console.error(err));
 }
 
 function closeModal(){ destroyRichEditors(); document.getElementById("modal-root").innerHTML = ""; }
@@ -607,6 +621,7 @@ const ICONS = {
   star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.8 1.5 6.9L12 17.8l-6.1 3.5 1.5-6.9-5.2-4.8 6.9-.7L12 2.5z"/></svg>',
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg>',
   reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 17l-5-5 5-5"/><path d="M4 12h10a5 5 0 0 1 5 5v2"/></svg>',
+  file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6.5A2.5 2.5 0 0 0 4 4.5v15A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5V8.5L14.5 2z"/><path d="M14 2v6.5h6.5"/><path d="M8 13h8M8 17h5"/></svg>',
 };
 
 /* ============ ROOT RENDER ============ */
@@ -687,11 +702,13 @@ function handleLogout(){
   state.blogPostsLoaded = false;
   state.reviewsLoaded = false;
   state.blogCommentsLoaded = false;
+  state.staticPagesLoaded = false;
   state.products = [];
   state.blogPosts = [];
   state.orders = [];
   state.reviews = [];
   state.blogComments = [];
+  state.staticPages = [];
   renderApp();
 }
 
@@ -712,6 +729,7 @@ function renderShell(){
         ${navItem("blog","blog","وبلاگ")}
         ${navItem("orders","order","سفارشات")}
         ${navItem("reviews","star","نظرات")}
+        ${navItem("pages","file","صفحات ثابت")}
       </nav>
       <div class="sidebar-foot">
         <div class="admin-chip">
@@ -747,7 +765,7 @@ function switchView(key){
   loadCurrentView();
 }
 function viewTitle(){
-  return { products:"مدیریت محصولات", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات" }[state.view];
+  return { products:"مدیریت محصولات", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات", pages:"صفحات ثابت" }[state.view];
 }
 function viewDesc(){
   return {
@@ -755,6 +773,7 @@ function viewDesc(){
     blog:"تعریف، ویرایش و حذف مطالب وبلاگ",
     orders:"مشاهده سفارشات و بروزرسانی وضعیت ارسال",
     reviews:"تایید یا رد نظرات مشتریان و پاسخ‌گویی به آن‌ها",
+    pages:"ویرایش متن صفحات ثابت فوتر (داستان ما، تماس با ما، سوالات متداول، شرایط بازگشت کالا)",
   }[state.view];
 }
 function refreshView(){
@@ -765,6 +784,7 @@ function renderView(){
   if(state.view === "blog") return renderBlogView();
   if(state.view === "orders") return renderOrdersView();
   if(state.view === "reviews") return renderReviewsView();
+  if(state.view === "pages") return renderStaticPagesView();
   return "";
 }
 
@@ -789,6 +809,7 @@ async function loadCurrentView(){
   if(state.view === "blog") return loadBlogPosts();
   if(state.view === "orders") return loadOrders();
   if(state.view === "reviews") return loadReviews();
+  if(state.view === "pages") return loadStaticPages();
 }
 
 /* =========================================================
@@ -1496,6 +1517,119 @@ async function saveBlogPost(existingId){
   }catch(e){
     if(e.message === 'unauthorized') return;
     toast(e.message || 'ذخیره مطلب ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   STATIC PAGES — چهارتا صفحه‌ی ثابت فوتر با اسلاگ از پیش تعریف‌شده؛
+   از پنل فقط عنوان و متنشون قابل ویرایشه، نه افزودن/حذف صفحه.
+========================================================= */
+async function loadStaticPages(){
+  try{
+    state.staticPages = await Api.getStaticPages();
+    state.staticPagesLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری صفحات ثابت', 'error');
+  }
+}
+
+function renderStaticPagesView(){
+  if(!state.staticPagesLoaded) return loadingRow();
+
+  const rows = state.staticPages.map(p => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          <div class="thumb sm">${initials(p.title)}</div>
+          <div>
+            <div class="cell-title">${escapeHtml(p.title)}</div>
+            <div class="cell-sub">${escapeHtml(p.slug)}</div>
+          </div>
+        </div>
+      </td>
+      <td class="muted">${faDate(p.updatedAt)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openStaticPageForm('${p.slug}')">${ICONS.edit}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="card">
+      <div class="table-wrap">
+        ${state.staticPages.length ? `
+        <table>
+          <thead><tr><th>صفحه</th><th>آخرین ویرایش</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("file","صفحه‌ای یافت نشد","صفحات ثابت فوتر هنوز تو دیتابیس ثبت نشده‌اند.")}
+      </div>
+    </div>
+  `;
+}
+
+async function openStaticPageForm(slug){
+  let p;
+  try{
+    p = await Api.getStaticPage(slug);
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری صفحه', 'error');
+    return;
+  }
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>ویرایش صفحه</h2>
+          <p>عنوان و متن این صفحه را ویرایش کنید.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="sp-form" onsubmit="return false;">
+          <div class="field">
+            <label>عنوان</label>
+            <input class="input" id="sp-title" value="${escapeHtml(p.title)}" placeholder="عنوان صفحه" />
+          </div>
+          <div class="field">
+            <label>متن صفحه</label>
+            <textarea class="textarea" id="sp-content" style="min-height:200px;" placeholder="متن صفحه...">${escapeHtml(p.content||"")}</textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="sp-save-btn" onclick="saveStaticPage('${p.slug}')">ذخیره تغییرات</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+  mountStaticPageEditor();
+}
+
+async function saveStaticPage(slug){
+  const title = document.getElementById("sp-title").value.trim();
+  if(!title){ toast("عنوان صفحه را وارد کنید.", "error"); return; }
+  const content = (spContentEditor ? spContentEditor.getData() : document.getElementById("sp-content").value).trim();
+
+  const btn = document.getElementById("sp-save-btn");
+  btn.disabled = true;
+
+  try{
+    await Api.updateStaticPage(slug, { title, content });
+    toast("تغییرات صفحه ذخیره شد.");
+    closeModal();
+    await loadStaticPages();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره صفحه ناموفق بود', 'error');
     btn.disabled = false;
   }
 }

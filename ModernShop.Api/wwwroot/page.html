@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title id="page-title">آتلیه</title>
+<meta name="robots" content="index, follow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<style>
+  :root{
+    --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
+    --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
+    --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
+  }
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;color:var(--foreground);transition:.3s;background:radial-gradient(1100px 560px at 12% -8%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 55%),radial-gradient(1000px 560px at 100% 6%, color-mix(in srgb, var(--emerald) 7%, transparent), transparent 55%),var(--background);background-repeat:no-repeat;}
+  .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
+  .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
+  .text-muted{color:var(--muted)} .text-emerald{color:var(--emerald)} .bg-emerald{background:var(--emerald)}
+  .hover\:text-emerald:hover{color:var(--emerald)}
+  .prose-article :where(h2){scroll-margin-top:6rem; margin-top:2rem; margin-bottom:.75rem; font-size:1.15rem; font-weight:800}
+  .prose-article :where(p){margin-top:.75rem; line-height:2}
+  .prose-article :where(ul){margin-top:1rem; padding-right:1.25rem; list-style:disc}
+  .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
+  @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body class="bg-bg">
+
+<div id="header-placeholder"></div>
+
+<nav aria-label="مسیر صفحه" class="border-b border-line bg-surface">
+  <ol class="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
+    <li><a href="index.html" class="hover:text-emerald">صفحه اصلی</a></li>
+    <li aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></li>
+    <li id="breadcrumb-title" class="truncate text-foreground/70" aria-current="page">در حال بارگذاری...</li>
+  </ol>
+</nav>
+
+<main class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+
+  <div id="loading-state" class="space-y-4">
+    <div class="skeleton h-4 w-24 rounded"></div>
+    <div class="skeleton h-9 w-full rounded"></div>
+    <div class="skeleton mt-4 h-40 w-full rounded-3xl"></div>
+  </div>
+
+  <div id="not-found-state" class="hidden py-24 text-center">
+    <p class="text-lg font-bold">این صفحه یافت نشد</p>
+    <a href="index.html" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به صفحه اصلی</a>
+  </div>
+
+  <article id="page-content" class="prose-article hidden">
+    <h1 id="page-heading" class="text-2xl font-extrabold leading-snug sm:text-3xl"></h1>
+    <div id="page-body" class="mt-6 text-[15px] text-foreground/85"></div>
+  </article>
+
+</main>
+
+<div id="footer-placeholder"></div>
+<div id="mobile-nav-placeholder"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/search.js"></script>
+<script src="js/mobile-nav.js"></script>
+<script>
+const slug = new URLSearchParams(window.location.search).get('slug');
+
+async function loadStaticPage(){
+  if(!slug){ showNotFound(); return; }
+  try {
+    const page = await Api.getStaticPage(slug);
+    renderPage(page);
+  } catch(e) {
+    showNotFound();
+  }
+}
+
+function showNotFound(){
+  document.getElementById('loading-state').classList.add('hidden');
+  document.getElementById('not-found-state').classList.remove('hidden');
+}
+
+function renderPage(page){
+  document.getElementById('loading-state').classList.add('hidden');
+  document.getElementById('page-content').classList.remove('hidden');
+
+  document.getElementById('page-title').textContent = `${page.title} | آتلیه`;
+  document.getElementById('breadcrumb-title').textContent = page.title;
+  document.getElementById('page-heading').textContent = page.title;
+  document.getElementById('page-body').innerHTML = page.content;
+}
+
+loadStaticPage();
+</script>
+
+</body>
+</html>
