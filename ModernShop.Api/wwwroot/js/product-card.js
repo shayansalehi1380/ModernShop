@@ -15,8 +15,9 @@
 const ProductCard = (function () {
   const PENDING_WISHLIST_KEY = 'atelier_pending_wishlist';
 
-  let cartState = new Map();      // productId -> { cartItemId, quantity }
+  let cartState = new Map();      // productId -> { totalQuantity, cartItemId (فقط وقتی lineCount===1 معتبره), lineCount }
   let wishlistState = new Set();  // productId
+  let productMeta = new Map();    // productId -> { isVariable, slug } — برای این‌که ناحیه‌ی سبد بدونه لینک به کجا بده
 
   function escapeHtmlPC(str) {
     return String(str ?? '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
@@ -29,11 +30,28 @@ const ProductCard = (function () {
     return toFaPC(Number(n || 0).toLocaleString('en-US'));
   }
 
+  // محصول متغیر می‌تونه چند خط سبد جدا (هر تنوع یک خط) داشته باشه؛ برای نمایش رو کارت
+  // فقط جمع تعداد لازمه، ولی cartItemId فقط وقتی معتبره که دقیقاً یک خط داشته باشیم
+  // (وگرنه معلوم نیست +/- باید کدوم تنوع رو تغییر بده)
+  function buildCartStateFromItems(items) {
+    const map = new Map();
+    (items || []).forEach(i => {
+      const existing = map.get(i.productId);
+      if (existing) {
+        existing.totalQuantity += i.quantity;
+        existing.lineCount += 1;
+        existing.cartItemId = null;
+      } else {
+        map.set(i.productId, { totalQuantity: i.quantity, cartItemId: i.id, lineCount: 1 });
+      }
+    });
+    return map;
+  }
+
   async function loadState() {
     try {
       const cart = await Api.getCart();
-      cartState = new Map();
-      (cart.items || []).forEach(i => cartState.set(i.productId, { cartItemId: i.id, quantity: i.quantity }));
+      cartState = buildCartStateFromItems(cart.items);
     } catch (e) {
       cartState = new Map();
     }
@@ -47,14 +65,31 @@ const ProductCard = (function () {
     }
   }
 
+  // برای محصول متغیر (چندتا تنوع رنگ/سایز)، دیگه دکمه‌ی +/- مستقیم نشون داده نمی‌شه چون
+  // معلوم نیست باید کدوم خط سبد (کدوم تنوع) رو تغییر بده؛ به‌جاش به صفحه‌ی محصول لینک
+  // می‌شه تا خود کاربر اونجا تنوع و تعداد دقیق رو انتخاب کنه - این باعث می‌شه عدد نشون‌داده‌شده
+  // رو کارت همیشه با سبد واقعی (که خودش بر اساس تنوع دقیق کار می‌کنه) هماهنگ بمونه
   function cartAreaHTML(pid, qty, inStock) {
+    const meta = productMeta.get(pid) || {};
     if (!inStock) {
       return `<button disabled class="flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold opacity-40">ناموجود</button>`;
+    }
+    if (meta.isVariable) {
+      const productUrl = `product.html?slug=${encodeURIComponent(meta.slug || '')}`;
+      if (qty > 0) {
+        return `<a href="${productUrl}" class="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald bg-emerald-soft py-2 text-xs font-semibold text-emerald-deep">
+          <span class="ticker" data-pc-qty="${pid}">${qty}</span> عدد در سبد · مشاهده
+        </a>`;
+      }
+      return `<a href="${productUrl}" class="flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+        افزودن به سبد
+      </a>`;
     }
     if (qty > 0) {
       return `<div class="flex items-center justify-between rounded-xl border border-emerald bg-emerald-soft px-2 py-1.5">
         <button type="button" class="pc-dec flex h-7 w-7 items-center justify-center rounded-lg bg-white text-emerald text-base font-bold leading-none" data-pid="${pid}" aria-label="کم کردن">−</button>
-        <span class="ticker text-sm font-bold text-emerald-deep" data-pc-qty="${pid}">${toFaPC(qty)}</span>
+        <span class="ticker text-sm font-bold text-emerald-deep" data-pc-qty="${pid}">${qty}</span>
         <button type="button" class="pc-inc flex h-7 w-7 items-center justify-center rounded-lg bg-white text-emerald text-base font-bold leading-none" data-pid="${pid}" aria-label="زیاد کردن">+</button>
       </div>`;
     }
@@ -64,32 +99,14 @@ const ProductCard = (function () {
     </button>`;
   }
 
-  // نسخه‌ی بزرگ همون دکمه/استپر، برای صفحه‌ی محصول (دکمه‌ی اصلی + نوار چسبان موبایل)؛
-  // از همون کلاس‌های pc-add/pc-inc/pc-dec استفاده می‌کنه، پس با bind() یکسان کار می‌کنه
-  function cartAreaHTMLLarge(pid, qty, inStock) {
-    if (!inStock) {
-      return `<button disabled class="flex flex-1 w-full items-center justify-center gap-2 rounded-2xl border border-line py-3 text-sm font-bold opacity-40">ناموجود</button>`;
-    }
-    if (qty > 0) {
-      return `<div class="flex flex-1 items-center justify-between rounded-2xl border border-emerald bg-emerald-soft px-3 py-2">
-        <button type="button" class="pc-dec flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" data-pid="${pid}" aria-label="کم کردن">−</button>
-        <span class="ticker text-base font-bold text-emerald-deep" data-pc-qty="${pid}">${toFaPC(qty)}</span>
-        <button type="button" class="pc-inc flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" data-pid="${pid}" aria-label="زیاد کردن">+</button>
-      </div>`;
-    }
-    return `<button type="button" class="pc-add flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200" data-pid="${pid}">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
-      افزودن به سبد خرید
-    </button>`;
-  }
-
   function render(p) {
     const price = p.discountPrice || p.price;
     const oldPrice = p.discountPrice ? p.price : null;
     const inWishlist = wishlistState.has(p.id);
     const entry = cartState.get(p.id);
-    const qty = entry ? entry.quantity : 0;
+    const qty = entry ? entry.totalQuantity : 0;
     const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
+    productMeta.set(p.id, { isVariable: !!p.isVariable, slug: p.slug });
 
     const badge = p.badge
       ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${p.badge === 'جدید' ? 'bg-emerald-soft text-emerald' : 'bg-danger/10 text-danger'}">${escapeHtmlPC(p.badge)}</span>`
@@ -125,10 +142,9 @@ const ProductCard = (function () {
 
   function refreshCartArea(pid) {
     const entry = cartState.get(pid);
-    const qty = entry ? entry.quantity : 0;
+    const qty = entry ? entry.totalQuantity : 0;
     document.querySelectorAll(`[data-pc-cart-area="${pid}"]`).forEach(el => {
-      const render = el.dataset.pcSize === 'large' ? cartAreaHTMLLarge : cartAreaHTML;
-      el.innerHTML = render(pid, qty, true);
+      el.innerHTML = cartAreaHTML(pid, qty, true);
     });
   }
 
@@ -143,8 +159,7 @@ const ProductCard = (function () {
   }
 
   function syncCartFromDto(cart) {
-    cartState = new Map();
-    (cart.items || []).forEach(i => cartState.set(i.productId, { cartItemId: i.id, quantity: i.quantity }));
+    cartState = buildCartStateFromItems(cart.items);
   }
 
   async function handleAdd(pid) {
@@ -161,8 +176,8 @@ const ProductCard = (function () {
 
   async function handleQtyChange(pid, delta) {
     const entry = cartState.get(pid);
-    if (!entry) return;
-    const newQty = entry.quantity + delta;
+    if (!entry || !entry.cartItemId) return;
+    const newQty = entry.totalQuantity + delta;
     try {
       const cart = newQty <= 0
         ? await Api.removeCartItem(entry.cartItemId)
@@ -232,7 +247,7 @@ const ProductCard = (function () {
 
   function getCartQty(pid) {
     const entry = cartState.get(pid);
-    return entry ? entry.quantity : 0;
+    return entry ? entry.totalQuantity : 0;
   }
 
   // برای صفحاتی که کارت کامل ProductCard.render رو نمی‌خوان ولی به همون استپر تعداد نیاز دارن

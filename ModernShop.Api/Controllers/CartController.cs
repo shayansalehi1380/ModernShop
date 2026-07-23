@@ -218,9 +218,14 @@ public class CartController : ControllerBase
             ProductId = i.ProductId,
             ProductVariantId = i.ProductVariantId,
             ProductName = i.Product.Name,
+            ProductSlug = i.Product.Slug,
             ImageUrl = i.Product.Images.FirstOrDefault(im => im.IsMain)?.ImageUrl
                        ?? i.Product.Images.FirstOrDefault()?.ImageUrl ?? "",
-            VariantLabel = i.ProductVariant?.Color,
+            VariantLabel = i.ProductVariant is null
+                ? null
+                : (!string.IsNullOrEmpty(i.ProductVariant.Size) && i.ProductVariant.Size != "-"
+                    ? $"{i.ProductVariant.Color} · سایز {i.ProductVariant.Size}"
+                    : i.ProductVariant.Color),
             Quantity = i.Quantity,
             UnitPrice = i.UnitPrice
         }).ToList();

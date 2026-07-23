@@ -76,6 +76,7 @@ public class ProductsController : ControllerBase
                 AverageRating = p.Reviews.Any() ? Math.Round(p.Reviews.Average(r => r.Rating), 1) : 0,
                 ReviewCount = p.Reviews.Count,
                 InStock = p.StockQuantity > 0,
+                IsVariable = p.Variants.Any(),
                 Badge = p.DiscountPrice != null ? "پیشنهاد ویژه"
                         : p.CreatedAt >= DateTime.UtcNow.AddDays(-14) ? "جدید"
                         : null
@@ -150,7 +151,7 @@ public class ProductsController : ControllerBase
                 .Select(i => new ProductImageDto { ImageUrl = i.ImageUrl, IsMain = i.IsMain })
                 .ToList(),
             Variants = product.Variants
-                .Select(v => new ProductVariantDto { Id = v.Id, Color = v.Color, Size = v.Size, StockQuantity = v.StockQuantity, PriceAdjustment = v.PriceAdjustment })
+                .Select(v => new ProductVariantDto { Id = v.Id, Color = v.Color, Size = v.Size, StockQuantity = v.StockQuantity, PriceAdjustment = v.PriceAdjustment, IncludedInDiscount = v.IncludedInDiscount })
                 .ToList(),
             Specifications = product.Specifications
                 .OrderBy(s => s.DisplayOrder)

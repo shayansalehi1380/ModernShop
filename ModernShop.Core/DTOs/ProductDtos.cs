@@ -18,6 +18,7 @@ namespace ModernShop.Core.DTOs
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }
         public bool InStock { get; set; }
+        public bool IsVariable { get; set; }   // اگه true باشه، محصول رنگ/سایز داره و باید تو صفحه محصول انتخاب بشه
         public string? Badge { get; set; }   // "جدید" / "پرفروش" / "پیشنهاد ویژه" (محاسبه‌شده)
     }
 
@@ -34,6 +35,7 @@ namespace ModernShop.Core.DTOs
         public string? Size { get; set; }
         public int StockQuantity { get; set; }
         public decimal? PriceAdjustment { get; set; }
+        public bool IncludedInDiscount { get; set; } = true;
     }
 
     public class ProductSpecificationDto

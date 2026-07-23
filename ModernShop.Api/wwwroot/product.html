@@ -436,19 +436,8 @@
           `).join('');
             updateGalleryArrows();
 
-            // قیمت پایه (بدون احتساب اختلاف قیمت تنوع - اون تو updatePriceDisplay اعمال می‌شه)
-            if (product.discountPrice) {
-                const pct = Math.round((1 - product.discountPrice / product.price) * 100);
-                document.getElementById('old-price').classList.remove('hidden');
-                const pctEl = document.getElementById('discount-pct');
-                pctEl.textContent = `${pct}٪ تخفیف`;
-                pctEl.classList.remove('hidden');
-                const badge = document.getElementById('discount-badge');
-                badge.textContent = `${pct}٪ تخفیف`;
-                badge.classList.remove('hidden');
-            }
-
-            // رنگ/سایز، قیمت نهایی، موجودی و ناحیه‌ی افزودن به سبد - همه بر اساس تنوع انتخاب‌شده
+            // رنگ/سایز، قیمت نهایی (شامل تخفیف یا نه بسته به تنوع)، موجودی و ناحیه‌ی افزودن به سبد -
+            // همه بر اساس تنوع انتخاب‌شده تو updatePriceDisplay/updateStockDisplay محاسبه می‌شن
             initVariants();
 
             // توضیحات
@@ -652,15 +641,35 @@
             refreshPdpCartArea();
         }
 
-        /* ---------- قیمت (بر اساس تنوع انتخاب‌شده) ---------- */
+        /* ---------- قیمت (بر اساس تنوع انتخاب‌شده) ----------
+           اگه تنوع انتخاب‌شده از تخفیف مستثنی شده باشه (includedInDiscount=false تو پنل مدیریت)،
+           برچسب/درصد تخفیف مخفی می‌شه و قیمت کامل (بدون تخفیف) + اختلاف قیمت همون تنوع نشون داده می‌شه */
         function updatePriceDisplay() {
             const v = currentVariant();
             const adj = v ? (v.priceAdjustment || 0) : 0;
-            const mainPrice = (product.discountPrice ?? product.price) + adj;
+            const variantIncluded = v ? v.includedInDiscount !== false : true;
+            const applyDiscount = product.discountPrice != null && variantIncluded;
+
+            const mainPrice = (applyDiscount ? product.discountPrice : product.price) + adj;
             document.getElementById('main-price').textContent = formatPrice(mainPrice);
             document.getElementById('mobile-price').textContent = formatPrice(mainPrice);
-            if (product.discountPrice) {
-                document.getElementById('old-price').textContent = formatPrice(product.price + adj);
+
+            const oldPriceEl = document.getElementById('old-price');
+            const pctEl = document.getElementById('discount-pct');
+            const badgeEl = document.getElementById('discount-badge');
+
+            if (applyDiscount) {
+                const pct = Math.round((1 - product.discountPrice / product.price) * 100);
+                oldPriceEl.textContent = formatPrice(product.price + adj);
+                oldPriceEl.classList.remove('hidden');
+                pctEl.textContent = `${pct}٪ تخفیف`;
+                pctEl.classList.remove('hidden');
+                badgeEl.textContent = `${pct}٪ تخفیف`;
+                badgeEl.classList.remove('hidden');
+            } else {
+                oldPriceEl.classList.add('hidden');
+                pctEl.classList.add('hidden');
+                badgeEl.classList.add('hidden');
             }
         }
 

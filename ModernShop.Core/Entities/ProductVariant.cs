@@ -10,4 +10,5 @@ public class ProductVariant
     public string? Size { get; set; }
     public int StockQuantity { get; set; }
     public decimal? PriceAdjustment { get; set; }
+    public bool IncludedInDiscount { get; set; } = true;   // آیا این تنوع هم شامل تخفیف محصول (DiscountPrice) می‌شه یا نه
 }

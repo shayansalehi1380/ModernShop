@@ -35,6 +35,7 @@ namespace ModernShop.Core.DTOs
         public string? Size { get; set; }
         public int StockQuantity { get; set; }
         public decimal? PriceAdjustment { get; set; }
+        public bool IncludedInDiscount { get; set; } = true;
     }
 
     public class AdminProductDetailDto

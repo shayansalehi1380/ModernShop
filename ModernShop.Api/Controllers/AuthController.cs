@@ -82,6 +82,8 @@ public class AuthController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+        await MergeGuestCartAsync(user.Id);
+
         var token = _jwtTokenService.GenerateToken(user);
 
         return Ok(new AuthResponseDto
@@ -93,5 +95,51 @@ public class AuthController : ControllerBase
             LastName = user.LastName,
             IsNewUser = isNewUser
         });
+    }
+
+    // بعد از لاگین، سبد خرید مهمان (که با X-Guest-Session-Id ردیابی می‌شد) رو با سبد
+    // کاربر لاگین‌شده یکی می‌کنه؛ وگرنه کاربر بعد از لاگین سبدش رو خالی می‌دید (چون
+    // apiFetch بعد از لاگین دیگه هدر مهمان رو نمی‌فرسته و یه سبد کاملا جدید ساخته می‌شه).
+    private async Task MergeGuestCartAsync(int userId)
+    {
+        var guestSessionId = Request.Headers["X-Guest-Session-Id"].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(guestSessionId)) return;
+
+        var guestCart = await _db.Carts.Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.GuestSessionId == guestSessionId);
+        if (guestCart is null || guestCart.Items.Count == 0) return;
+
+        var userCart = await _db.Carts.Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
+
+        if (userCart is null)
+        {
+            userCart = new Cart { UserId = userId };
+            _db.Carts.Add(userCart);
+        }
+
+        foreach (var guestItem in guestCart.Items)
+        {
+            var existing = userCart.Items.FirstOrDefault(i =>
+                i.ProductId == guestItem.ProductId && i.ProductVariantId == guestItem.ProductVariantId);
+
+            if (existing is not null)
+            {
+                existing.Quantity += guestItem.Quantity;
+            }
+            else
+            {
+                userCart.Items.Add(new CartItem
+                {
+                    ProductId = guestItem.ProductId,
+                    ProductVariantId = guestItem.ProductVariantId,
+                    Quantity = guestItem.Quantity,
+                    UnitPrice = guestItem.UnitPrice
+                });
+            }
+        }
+
+        _db.Carts.Remove(guestCart);
+        await _db.SaveChangesAsync();
     }
 }

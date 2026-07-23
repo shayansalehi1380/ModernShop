@@ -216,7 +216,8 @@ public class AdminProductsController : ControllerBase
                 Color = v.Color,
                 Size = v.Size,
                 StockQuantity = v.StockQuantity,
-                PriceAdjustment = v.PriceAdjustment
+                PriceAdjustment = v.PriceAdjustment,
+                IncludedInDiscount = v.IncludedInDiscount
             })
             .ToList()
     };
@@ -230,7 +231,8 @@ public class AdminProductsController : ControllerBase
                 Color = string.IsNullOrWhiteSpace(v.Color) ? null : v.Color.Trim(),
                 Size = string.IsNullOrWhiteSpace(v.Size) ? "-" : v.Size.Trim(),
                 StockQuantity = v.StockQuantity,
-                PriceAdjustment = v.PriceAdjustment
+                PriceAdjustment = v.PriceAdjustment,
+                IncludedInDiscount = v.IncludedInDiscount
             })
             .ToList();
 

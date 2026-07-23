@@ -362,6 +362,8 @@
   .variant-card .rm:hover{opacity:0.8;}
   .variant-final-price{margin-top:8px;font-size:11.5px;color:var(--text-soft);}
   .variant-final-price b{color:var(--wine);font-weight:700;}
+  .variant-discount-toggle{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11.5px;color:var(--text-soft);cursor:pointer;}
+  .variant-discount-toggle input{accent-color:var(--wine);}
   .variants-summary{font-size:11.5px;color:var(--text-soft);margin-top:2px;margin-bottom:10px;}
 
   /* ---------- Order detail ---------- */
@@ -922,7 +924,7 @@ async function openProductForm(id){
   const brandOptions = `<option value="">بدون برند</option>` + state.brands.map(b=>`<option value="${b.id}" ${p.brandId==b.id?"selected":""}>${escapeHtml(b.name)}</option>`).join("");
 
   const specsRows = (p.specifications||[]).map(s => specRowHtml(s.key, s.value)).join("");
-  const variantRows = (p.variants||[]).map(v => variantRowHtml(v.color, v.size, v.stockQuantity, v.priceAdjustment)).join("");
+  const variantRows = (p.variants||[]).map(v => variantRowHtml(v.color, v.size, v.stockQuantity, v.priceAdjustment, v.includedInDiscount !== false)).join("");
   const galleryRows = (p.galleryImageUrls||[]).map(url => galleryRowHtml(url)).join("");
 
   openModalHtml(`
@@ -996,7 +998,7 @@ async function openProductForm(id){
             </div>
             <div class="field">
               <label>قیمت با تخفیف (اختیاری)</label>
-              <input class="input" id="pf-discount" type="number" value="${p.discountPrice ?? ""}" placeholder="خالی = بدون تخفیف" />
+              <input class="input" id="pf-discount" type="number" value="${p.discountPrice ?? ""}" oninput="refreshAllVariantFinalPrices()" placeholder="خالی = بدون تخفیف" />
             </div>
             <div class="field">
               <label>موجودی کل</label>
@@ -1072,7 +1074,8 @@ function variantColorHex(name){
   return map[(name||"").trim()] || '#9ca3af';
 }
 
-function variantRowHtml(color, size, stock, adj){
+function variantRowHtml(color, size, stock, adj, includedInDiscount){
+  const included = includedInDiscount !== false;
   return `
   <div class="variant-card">
     <div class="variant-card-top">
@@ -1097,6 +1100,10 @@ function variantRowHtml(color, size, stock, adj){
       </div>
       <button type="button" class="rm" onclick="this.closest('.variant-card').remove(); refreshVariantsSummary();" title="حذف این تنوع">${ICONS.close}</button>
     </div>
+    <label class="variant-discount-toggle">
+      <input type="checkbox" data-vfield="included" ${included ? "checked" : ""} onchange="onVariantInput(this)">
+      شامل تخفیف بالا می‌شود
+    </label>
     <div class="variant-final-price" data-vfinal></div>
   </div>`;
 }
@@ -1111,8 +1118,14 @@ function onVariantInput(el){
   updateVariantFinalPrice(card);
 }
 
+// دقیقاً همون فرمولی که تو صفحه محصول مشتری نشون داده می‌شه: (قیمت با تخفیف یا قیمت عادی) + اختلاف قیمت تنوع؛
+// اگه این تنوع از تخفیف مستثنی شده باشه، فقط قیمت عادی + اختلاف قیمت حساب می‌شه
 function updateVariantFinalPrice(card){
-  const base = parseFloat(document.getElementById("pf-price")?.value) || 0;
+  const price = parseFloat(document.getElementById("pf-price")?.value) || 0;
+  const discountVal = document.getElementById("pf-discount")?.value;
+  const discountPrice = discountVal ? parseFloat(discountVal) : null;
+  const included = card.querySelector('[data-vfield="included"]').checked;
+  const base = (included && discountPrice) ? discountPrice : price;
   const adj = parseFloat(card.querySelector('[data-vfield="adj"]').value) || 0;
   const el = card.querySelector("[data-vfinal]");
   if(el) el.innerHTML = `قیمت نهایی این تنوع: <b>${Math.round(base + adj).toLocaleString('fa-IR')} تومان</b>`;
@@ -1137,7 +1150,7 @@ function refreshVariantsSummary(){
 }
 
 function pfAddVariant(){
-  document.getElementById("pf-variants-list").insertAdjacentHTML("beforeend", variantRowHtml("","",0,0));
+  document.getElementById("pf-variants-list").insertAdjacentHTML("beforeend", variantRowHtml("","",0,0,true));
   const lastCard = document.getElementById("pf-variants-list").lastElementChild;
   if(lastCard) updateVariantFinalPrice(lastCard);
   refreshVariantsSummary();
@@ -1251,7 +1264,8 @@ async function saveProduct(existingId){
       const size = row.querySelector('[data-vfield="size"]').value.trim();
       const vstock = parseInt(row.querySelector('[data-vfield="stock"]').value) || 0;
       const adj = parseFloat(row.querySelector('[data-vfield="adj"]').value) || 0;
-      if(color || size) variants.push({ color, size: size || "-", stockQuantity: vstock, priceAdjustment: adj });
+      const includedInDiscount = row.querySelector('[data-vfield="included"]').checked;
+      if(color || size) variants.push({ color, size: size || "-", stockQuantity: vstock, priceAdjustment: adj, includedInDiscount });
     });
     if(variants.length === 0){ toast("برای محصول متغیر، حداقل یک تنوع رنگ/سایز وارد کنید.", "error"); return; }
   }

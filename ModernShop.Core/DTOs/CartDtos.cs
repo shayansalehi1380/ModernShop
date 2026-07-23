@@ -12,8 +12,9 @@ namespace ModernShop.Core.DTOs
         public int ProductId { get; set; }
         public int? ProductVariantId { get; set; }
         public string ProductName { get; set; } = null!;
+        public string ProductSlug { get; set; } = null!;
         public string ImageUrl { get; set; } = null!;
-        public string? VariantLabel { get; set; }   // مثلا "رنگ مشکی"
+        public string? VariantLabel { get; set; }   // مثلا "مشکی · سایز XL"
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice => UnitPrice * Quantity;
