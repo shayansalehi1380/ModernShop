@@ -33,19 +33,6 @@ function highlightActiveNav() {
   });
 }
 
-/* تب فعال نوار پایین موبایل (partials/mobile-nav.html)، بر اساس اسم فایل صفحه فعلی */
-const MNAV_PAGE_KEY_MAP = { 'product.html': 'shop.html', 'checkout.html': 'cart.html' };
-function highlightActiveMobileNav() {
-  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-  const activeKey = MNAV_PAGE_KEY_MAP[currentPath] || currentPath;
-
-  document.querySelectorAll('[data-mnav-key]').forEach(link => {
-    const isActive = link.dataset.mnavKey === activeKey;
-    link.classList.toggle('text-emerald', isActive);
-    link.classList.toggle('text-muted', !isActive);
-  });
-}
-
 async function loadLayout() {
   await Promise.all([
     loadPartial('partials/header.html', '#header-placeholder'),
@@ -54,7 +41,8 @@ async function loadLayout() {
   ]);
 
   highlightActiveNav();
-  highlightActiveMobileNav();
+  // تب فعال + دیتای دسته‌بندی‌ها/شیت‌های منوی پایین موبایل از js/mobile-nav.js میاد
+  if (typeof MobileNavSheet === 'object') MobileNavSheet.init();
 
   // این دو تابع تو api.js تعریف شدن و به المنت‌های داخل هدر (data-auth-link / data-cart-badge) نیاز دارن،
   // پس باید بعد از تزریق هدر صدا زده بشن نه قبلش

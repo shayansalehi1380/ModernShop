@@ -111,6 +111,7 @@
 </section>
 
 <div id="footer-placeholder"></div>
+<div id="mobile-nav-placeholder"></div>
 
 <!-- back to top -->
 <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="بازگشت به بالای صفحه"
@@ -118,50 +119,10 @@
   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
 </button>
 
-<!-- mobile bottom navigation -->
-<div id="sheet-overlay" class="fixed inset-0 z-[90] hidden bg-black/40 lg:hidden" onclick="closeSheet()"></div>
-
-<div id="sheet-panel" class="fixed inset-x-0 bottom-16 z-[95] hidden max-h-[70vh] translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
-  <div class="flex items-center justify-between border-b border-line px-4 py-3">
-    <h3 id="sheet-title" class="text-sm font-bold">دسته‌بندی‌ها</h3>
-    <button onclick="closeSheet()" class="rounded-full p-2 text-foreground/80 hover:bg-surface-muted" aria-label="بستن">
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-    </button>
-  </div>
-  <div id="sheet-body" class="max-h-[calc(70vh-52px)] overflow-y-auto p-4"></div>
-</div>
-
-<nav class="fixed inset-x-0 bottom-0 z-[96] border-t border-line bg-surface lg:hidden">
-  <div class="mx-auto grid max-w-md grid-cols-5">
-    <button onclick="closeSheet()" data-tab="home" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-emerald">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-      خانه
-    </button>
-    <button onclick="openSheet('categories')" data-tab="categories" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      دسته‌ها
-    </button>
-    <button onclick="openSheet('search')" data-tab="search" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      جستجو
-    </button>
-    <button onclick="window.location.href='cart.html'" data-tab="cart" class="bn-tab relative flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
-      <span class="relative">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        <span data-cart-badge class="absolute -top-1 -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white" style="display:none">0</span>
-      </span>
-      سبد خرید
-    </button>
-    <button onclick="openSheet('menu')" data-tab="menu" class="bn-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-      منو
-    </button>
-  </div>
-</nav>
-
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
+<script src="js/mobile-nav.js"></script>
 <script src="js/color-map.js"></script>
 <script src="js/product-card.js"></script>
 <script>
@@ -257,24 +218,6 @@ function resumeBanner(){
   }
 }
 
-/* ---------- دسته‌بندی‌ها (حالا از API) ---------- */
-let categoriesData = [];
-
-async function loadCategories(){
-  try {
-    const raw = await Api.getCategories();
-    categoriesData = raw.map(c => ({
-      id: c.slug,
-      title: c.name,
-      subtitle: `${c.productCount} کالای جدید`,
-      image: c.imageUrl
-    }));
-  } catch(e) {
-    categoriesData = [];
-  }
-  // این داده فقط تو شیت «دسته‌بندی‌ها» ی موبایل (categoriesSheetHTML) استفاده می‌شه
-}
-
 /* ---------- نوار برندها (حالا از API) ---------- */
 async function loadBrandStrip(){
   const wrap = document.getElementById('brand-strip');
@@ -286,86 +229,8 @@ async function loadBrandStrip(){
   }
 }
 
-/* ---------- mobile bottom sheet ---------- */
-const sheets = {
-  categories: () => categoriesSheetHTML(),
-  search: () => `<div id="mobile-search-wrap" class="relative">
-      <div class="flex items-center gap-2 rounded-full border border-line bg-surface-muted px-4 py-3">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-muted"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="mobile-search-input" autofocus type="text" autocomplete="off" placeholder="جستجوی کالا، برند..." class="w-full bg-transparent text-sm outline-none placeholder:text-muted" />
-      </div>
-      <div id="mobile-search-dropdown" class="hidden mt-2 max-h-80 overflow-y-auto rounded-2xl border border-line bg-surface py-1.5 shadow-lg"></div>
-    </div>`,
-  cart: () => `<div class="flex flex-col items-center gap-3 py-10 text-center">
-      <span class="flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-muted"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-      </span>
-      <p class="text-sm text-muted">سبد خرید خود را در صفحه سبد خرید مشاهده کنید</p>
-      <a href="cart.html" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده سبد خرید</a>
-    </div>`,
-  menu: () => `<div class="flex flex-col gap-1">
-      ${[["صفحه اصلی","index.html"],["پوشاک","shop.html?category=fashion"],["دیجیتال","shop.html?category=digital"],["خانه و آشپزخانه","shop.html?category=home-kitchen"],["زیبایی","shop.html?category=beauty-health"],["وبلاگ","blog.html"]]
-        .map(([l,href])=>`<a href="${href}" class="rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted">${l}</a>`).join("")}
-    </div>`,
-};
-const sheetTitles = { categories: "دسته‌بندی‌ها", search: "جستجو", cart: "سبد خرید", menu: "منو" };
-let currentSheet = null;
-let currentCategory = null;
-
-function categoriesSheetHTML(){
-  if(categoriesData.length === 0){
-    return `<p class="py-10 text-center text-sm text-muted">هنوز دسته‌بندی‌ای ثبت نشده است</p>`;
-  }
-  if(!currentCategory){
-    return `<div class="grid grid-cols-2 gap-3">${categoriesData.map(c=>`
-      <a href="shop.html?category=${c.id}" class="group relative aspect-[4/3] overflow-hidden rounded-2xl text-right">
-        <img src="${c.image}" class="h-full w-full object-cover" alt="${c.title}" />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
-        <div class="absolute bottom-3 right-3 text-white">
-          <div class="text-sm font-bold">${c.title}</div>
-          <div class="text-[11px] text-white/80">${c.subtitle}</div>
-        </div>
-      </a>`).join("")}</div>`;
-  }
-  return '';
-}
-
-function setActiveTab(tab){
-  document.querySelectorAll('.bn-tab').forEach(btn=>{
-    const active = btn.dataset.tab === tab;
-    btn.classList.toggle('text-emerald', active);
-    btn.classList.toggle('text-muted', !active);
-  });
-}
-
-function openSheet(type){
-  if(currentSheet === type){ closeSheet(); return; }
-  currentSheet = type;
-  if(type !== 'categories') currentCategory = null;
-  document.getElementById('sheet-title').textContent = sheetTitles[type];
-  document.getElementById('sheet-body').innerHTML = sheets[type]();
-  if(type === 'search' && typeof AtelierSearch === 'object'){
-    AtelierSearch.attach(
-      document.getElementById('mobile-search-input'),
-      document.getElementById('mobile-search-dropdown'),
-      document.getElementById('mobile-search-wrap')
-    );
-  }
-  document.getElementById('sheet-overlay').classList.remove('hidden');
-  const panel = document.getElementById('sheet-panel');
-  panel.classList.remove('hidden');
-  requestAnimationFrame(() => panel.classList.remove('translate-y-full'));
-  setActiveTab(type);
-}
-
-function closeSheet(){
-  currentSheet = null;
-  const panel = document.getElementById('sheet-panel');
-  panel.classList.add('translate-y-full');
-  document.getElementById('sheet-overlay').classList.add('hidden');
-  setTimeout(() => panel.classList.add('hidden'), 300);
-  setActiveTab('home');
-}
+/* منوی پایین موبایل (شیت دسته‌بندی/جستجو/منو) از js/mobile-nav.js میاد - همون کامپوننت
+   مشترکی که تو بقیه‌ی صفحات هم استفاده می‌شه، تا همه‌جا دقیقاً یک رفتار داشته باشه */
 
 /* ---------- newsletter (حالا واقعی) ---------- */
 async function submitNewsletter(e){
@@ -487,7 +352,6 @@ async function loadDiscountedProducts(){
 
   await Promise.all([
     loadBanners(),
-    loadCategories(),
     loadBrandStrip(),
     loadFeaturedProducts(),
     loadDiscountedProducts(),

@@ -135,19 +135,21 @@
 
 <!-- mobile bottom sheets -->
 <div id="sheet-overlay" class="fixed inset-0 z-[90] hidden bg-black/40 lg:hidden" onclick="closeSheet()"></div>
-<div id="sheet-panel" class="fixed inset-x-0 bottom-0 z-[95] hidden max-h-[75vh] w-full translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
-  <div class="flex items-center justify-between border-b border-line px-4 py-3">
+<div id="sheet-panel" class="fixed inset-x-0 bottom-0 z-[95] hidden max-h-[75svh] w-full flex-col translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
+  <div class="flex shrink-0 items-center justify-between border-b border-line px-4 py-3">
     <h3 id="sheet-title" class="text-sm font-bold"></h3>
     <button onclick="closeSheet()" class="rounded-full p-2 text-foreground/80 hover:bg-surface-muted" aria-label="بستن">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
-  <div id="sheet-body" class="max-h-[calc(75vh-52px)] overflow-y-auto p-4"></div>
+  <div id="sheet-body" class="min-h-0 flex-1 overflow-y-auto p-4"></div>
+  <div id="sheet-footer" class="hidden shrink-0 items-center gap-2 border-t border-line bg-surface px-4 py-3"></div>
 </div>
 
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
+<script src="js/mobile-nav.js"></script>
 <script src="js/color-map.js"></script>
 <script src="js/product-card.js"></script>
 <script>
@@ -404,11 +406,6 @@ function filtersHTML(scope) {
         <span onclick="toggleInStock('${scope}')" class="toggle-switch ${filterState.inStockOnly?'on':''}"></span>
       </label>
     </div>
-    ${scope === 'mobile' ? `
-    <div class="sticky bottom-0 -mx-4 -mb-4 mt-5 flex items-center gap-2 border-t border-line bg-surface px-4 py-3">
-      <button onclick="clearFilters('mobile')" class="flex-1 rounded-xl border border-line py-2.5 text-xs font-semibold hover:border-danger hover:text-danger">حذف فیلترها</button>
-      <button onclick="applyFiltersFromSheet()" class="flex-1 rounded-xl bg-emerald py-2.5 text-xs font-semibold text-white hover:bg-emerald-deep">اعمال فیلترها</button>
-    </div>` : ''}
   `;
 }
 
@@ -496,14 +493,27 @@ function openSheet(type){
   currentSheet = type;
   document.getElementById('sheet-title').textContent = sheetTitles[type];
   const body = document.getElementById('sheet-body');
+  const footer = document.getElementById('sheet-footer');
   if(type === 'filters'){
     body.innerHTML = `<div id="sheet-filters-body">${filtersHTML('mobile')}</div>`;
+    // دکمه‌های اعمال/حذف فیلتر یک فوتر ثابت و همیشه‌دیده هستن (نه بخشی از محتوای اسکرول‌شونده)
+    // تا هیچ‌وقت، حتی وقتی محتوا کوتاهه، بیرون از دید نباشن
+    footer.innerHTML = `
+      <button onclick="clearFilters('mobile')" class="flex-1 rounded-xl border border-line py-2.5 text-xs font-semibold hover:border-danger hover:text-danger">حذف فیلترها</button>
+      <button onclick="applyFiltersFromSheet()" class="flex-1 rounded-xl bg-emerald py-2.5 text-xs font-semibold text-white hover:bg-emerald-deep">اعمال فیلترها</button>
+    `;
+    footer.classList.remove('hidden');
+    footer.classList.add('flex');
   } else {
     body.innerHTML = sortSheetHTML();
+    footer.classList.add('hidden');
+    footer.classList.remove('flex');
+    footer.innerHTML = '';
   }
   document.getElementById('sheet-overlay').classList.remove('hidden');
   const panel = document.getElementById('sheet-panel');
   panel.classList.remove('hidden');
+  panel.classList.add('flex');
   requestAnimationFrame(() => panel.classList.remove('translate-y-full'));
 }
 
@@ -512,7 +522,7 @@ function closeSheet(){
   const panel = document.getElementById('sheet-panel');
   panel.classList.add('translate-y-full');
   document.getElementById('sheet-overlay').classList.add('hidden');
-  setTimeout(() => panel.classList.add('hidden'), 300);
+  setTimeout(() => { panel.classList.add('hidden'); panel.classList.remove('flex'); }, 300);
 }
 
 /* ================= INIT ================= */

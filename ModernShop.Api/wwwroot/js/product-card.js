@@ -19,6 +19,7 @@ const ProductCard = (function () {
 
   let cartState = new Map();      // productId -> { totalQuantity, cartItemId (فقط وقتی lineCount===1 معتبره), lineCount }
   let variantCartQty = new Map(); // productVariantId -> تعدادی که از همین تنوع دقیق از قبل در سبد هست
+  let cartLinesByProduct = new Map(); // productId -> [{ cartItemId, variantId, quantity }] — برای لیست «تنوع‌های انتخاب‌شده» تو پاپ‌آپ
   let wishlistState = new Set();  // productId
   let productMeta = new Map();    // productId -> { isVariable, slug } — برای این‌که پاپ‌آپ انتخاب تنوع بدونه چی رو بگیره
   const productDetailCache = new Map(); // slug -> ProductDetailDto (تنوع‌ها فقط موقع باز شدن پاپ‌آپ، یک‌بار گرفته می‌شه)
@@ -41,6 +42,7 @@ const ProductCard = (function () {
   function buildCartStateFromItems(items) {
     const map = new Map();
     variantCartQty = new Map();
+    cartLinesByProduct = new Map();
     (items || []).forEach(i => {
       const existing = map.get(i.productId);
       if (existing) {
@@ -53,6 +55,8 @@ const ProductCard = (function () {
       if (i.productVariantId) {
         variantCartQty.set(i.productVariantId, (variantCartQty.get(i.productVariantId) || 0) + i.quantity);
       }
+      if (!cartLinesByProduct.has(i.productId)) cartLinesByProduct.set(i.productId, []);
+      cartLinesByProduct.get(i.productId).push({ cartItemId: i.id, variantId: i.productVariantId, quantity: i.quantity });
     });
     return map;
   }
@@ -86,9 +90,14 @@ const ProductCard = (function () {
     }
     if (meta.isVariable) {
       if (qty > 0) {
-        return `<button type="button" class="pc-quickadd flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald bg-emerald-soft py-2 text-xs font-semibold text-emerald-deep" data-pid="${pid}">
-          <span class="ticker" data-pc-qty="${pid}">${qty}</span> عدد در سبد · افزودن بیشتر
-        </button>`;
+        return `<div class="flex items-center gap-1.5">
+          <button type="button" class="pc-remove-variants flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line text-foreground/60 hover:border-danger hover:text-danger" data-pid="${pid}" aria-label="حذف از سبد خرید">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+          <button type="button" class="pc-quickadd flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-emerald bg-emerald-soft py-2 text-xs font-semibold text-emerald-deep" data-pid="${pid}">
+            <span class="ticker" data-pc-qty="${pid}">${qty}</span> عدد در سبد · افزودن بیشتر
+          </button>
+        </div>`;
       }
       return `<button type="button" class="pc-quickadd flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald" data-pid="${pid}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
@@ -199,6 +208,26 @@ const ProductCard = (function () {
     }
   }
 
+  // دکمه‌ی سطل‌زباله رو خود کارت (برای محصول متغیر): همه‌ی خط‌های سبد این محصول (هر رنگ/سایزی)
+  // رو یک‌جا حذف می‌کنه — برای وقتی که کاربر می‌خواد کل محصول رو از سبد خرید بردار بدون اینکه
+  // مجبور باشه پاپ‌آپ رو باز کنه و تک‌تک تنوع‌ها رو کم کنه
+  async function handleRemoveAllVariants(pid) {
+    const lines = cartLinesByProduct.get(pid) || [];
+    if (!lines.length) return;
+    try {
+      let cart = null;
+      for (const line of lines) {
+        cart = await Api.removeCartItem(line.cartItemId);
+      }
+      if (cart) syncCartFromDto(cart);
+      refreshCartArea(pid);
+      if (typeof updateCartBadge === 'function') updateCartBadge();
+      if (typeof showToast === 'function') showToast('success', 'از سبد خرید حذف شد');
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('error', e.message || 'خطا در حذف از سبد خرید');
+    }
+  }
+
   /* ================= پاپ‌آپ انتخاب تنوع (quick-add) ================= */
 
   function ensureQuickAddModal() {
@@ -208,7 +237,7 @@ const ProductCard = (function () {
     overlay.id = 'pc-quickadd-overlay';
     overlay.className = 'fixed inset-0 z-[205] hidden items-end justify-center bg-black/40 sm:items-center sm:p-4';
     overlay.innerHTML = `
-      <div class="max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-surface p-5 sm:max-w-sm sm:rounded-3xl">
+      <div class="max-h-[85svh] w-full overflow-y-auto rounded-t-3xl bg-surface p-5 sm:max-w-sm sm:rounded-3xl">
         <div class="mb-4 flex items-center justify-between">
           <h3 class="text-sm font-bold">انتخاب تنوع</h3>
           <button type="button" data-pc-qa-close class="rounded-full p-1.5 text-foreground/70 hover:bg-surface-muted" aria-label="بستن">
@@ -225,12 +254,14 @@ const ProductCard = (function () {
       const variantBtn = e.target.closest('[data-pc-qa-variant]');
       const qtyBtn = e.target.closest('[data-pc-qa-qty]');
       const confirmBtn = e.target.closest('[data-pc-qa-confirm]');
+      const lineQtyBtn = e.target.closest('[data-pc-qa-line-qty]');
 
       if (closeBtn) closeQuickAdd();
       else if (colorBtn) quickAddSelectColor(colorBtn.dataset.pcQaColor);
       else if (variantBtn) quickAddSelectVariant(parseInt(variantBtn.dataset.pcQaVariant, 10));
       else if (qtyBtn) quickAddChangeQty(parseInt(qtyBtn.dataset.pcQaQty, 10));
       else if (confirmBtn) quickAddConfirm();
+      else if (lineQtyBtn) quickAddLineChangeQty(parseInt(lineQtyBtn.dataset.pcQaLineId, 10), parseInt(lineQtyBtn.dataset.pcQaLineQty, 10));
     });
 
     document.body.appendChild(overlay);
@@ -310,6 +341,32 @@ const ProductCard = (function () {
     renderQuickAddBody();
   }
 
+  // دکمه‌های +/- جلوی هر خط از لیست «تنوع‌های از قبل انتخاب‌شده» تو پاپ‌آپ — با موجودی همون
+  // تنوع چک می‌شه (نه فقط qty دلخواه)، و روی صفر رسیدن، همون خط از سبد حذف می‌شه
+  async function quickAddLineChangeQty(cartItemId, delta) {
+    if (!quickAdd || !quickAdd.detail) return;
+    const lines = cartLinesByProduct.get(quickAdd.pid) || [];
+    const line = lines.find(l => l.cartItemId === cartItemId);
+    if (!line) return;
+
+    const variant = (quickAdd.detail.variants || []).find(v => v.id === line.variantId);
+    const stock = variant ? variant.stockQuantity : Infinity;
+    const newQty = line.quantity + delta;
+    if (newQty > stock) return;
+
+    try {
+      const cart = newQty <= 0
+        ? await Api.removeCartItem(cartItemId)
+        : await Api.updateCartItem(cartItemId, newQty);
+      syncCartFromDto(cart);
+      refreshCartArea(quickAdd.pid);
+      if (typeof updateCartBadge === 'function') updateCartBadge();
+      renderQuickAddBody();
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('error', e.message || 'خطا در بروزرسانی سبد خرید');
+    }
+  }
+
   async function quickAddConfirm() {
     if (!quickAdd || !quickAdd.selectedVariantId) return;
     const { pid, selectedVariantId, qty } = quickAdd;
@@ -384,6 +441,35 @@ const ProductCard = (function () {
         ? `<button type="button" disabled class="w-full rounded-xl border border-line py-2.5 text-sm font-semibold opacity-40">کل موجودی این تنوع را به سبد اضافه کرده‌اید</button>`
         : `<button type="button" data-pc-qa-confirm class="w-full rounded-xl bg-emerald py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">افزودن به سبد</button>`;
 
+    // خط‌های سبدی که همین الان از این محصول (با هر رنگ/سایزی) وجود دارن، به‌صورت لیست نشون داده
+    // می‌شه (نه فقط یک خط خلاصه‌ی گیج‌کننده)، هرکدوم با دکمه‌ی +/- خودش که مستقیم رو همون خط
+    // سبد اثر می‌ذاره و به موجودی همون تنوع محدوده
+    const existingLines = (cartLinesByProduct.get(quickAdd.pid) || [])
+      .map(line => ({ line, variant: variants.find(v => v.id === line.variantId) }))
+      .filter(x => x.variant);
+
+    const existingLinesHTML = existingLines.length ? `
+      <div class="mb-4">
+        <p class="mb-2 text-xs font-semibold text-muted">قبلاً به سبد اضافه شده</p>
+        <div class="flex flex-col gap-2">
+          ${existingLines.map(({ line, variant }) => {
+            const label = variant.size && variant.size !== '-' ? `${variant.color || ''} · سایز ${variant.size}` : (variant.color || '');
+            const atMax = line.quantity >= variant.stockQuantity;
+            return `<div class="flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2">
+              <div class="flex items-center gap-2">
+                <span class="block h-5 w-5 shrink-0 rounded-full border border-line" style="background:${ColorMap.hexFor(variant.color || '')}"></span>
+                <span class="text-xs font-medium">${escapeHtmlPC(label)}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" data-pc-qa-line-id="${line.cartItemId}" data-pc-qa-line-qty="-1" class="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-muted text-sm font-bold leading-none" aria-label="کم کردن">−</button>
+                <span class="ticker w-5 text-center text-xs font-bold">${toFaPC(line.quantity)}</span>
+                <button type="button" data-pc-qa-line-id="${line.cartItemId}" data-pc-qa-line-qty="1" class="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-muted text-sm font-bold leading-none disabled:opacity-40" ${atMax ? 'disabled' : ''} aria-label="زیاد کردن">+</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+
     body.innerHTML = `
       <div class="mb-4 flex items-center gap-3">
         <img src="${mainImage?.imageUrl || 'https://picsum.photos/200/200'}" class="h-14 w-14 rounded-xl object-cover" alt="" />
@@ -392,6 +478,8 @@ const ProductCard = (function () {
           <p class="mt-1 text-sm font-bold text-emerald-deep"><span class="ticker">${fmtPC(finalPrice)}</span> <span class="text-[11px] font-normal text-muted">تومان</span></p>
         </div>
       </div>
+
+      ${existingLinesHTML}
 
       ${colors.length ? `
       <div class="mb-4">
@@ -415,8 +503,6 @@ const ProductCard = (function () {
           }).join('')}
         </div>
       </div>` : ''}
-
-      ${alreadyInCart > 0 ? `<p class="mb-3 -mt-1 text-xs text-muted">در حال حاضر <span class="font-bold text-emerald-deep">${toFaPC(alreadyInCart)} عدد</span> از همین تنوع در سبد شما هست</p>` : ''}
 
       ${qtyBlock}
 
@@ -472,11 +558,13 @@ const ProductCard = (function () {
       const decBtn = e.target.closest('.pc-dec');
       const wishBtn = e.target.closest('.pc-wishlist-btn');
       const quickAddBtn = e.target.closest('.pc-quickadd');
+      const removeVariantsBtn = e.target.closest('.pc-remove-variants');
 
       if (addBtn) { e.preventDefault(); handleAdd(parseInt(addBtn.dataset.pid, 10)); }
       else if (incBtn) { e.preventDefault(); handleQtyChange(parseInt(incBtn.dataset.pid, 10), 1); }
       else if (decBtn) { e.preventDefault(); handleQtyChange(parseInt(decBtn.dataset.pid, 10), -1); }
       else if (wishBtn) { e.preventDefault(); e.stopPropagation(); handleWishlistToggle(parseInt(wishBtn.dataset.pid, 10)); }
+      else if (removeVariantsBtn) { e.preventDefault(); handleRemoveAllVariants(parseInt(removeVariantsBtn.dataset.pid, 10)); }
       else if (quickAddBtn) { e.preventDefault(); openQuickAdd(parseInt(quickAddBtn.dataset.pid, 10)); }
     });
   }

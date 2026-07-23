@@ -1,27 +1,39 @@
+<div id="mnav-sheet-overlay" class="fixed inset-0 z-[90] hidden bg-black/40 lg:hidden" onclick="MobileNavSheet.close()"></div>
+
+<div id="mnav-sheet-panel" class="fixed inset-x-0 bottom-16 z-[95] hidden max-h-[70svh] translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
+  <div class="flex items-center justify-between border-b border-line px-4 py-3">
+    <h3 id="mnav-sheet-title" class="text-sm font-bold">دسته‌بندی‌ها</h3>
+    <button onclick="MobileNavSheet.close()" class="rounded-full p-2 text-foreground/80 hover:bg-surface-muted" aria-label="بستن">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="mnav-sheet-body" class="max-h-[calc(70svh-52px)] overflow-y-auto p-4"></div>
+</div>
+
 <nav class="fixed inset-x-0 bottom-0 z-[96] border-t border-line bg-surface lg:hidden">
   <div class="mx-auto grid max-w-md grid-cols-5">
-    <a href="index.html" data-mnav-link data-mnav-key="index.html" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+    <a href="index.html" data-tab="home" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
       خانه
     </a>
-    <a href="shop.html" data-mnav-link data-mnav-key="shop.html" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+    <button type="button" onclick="MobileNavSheet.open('categories')" data-tab="categories" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       دسته‌ها
-    </a>
-    <a href="shop.html" data-mnav-link class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+    </button>
+    <button type="button" onclick="MobileNavSheet.open('search')" data-tab="search" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       جستجو
-    </a>
-    <a href="cart.html" data-mnav-link data-mnav-key="cart.html" class="mnav-tab relative flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+    </button>
+    <a href="cart.html" data-tab="cart" class="mnav-tab relative flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
       <span class="relative">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         <span data-cart-badge class="absolute -top-1 -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white" style="display:none">0</span>
       </span>
       سبد خرید
     </a>
-    <a href="account.html" data-mnav-link data-mnav-key="account.html" data-auth-link data-auth-loggedin-text="حساب" data-auth-loggedout-text="ورود" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      <span data-auth-label>حساب</span>
-    </a>
+    <button type="button" onclick="MobileNavSheet.open('menu')" data-tab="menu" class="mnav-tab flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      منو
+    </button>
   </div>
 </nav>
