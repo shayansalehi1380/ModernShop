@@ -1,6 +1,8 @@
 /* ==============================================================
-   Atelier — کامپوننت مشترک کارت محصول (استپر تعداد + علاقه‌مندی)
-   این فایل باید بعد از js/api.js لود بشه. روی هر صفحه‌ای که کارت محصول
+   Atelier — کامپوننت مشترک کارت محصول (استپر تعداد + علاقه‌مندی + انتخاب تنوع)
+   این فایل باید بعد از js/api.js و js/color-map.js لود بشه (برای محصول متغیر،
+   پاپ‌آپ انتخاب رنگ/سایز از Api.getProduct و ColorMap استفاده می‌کنه). روی هر
+   صفحه‌ای که کارت محصول
    نشون می‌ده (index.html، shop.html، account.html تب علاقه‌مندی‌ها) استفاده می‌شه:
 
      await ProductCard.loadState();     // وضعیت واقعی سبد + علاقه‌مندی‌ها رو از سرور می‌خونه
@@ -17,7 +19,9 @@ const ProductCard = (function () {
 
   let cartState = new Map();      // productId -> { totalQuantity, cartItemId (فقط وقتی lineCount===1 معتبره), lineCount }
   let wishlistState = new Set();  // productId
-  let productMeta = new Map();    // productId -> { isVariable, slug } — برای این‌که ناحیه‌ی سبد بدونه لینک به کجا بده
+  let productMeta = new Map();    // productId -> { isVariable, slug } — برای این‌که پاپ‌آپ انتخاب تنوع بدونه چی رو بگیره
+  const productDetailCache = new Map(); // slug -> ProductDetailDto (تنوع‌ها فقط موقع باز شدن پاپ‌آپ، یک‌بار گرفته می‌شه)
+  let quickAdd = null; // { pid, detail, selectedColor, selectedVariantId, qty } — وضعیت پاپ‌آپ باز
 
   function escapeHtmlPC(str) {
     return String(str ?? '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
@@ -65,26 +69,26 @@ const ProductCard = (function () {
     }
   }
 
-  // برای محصول متغیر (چندتا تنوع رنگ/سایز)، دیگه دکمه‌ی +/- مستقیم نشون داده نمی‌شه چون
-  // معلوم نیست باید کدوم خط سبد (کدوم تنوع) رو تغییر بده؛ به‌جاش به صفحه‌ی محصول لینک
-  // می‌شه تا خود کاربر اونجا تنوع و تعداد دقیق رو انتخاب کنه - این باعث می‌شه عدد نشون‌داده‌شده
-  // رو کارت همیشه با سبد واقعی (که خودش بر اساس تنوع دقیق کار می‌کنه) هماهنگ بمونه
+  // برای محصول متغیر (چندتا تنوع رنگ/سایز)، دکمه‌ی +/- مستقیم نشون داده نمی‌شه چون معلوم
+  // نیست باید کدوم خط سبد (کدوم تنوع) رو تغییر بده؛ به‌جاش با کلیک روی دکمه، همین‌جا رو خود
+  // کارت یک پاپ‌آپ کوچیک (quick-add) باز می‌شه که توش رنگ/سایز و تعداد رو انتخاب می‌کنه و
+  // بدون خارج شدن از صفحه به سبد اضافه می‌شه (نسخه قبلی کاربر رو به صفحه محصول می‌فرستاد که
+  // تجربه‌ی خوبی نبود)
   function cartAreaHTML(pid, qty, inStock) {
     const meta = productMeta.get(pid) || {};
     if (!inStock) {
       return `<button disabled class="flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold opacity-40">ناموجود</button>`;
     }
     if (meta.isVariable) {
-      const productUrl = `product.html?slug=${encodeURIComponent(meta.slug || '')}`;
       if (qty > 0) {
-        return `<a href="${productUrl}" class="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald bg-emerald-soft py-2 text-xs font-semibold text-emerald-deep">
-          <span class="ticker" data-pc-qty="${pid}">${qty}</span> عدد در سبد · مشاهده
-        </a>`;
+        return `<button type="button" class="pc-quickadd flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald bg-emerald-soft py-2 text-xs font-semibold text-emerald-deep" data-pid="${pid}">
+          <span class="ticker" data-pc-qty="${pid}">${qty}</span> عدد در سبد · افزودن بیشتر
+        </button>`;
       }
-      return `<a href="${productUrl}" class="flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald">
+      return `<button type="button" class="pc-quickadd flex w-full items-center justify-center gap-2 rounded-xl border border-line py-2 text-xs font-semibold hover:border-emerald hover:text-emerald" data-pid="${pid}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
         افزودن به سبد
-      </a>`;
+      </button>`;
     }
     if (qty > 0) {
       return `<div class="flex items-center justify-between rounded-xl border border-emerald bg-emerald-soft px-2 py-1.5">
@@ -190,6 +194,206 @@ const ProductCard = (function () {
     }
   }
 
+  /* ================= پاپ‌آپ انتخاب تنوع (quick-add) ================= */
+
+  function ensureQuickAddModal() {
+    if (document.getElementById('pc-quickadd-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'pc-quickadd-overlay';
+    overlay.className = 'fixed inset-0 z-[205] hidden items-end justify-center bg-black/40 sm:items-center sm:p-4';
+    overlay.innerHTML = `
+      <div class="max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-surface p-5 sm:max-w-sm sm:rounded-3xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-sm font-bold">انتخاب تنوع</h3>
+          <button type="button" data-pc-qa-close class="rounded-full p-1.5 text-foreground/70 hover:bg-surface-muted" aria-label="بستن">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div id="pc-quickadd-body"></div>
+      </div>`;
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) { closeQuickAdd(); return; }
+      const closeBtn = e.target.closest('[data-pc-qa-close]');
+      const colorBtn = e.target.closest('[data-pc-qa-color]');
+      const variantBtn = e.target.closest('[data-pc-qa-variant]');
+      const qtyBtn = e.target.closest('[data-pc-qa-qty]');
+      const confirmBtn = e.target.closest('[data-pc-qa-confirm]');
+
+      if (closeBtn) closeQuickAdd();
+      else if (colorBtn) quickAddSelectColor(colorBtn.dataset.pcQaColor);
+      else if (variantBtn) quickAddSelectVariant(parseInt(variantBtn.dataset.pcQaVariant, 10));
+      else if (qtyBtn) quickAddChangeQty(parseInt(qtyBtn.dataset.pcQaQty, 10));
+      else if (confirmBtn) quickAddConfirm();
+    });
+
+    document.body.appendChild(overlay);
+  }
+
+  function showQuickAddOverlay() {
+    const overlay = document.getElementById('pc-quickadd-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  }
+
+  function closeQuickAdd() {
+    const overlay = document.getElementById('pc-quickadd-overlay');
+    if (overlay) { overlay.classList.add('hidden'); overlay.classList.remove('flex'); }
+    quickAdd = null;
+  }
+
+  async function openQuickAdd(pid) {
+    const meta = productMeta.get(pid);
+    if (!meta) return;
+
+    ensureQuickAddModal();
+    quickAdd = { pid, detail: null, selectedColor: null, selectedVariantId: null, qty: 1 };
+    showQuickAddOverlay();
+    renderQuickAddBody();
+
+    let detail = productDetailCache.get(meta.slug);
+    if (!detail) {
+      try {
+        detail = await Api.getProduct(meta.slug);
+        productDetailCache.set(meta.slug, detail);
+      } catch (e) {
+        closeQuickAdd();
+        if (typeof showToast === 'function') showToast('error', 'خطا در دریافت اطلاعات محصول');
+        return;
+      }
+    }
+    if (!quickAdd || quickAdd.pid !== pid) return; // تا رسیدن جواب، کاربر مودال رو بسته یا محصول دیگه‌ای باز کرده
+
+    const variants = detail.variants || [];
+    const firstInStock = variants.find(v => v.stockQuantity > 0) || variants[0] || null;
+    quickAdd.detail = detail;
+    quickAdd.selectedColor = firstInStock ? (firstInStock.color || '—') : null;
+    quickAdd.selectedVariantId = firstInStock ? firstInStock.id : null;
+    quickAdd.qty = 1;
+
+    renderQuickAddBody();
+  }
+
+  function quickAddSelectColor(color) {
+    if (!quickAdd || !quickAdd.detail) return;
+    quickAdd.selectedColor = color;
+    const forColor = (quickAdd.detail.variants || []).filter(v => (v.color || '—') === color);
+    const sizesForColor = forColor.filter(v => v.size && v.size !== '-');
+    const chosen = sizesForColor[0] || forColor[0] || null;
+    quickAdd.selectedVariantId = chosen ? chosen.id : null;
+    quickAdd.qty = 1;
+    renderQuickAddBody();
+  }
+
+  function quickAddSelectVariant(variantId) {
+    if (!quickAdd) return;
+    quickAdd.selectedVariantId = variantId;
+    quickAdd.qty = 1;
+    renderQuickAddBody();
+  }
+
+  function quickAddChangeQty(delta) {
+    if (!quickAdd || !quickAdd.detail) return;
+    const variant = (quickAdd.detail.variants || []).find(v => v.id === quickAdd.selectedVariantId);
+    const stock = variant ? variant.stockQuantity : 0;
+    const next = quickAdd.qty + delta;
+    if (next < 1 || next > stock) return;
+    quickAdd.qty = next;
+    renderQuickAddBody();
+  }
+
+  async function quickAddConfirm() {
+    if (!quickAdd || !quickAdd.selectedVariantId) return;
+    const { pid, selectedVariantId, qty } = quickAdd;
+    try {
+      const cart = await Api.addToCart(pid, qty, selectedVariantId);
+      syncCartFromDto(cart);
+      refreshCartArea(pid);
+      if (typeof updateCartBadge === 'function') updateCartBadge();
+      if (typeof showToast === 'function') showToast('success', 'به سبد خرید اضافه شد');
+      closeQuickAdd();
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('error', e.message || 'خطا در افزودن به سبد خرید');
+    }
+  }
+
+  function renderQuickAddBody() {
+    const body = document.getElementById('pc-quickadd-body');
+    if (!body || !quickAdd) return;
+
+    if (!quickAdd.detail) {
+      body.innerHTML = `<div class="flex items-center justify-center py-10 text-xs text-muted">در حال بارگذاری...</div>`;
+      return;
+    }
+
+    const detail = quickAdd.detail;
+    const variants = detail.variants || [];
+
+    if (!variants.length) {
+      body.innerHTML = `<div class="py-6 text-center text-xs text-muted">این محصول تنوعی ندارد.</div>`;
+      return;
+    }
+
+    const variantsByColor = new Map();
+    variants.forEach(v => {
+      const key = v.color || '—';
+      if (!variantsByColor.has(key)) variantsByColor.set(key, []);
+      variantsByColor.get(key).push(v);
+    });
+    const colors = [...variantsByColor.keys()];
+
+    const sizesForColor = (variantsByColor.get(quickAdd.selectedColor) || []).filter(v => v.size && v.size !== '-');
+    const currentVariant = variants.find(v => v.id === quickAdd.selectedVariantId) || null;
+    const stock = currentVariant ? currentVariant.stockQuantity : 0;
+    const basePrice = detail.discountPrice || detail.price;
+    const finalPrice = basePrice + (currentVariant?.priceAdjustment || 0);
+    const mainImage = (detail.images || []).find(i => i.isMain) || detail.images?.[0];
+
+    body.innerHTML = `
+      <div class="mb-4 flex items-center gap-3">
+        <img src="${mainImage?.imageUrl || 'https://picsum.photos/200/200'}" class="h-14 w-14 rounded-xl object-cover" alt="" />
+        <div>
+          <p class="text-sm font-semibold leading-snug">${escapeHtmlPC(detail.name)}</p>
+          <p class="mt-1 text-sm font-bold text-emerald-deep"><span class="ticker">${fmtPC(finalPrice)}</span> <span class="text-[11px] font-normal text-muted">تومان</span></p>
+        </div>
+      </div>
+
+      ${colors.length ? `
+      <div class="mb-4">
+        <p class="mb-2 text-xs font-semibold text-muted">رنگ: <span class="text-foreground">${escapeHtmlPC(quickAdd.selectedColor || '')}</span></p>
+        <div class="flex flex-wrap items-center gap-2">
+          ${colors.map(c => `
+            <button type="button" data-pc-qa-color="${escapeHtmlPC(c)}" class="flex h-9 w-9 items-center justify-center rounded-full border-2 p-0.5 ${c === quickAdd.selectedColor ? 'border-emerald' : 'border-transparent'}" aria-label="${escapeHtmlPC(c)}">
+              <span class="block h-full w-full rounded-full border border-line" style="background:${ColorMap.hexFor(c)}"></span>
+            </button>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${sizesForColor.length ? `
+      <div class="mb-4">
+        <p class="mb-2 text-xs font-semibold text-muted">سایز</p>
+        <div class="flex flex-wrap gap-2">
+          ${sizesForColor.map(v => `
+            <button type="button" data-pc-qa-variant="${v.id}" class="rounded-xl border-2 px-3.5 py-1.5 text-xs font-semibold ${v.id === quickAdd.selectedVariantId ? 'border-emerald text-emerald' : 'border-line'}">${escapeHtmlPC(v.size)}</button>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="mb-4 flex items-center justify-between rounded-xl border border-line px-3 py-2">
+        <span class="text-xs font-semibold text-muted">تعداد</span>
+        <div class="flex items-center gap-3">
+          <button type="button" data-pc-qa-qty="-1" class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-base font-bold leading-none disabled:opacity-40" ${quickAdd.qty <= 1 ? 'disabled' : ''}>−</button>
+          <span class="ticker w-6 text-center text-sm font-bold">${toFaPC(quickAdd.qty)}</span>
+          <button type="button" data-pc-qa-qty="1" class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-muted text-base font-bold leading-none disabled:opacity-40" ${quickAdd.qty >= stock ? 'disabled' : ''}>+</button>
+        </div>
+      </div>
+
+      ${stock <= 0
+        ? `<button type="button" disabled class="w-full rounded-xl border border-line py-2.5 text-sm font-semibold opacity-40">این تنوع موجود نیست</button>`
+        : `<button type="button" data-pc-qa-confirm class="w-full rounded-xl bg-emerald py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">افزودن به سبد</button>`}
+    `;
+  }
+
   async function handleWishlistToggle(pid) {
     if (!isLoggedIn()) {
       // بعد از لاگین باید بلافاصله همین محصول به علاقه‌مندی‌ها اضافه بشه
@@ -237,11 +441,13 @@ const ProductCard = (function () {
       const incBtn = e.target.closest('.pc-inc');
       const decBtn = e.target.closest('.pc-dec');
       const wishBtn = e.target.closest('.pc-wishlist-btn');
+      const quickAddBtn = e.target.closest('.pc-quickadd');
 
       if (addBtn) { e.preventDefault(); handleAdd(parseInt(addBtn.dataset.pid, 10)); }
       else if (incBtn) { e.preventDefault(); handleQtyChange(parseInt(incBtn.dataset.pid, 10), 1); }
       else if (decBtn) { e.preventDefault(); handleQtyChange(parseInt(decBtn.dataset.pid, 10), -1); }
       else if (wishBtn) { e.preventDefault(); e.stopPropagation(); handleWishlistToggle(parseInt(wishBtn.dataset.pid, 10)); }
+      else if (quickAddBtn) { e.preventDefault(); openQuickAdd(parseInt(quickAddBtn.dataset.pid, 10)); }
     });
   }
 

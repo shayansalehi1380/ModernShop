@@ -148,6 +148,7 @@
 <script src="js/api.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
+<script src="js/color-map.js"></script>
 <script src="js/product-card.js"></script>
 <script>
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
@@ -282,9 +283,9 @@ function toggleInStock() {
   resetAndRender();
 }
 
-function applyPrice() {
-  const min = document.getElementById('price-min')?.value;
-  const max = document.getElementById('price-max')?.value;
+function applyPrice(scope) {
+  const min = document.getElementById(`${scope}-price-min`)?.value;
+  const max = document.getElementById(`${scope}-price-max`)?.value;
   filterState.minPrice = min ? parseInt(min) * 1000 : null;
   filterState.maxPrice = max ? parseInt(max) * 1000 : null;
   resetAndRender();
@@ -319,7 +320,7 @@ function setSort(val) {
   resetAndRender();
 }
 
-function filtersHTML() {
+function filtersHTML(scope) {
   return `
     <div class="mb-5 flex items-center justify-between">
       <h2 class="text-sm font-bold">فیلترها</h2>
@@ -338,11 +339,11 @@ function filtersHTML() {
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">محدوده قیمت (هزار تومان)</p>
       <div class="flex items-center gap-2">
-        <input id="price-min" type="number" placeholder="از" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ? Math.floor(filterState.minPrice/1000) : ''}" />
+        <input id="${scope}-price-min" type="number" placeholder="از" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ? Math.floor(filterState.minPrice/1000) : ''}" />
         <span class="text-muted text-xs">تا</span>
-        <input id="price-max" type="number" placeholder="تا" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ? Math.floor(filterState.maxPrice/1000) : ''}" />
+        <input id="${scope}-price-max" type="number" placeholder="تا" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ? Math.floor(filterState.maxPrice/1000) : ''}" />
       </div>
-      <button onclick="applyPrice()" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>
+      <button onclick="applyPrice('${scope}')" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>
     </div>
     <div class="mb-5 border-t border-line pt-5">
       <p class="mb-2.5 text-xs font-semibold text-muted">برند</p>
@@ -374,9 +375,9 @@ function filtersHTML() {
 }
 
 function renderFilters(){
-  document.getElementById('filters-desktop').innerHTML = filtersHTML();
+  document.getElementById('filters-desktop').innerHTML = filtersHTML('desktop');
   const mobileBody = document.getElementById('sheet-filters-body');
-  if(mobileBody) mobileBody.innerHTML = filtersHTML();
+  if(mobileBody) mobileBody.innerHTML = filtersHTML('mobile');
 }
 
 function updateResultText(){
@@ -458,7 +459,7 @@ function openSheet(type){
   document.getElementById('sheet-title').textContent = sheetTitles[type];
   const body = document.getElementById('sheet-body');
   if(type === 'filters'){
-    body.innerHTML = `<div id="sheet-filters-body">${filtersHTML()}</div>`;
+    body.innerHTML = `<div id="sheet-filters-body">${filtersHTML('mobile')}</div>`;
   } else {
     body.innerHTML = sortSheetHTML();
   }

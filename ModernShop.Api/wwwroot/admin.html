@@ -438,6 +438,7 @@
 
 <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/translations/fa.js"></script>
+<script src="js/color-map.js"></script>
 <script>
 /* =========================================================
    کلاینت API پنل مدیریت — این پنل به بک‌اند واقعی وصله، نه مثل قبل mock.
@@ -1068,10 +1069,10 @@ function pfSetType(type){
   if(type === "variable") refreshVariantsSummary();
 }
 
-/* رنگ‌های رایج فارسی برای پیش‌نمایش دایره‌ی رنگ؛ رنگ ناشناخته → خاکستری خنثی */
+/* نگاشت نام رنگ فارسی به HEX برای پیش‌نمایش دایره‌ی رنگ، از js/color-map.js (مشترک با
+   product.html تا رنگی که این‌جا انتخاب می‌شه دقیقاً همون‌جا هم نشون داده بشه) */
 function variantColorHex(name){
-  const map = { 'مشکی':'#1c1c1c','سفید':'#f4f3ee','طلایی':'#b8903e','نقره‌ای':'#c0c0c0','قرمز':'#b4432f','آبی':'#1f4b6f','سبز':'#1f6f5c','صورتی':'#d98ba0','بنفش':'#6b4c9a','قهوه‌ای':'#6b4a35','خاکستری':'#8a8a8a','زرد':'#d9b84a' };
-  return map[(name||"").trim()] || '#9ca3af';
+  return ColorMap.hexFor(name);
 }
 
 function variantRowHtml(color, size, stock, adj, includedInDiscount){

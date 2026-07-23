@@ -326,6 +326,7 @@
     <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
     <script src="js/product-card.js"></script>
+    <script src="js/color-map.js"></script>
     <script>
         function showToast(kind, message) {
             const root = document.getElementById('toast-root');
@@ -507,9 +508,10 @@
             return html;
         }
 
+        // نگاشت نام رنگ به HEX از js/color-map.js (مشترک با پنل مدیریت) میاد، تا رنگی که
+        // ادمین موقع تعریف تنوع انتخاب می‌کنه، دقیقاً همون‌جا این‌جا هم نشون داده بشه
         function colorToHex(name) {
-            const map = { 'مشکی': '#1c1c1c', 'سفید': '#f4f3ee', 'طلایی': '#b8903e', 'قرمز': '#b4432f', 'آبی': '#1f4b6f', 'سبز': '#1f6f5c' };
-            return map[name] || '#9ca3af';
+            return ColorMap.hexFor(name);
         }
 
         /* ---------- گالری ---------- */
