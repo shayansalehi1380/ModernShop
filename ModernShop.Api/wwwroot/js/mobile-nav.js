@@ -64,6 +64,9 @@ const MobileNavSheet = (function () {
 
   function open(type) {
     if (currentSheet === type) { close(); return; }
+    // اگه صفحه‌ای مثل shop.html شیت مخصوص خودش (فیلتر/مرتب‌سازی) رو باز داره،
+    // اول همون بسته بشه که این شیت روش قرار نگیره، بلافاصله بعدش این شیت باز بشه
+    if (typeof closeSheet === 'function') closeSheet();
     currentSheet = type;
     const title = document.getElementById('mnav-sheet-title');
     const body = document.getElementById('mnav-sheet-body');

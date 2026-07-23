@@ -563,6 +563,10 @@ function confirmLogout(){
 
 loadProfile();
 
+/* عدد کنار «سفارش‌های من» و «علاقه‌مندی‌ها» باید همون اول (نه فقط بعد از کلیک روی تب) درست نشون داده بشه */
+loadOrders();
+loadWishlist();
+
 /* ---------- دیپ‌لینک به تب مشخص، مثلاً از order-complete.html?tab=orders ---------- */
 const initialTab = new URLSearchParams(window.location.search).get('tab');
 if(initialTab === 'orders' || initialTab === 'wishlist') switchTab(initialTab);
