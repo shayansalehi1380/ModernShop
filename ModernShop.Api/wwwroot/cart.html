@@ -294,6 +294,10 @@ document.getElementById('go-checkout').addEventListener('click', () => {
 });
 
 loadCart();
+
+// اگه سبد خرید از یک تب دیگه یا هر جای دیگه‌ی سایت تغییر کنه، همین‌جا هم بدون نیاز به
+// رفرش کامل صفحه دوباره خونده و نشون داده می‌شه
+window.addEventListener('atelier:cart-changed', loadCart);
 </script>
 
 </body>

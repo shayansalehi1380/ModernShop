@@ -166,6 +166,18 @@ const ProductCard = (function () {
     });
   }
 
+  // بعد از سینک شدن با سرور (مثلاً وقتی سبد از یک تب دیگه یا صفحه محصول تغییر کرده)، تمام
+  // ناحیه‌های سبد رو کارت‌های همین صفحه (هر تعداد کارتی که باشه) رو یک‌جا به‌روز می‌کنه
+  function refreshAllCartAreas() {
+    document.querySelectorAll('[data-pc-cart-area]').forEach(el => {
+      const pid = parseInt(el.dataset.pcCartArea, 10);
+      if (!pid) return;
+      const entry = cartState.get(pid);
+      const qty = entry ? entry.totalQuantity : 0;
+      el.innerHTML = cartAreaHTML(pid, qty, true);
+    });
+  }
+
   function refreshWishlistBtn(pid) {
     const inWishlist = wishlistState.has(pid);
     document.querySelectorAll(`.pc-wishlist-btn[data-pid="${pid}"]`).forEach(btn => {
@@ -581,5 +593,12 @@ const ProductCard = (function () {
     return cartAreaHTML(pid, getCartQty(pid), inStock);
   }
 
-  return { loadState, render, bind, resolvePendingWishlist, getCartQty, renderCartArea };
+  // هر جای دیگه‌ی سایت (تب دیگه، صفحه محصول، ...) که سبد خرید تغییر کنه، همین‌جا هم دوباره
+  // از سرور خونده می‌شه و تمام کارت‌های محصول رو همین صفحه به‌روز می‌شن - بدون نیاز به رفرش کامل صفحه
+  window.addEventListener('atelier:cart-changed', async () => {
+    await loadState();
+    refreshAllCartAreas();
+  });
+
+  return { loadState, render, bind, resolvePendingWishlist, getCartQty, renderCartArea, refreshAllCartAreas };
 })();

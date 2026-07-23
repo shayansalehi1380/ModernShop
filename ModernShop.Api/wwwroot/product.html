@@ -751,6 +751,14 @@
             }
         }
 
+        // اگه سبد خرید از یک تب دیگه یا هرجای دیگه‌ی سایت (مثلاً کارت‌های محصولات مرتبط همین
+        // صفحه) تغییر کنه، دکمه‌ی افزودن/استپر تعداد همین محصول هم بدون رفرش کامل صفحه به‌روز می‌شه
+        window.addEventListener('atelier:cart-changed', async () => {
+            if (!product) return; // هنوز محصول این صفحه لود نشده
+            await loadCartSnapshot();
+            refreshPdpCartArea();
+        });
+
         /* ---------- تب‌ها ---------- */
         function switchTab(id) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));

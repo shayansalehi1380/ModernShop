@@ -135,7 +135,7 @@
 
 <!-- mobile bottom sheets -->
 <div id="sheet-overlay" class="fixed inset-0 z-[90] hidden bg-black/40 lg:hidden" onclick="closeSheet()"></div>
-<div id="sheet-panel" class="fixed inset-x-0 bottom-0 z-[95] hidden max-h-[75svh] w-full flex-col translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
+<div id="sheet-panel" class="fixed inset-x-0 bottom-16 z-[95] hidden max-h-[70svh] w-full flex-col translate-y-full overflow-hidden rounded-t-3xl border-t border-line bg-surface transition-transform duration-300 ease-out lg:hidden">
   <div class="flex shrink-0 items-center justify-between border-b border-line px-4 py-3">
     <h3 id="sheet-title" class="text-sm font-bold"></h3>
     <button onclick="closeSheet()" class="rounded-full p-2 text-foreground/80 hover:bg-surface-muted" aria-label="بستن">
@@ -304,8 +304,8 @@ function toggleInStock(scope) {
 function applyPrice(scope) {
   const min = toEnDigits(document.getElementById(`${scope}-price-min`)?.value);
   const max = toEnDigits(document.getElementById(`${scope}-price-max`)?.value);
-  filterState.minPrice = min ? parseInt(min) * 1000 : null;
-  filterState.maxPrice = max ? parseInt(max) * 1000 : null;
+  filterState.minPrice = min ? parseInt(min) : null;
+  filterState.maxPrice = max ? parseInt(max) : null;
   resetAndRender();
   showToast('success', 'فیلتر قیمت اعمال شد');
 }
@@ -331,8 +331,8 @@ function clearFilters(scope) {
 function applyFiltersFromSheet() {
   const min = toEnDigits(document.getElementById('mobile-price-min')?.value);
   const max = toEnDigits(document.getElementById('mobile-price-max')?.value);
-  filterState.minPrice = min ? parseInt(min) * 1000 : null;
-  filterState.maxPrice = max ? parseInt(max) * 1000 : null;
+  filterState.minPrice = min ? parseInt(min) : null;
+  filterState.maxPrice = max ? parseInt(max) : null;
   resetAndRender();
   closeSheet();
   showToast('success', 'فیلترها اعمال شد');
@@ -372,11 +372,11 @@ function filtersHTML(scope) {
       </div>
     </div>
     <div class="mb-5 border-t border-line pt-5">
-      <p class="mb-2.5 text-xs font-semibold text-muted">محدوده قیمت (هزار تومان)</p>
+      <p class="mb-2.5 text-xs font-semibold text-muted">محدوده قیمت (تومان)</p>
       <div class="flex items-center gap-2">
-        <input id="${scope}-price-min" type="number" placeholder="از" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ? Math.floor(filterState.minPrice/1000) : ''}" />
+        <input id="${scope}-price-min" type="number" placeholder="مثلاً ۵۰۰۰۰۰" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.minPrice ?? ''}" />
         <span class="text-muted text-xs">تا</span>
-        <input id="${scope}-price-max" type="number" placeholder="تا" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ? Math.floor(filterState.maxPrice/1000) : ''}" />
+        <input id="${scope}-price-max" type="number" placeholder="مثلاً ۵۰۰۰۰۰۰" class="ticker w-full rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs" value="${filterState.maxPrice ?? ''}" />
       </div>
       ${scope === 'desktop' ? `<button onclick="applyPrice('desktop')" class="mt-2.5 w-full rounded-xl border border-emerald py-2 text-xs font-semibold text-emerald hover:bg-emerald-soft">اعمال قیمت</button>` : ''}
     </div>

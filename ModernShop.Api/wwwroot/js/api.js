@@ -51,6 +51,26 @@ async function apiFetch(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
+/* ---------------- سینک سبد خرید بین تب‌ها و بخش‌های مختلف همون صفحه ----------------
+   وقتی سبد خرید از هرجایی (کارت محصول، پاپ‌آپ انتخاب تنوع، صفحه محصول، خود صفحه سبد
+   خرید) تغییر می‌کنه، این تابع صدا زده می‌شه؛ یک رویداد سراسری atelier:cart-changed
+   پخش می‌کنه که هر بخشی از همون صفحه (نشان تعداد سبد، کارت‌های محصول، ...) می‌تونه
+   بهش گوش بده و خودش رو با وضعیت واقعی سبد به‌روز کنه. علاوه بر این، چون تو localStorage
+   هم یک مقدار می‌نویسه، مرورگر به‌صورت خودکار رویداد استاندارد "storage" رو تو بقیه‌ی
+   تب‌های باز همین سایت (نه تب فعلی) triggers می‌کنه - پس اگه کاربر همزمان سبد خرید رو
+   تو یک تب دیگه باز کرده باشه، اونم به‌محض برگشتن به اون تب (یا حتی در پس‌زمینه) خودش
+   رو با آخرین وضعیت هماهنگ می‌کنه. */
+function notifyCartChanged() {
+  try { localStorage.setItem('atelier_cart_sync', String(Date.now())); } catch (e) { /* بی‌خیال (مثلاً حالت خصوصی مرورگر) */ }
+  window.dispatchEvent(new CustomEvent('atelier:cart-changed'));
+}
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'atelier_cart_sync') {
+    window.dispatchEvent(new CustomEvent('atelier:cart-changed'));
+  }
+});
+
 /* ---------------- همه‌ی endpoint هایی که تو صفحات استفاده می‌شن ---------------- */
 const Api = {
   // کاتالوگ
@@ -69,11 +89,21 @@ const Api = {
 
   // سبد خرید (هم کاربر مهمان هم لاگین‌کرده)
   getCart: () => apiFetch('/cart'),
-  addToCart: (productId, quantity = 1, productVariantId = null) =>
-    apiFetch('/cart/items', { method: 'POST', body: JSON.stringify({ productId, quantity, productVariantId }) }),
-  updateCartItem: (cartItemId, quantity) =>
-    apiFetch('/cart/items', { method: 'PUT', body: JSON.stringify({ cartItemId, quantity }) }),
-  removeCartItem: (cartItemId) => apiFetch(`/cart/items/${cartItemId}`, { method: 'DELETE' }),
+  addToCart: async (productId, quantity = 1, productVariantId = null) => {
+    const cart = await apiFetch('/cart/items', { method: 'POST', body: JSON.stringify({ productId, quantity, productVariantId }) });
+    notifyCartChanged();
+    return cart;
+  },
+  updateCartItem: async (cartItemId, quantity) => {
+    const cart = await apiFetch('/cart/items', { method: 'PUT', body: JSON.stringify({ cartItemId, quantity }) });
+    notifyCartChanged();
+    return cart;
+  },
+  removeCartItem: async (cartItemId) => {
+    const cart = await apiFetch(`/cart/items/${cartItemId}`, { method: 'DELETE' });
+    notifyCartChanged();
+    return cart;
+  },
   applyDiscount: (code) => apiFetch('/cart/apply-discount', { method: 'POST', body: JSON.stringify({ code }) }),
 
   // سفارش (نیاز به لاگین)
@@ -147,3 +177,7 @@ async function updateCartBadge() {
     // اگه هنوز سبدی نساخته شده یا خطای شبکه بود، بی‌سروصدا رد شو
   }
 }
+
+// نشان تعداد سبد خرید (هدر + منوی پایین موبایل) رو تمام صفحات، خودش رو با هر تغییر سبد
+// (چه تو همین صفحه چه تو یک تب دیگه) هماهنگ نگه می‌داره
+window.addEventListener('atelier:cart-changed', () => updateCartBadge());

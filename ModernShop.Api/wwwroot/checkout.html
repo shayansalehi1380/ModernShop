@@ -281,6 +281,26 @@ async function init(){
   }
 }
 
+// وقتی سبد خرید از یک تب دیگه یا هرجای دیگه‌ی سایت تغییر کنه، به‌جای دوباره اجرا کردن کل
+// init() (که فرم آدرس رو هم دوباره پر می‌کرد و ممکن بود چیزی که کاربر داشت تایپ می‌کرد رو
+// پاک کنه)، فقط خود سبد و خلاصه‌ی سفارش دوباره خونده و به‌روز می‌شه
+async function refreshCartOnly(){
+  try {
+    let cart = await Api.getCart();
+    if(!cart.items || cart.items.length === 0){
+      window.location.href = 'cart.html';
+      return;
+    }
+    const storedCode = localStorage.getItem(DISCOUNT_STORAGE_KEY);
+    if(storedCode){
+      try { cart = await Api.applyDiscount(storedCode); }
+      catch(e) { localStorage.removeItem(DISCOUNT_STORAGE_KEY); }
+    }
+    currentCart = cart;
+    renderSummary();
+  } catch(e) { /* بی‌سروصدا رد شو */ }
+}
+
 function prefillAddress(addresses){
   if(!addresses || addresses.length === 0) return;
   const def = addresses.find(a => a.isDefault) || addresses[0];
@@ -422,6 +442,8 @@ document.getElementById('submit-order').addEventListener('click', async () => {
 });
 
 init();
+
+window.addEventListener('atelier:cart-changed', refreshCartOnly);
 </script>
 
 </body>
