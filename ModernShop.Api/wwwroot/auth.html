@@ -45,15 +45,7 @@
 
 <div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
 
-<!-- این صفحه عمداً از سیستم partial هدر/فوتر استفاده نمی‌کنه، چون طراحی مینیمال خودش رو داره -->
-<header class="border-b border-line bg-surface/90 backdrop-blur">
-  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-    <a href="index.html" class="flex items-center gap-2">
-      <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald text-sm font-bold text-white">آ</span>
-      <span class="text-lg font-extrabold tracking-tight">آتلیه</span>
-    </a>
-  </div>
-</header>
+<div id="header-placeholder"></div>
 
 <main class="relative flex min-h-[calc(100vh-65px)] items-center justify-center overflow-hidden px-4 py-12">
   <div class="pattern-emerald pointer-events-none absolute inset-0 opacity-60"></div>
@@ -64,9 +56,9 @@
       <!-- ============ STEP 1: PHONE ============ -->
       <section id="step-phone" class="step">
           <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl">
-              <img src="images/logo_login.png" alt="Dorin Market" class="h-14 w-14 object-contain"
+              <img src="images/logo_header.png" alt="Dorin Market" class="h-full w-full object-contain scale-150"
                    draggable="false" oncontextmenu="return false"
-                   style="-webkit-user-drag:none; user-select:none; pointer-events:none;" />
+                   style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />
           </div>
         <h1 class="text-center text-xl font-extrabold">ورود یا ثبت‌نام</h1>
         <p class="mt-2 text-center text-sm leading-6 text-muted">شماره همراه خود را وارد کنید تا کد تایید برایتان پیامک شود</p>
@@ -135,7 +127,13 @@
   </div>
 </main>
 
+<div id="footer-placeholder"></div>
+<div id="mobile-nav-placeholder"></div>
+
 <script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/search.js"></script>
+<script src="js/mobile-nav.js"></script>
 <script>
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
 
