@@ -44,7 +44,9 @@ function initBackToTop() {
   const btn = document.createElement('button');
   btn.id = 'back-to-top';
   btn.setAttribute('aria-label', 'بازگشت به بالای صفحه');
-  btn.className = 'fixed bottom-20 right-4 z-[94] flex h-11 w-11 translate-y-3 items-center justify-center rounded-full border border-line bg-surface text-foreground opacity-0 shadow-lg backdrop-blur transition-all duration-300 pointer-events-none hover:border-emerald hover:text-emerald lg:bottom-6';
+  // product.html یه نوار چسبان قیمت/افزودن-به-سبد اضافه رو موبایل داره که این دکمه رو می‌پوشوند، پس رو این صفحه باید بالاتر قرار بگیره
+  const bottomOffsetClass = currentPage === 'product.html' ? 'bottom-[9.5rem]' : 'bottom-20';
+  btn.className = `fixed ${bottomOffsetClass} right-4 z-[94] flex h-11 w-11 translate-y-3 items-center justify-center rounded-full border border-line bg-surface text-foreground opacity-0 shadow-lg backdrop-blur transition-all duration-300 pointer-events-none hover:border-emerald hover:text-emerald lg:bottom-6`;
   btn.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   document.body.appendChild(btn);
