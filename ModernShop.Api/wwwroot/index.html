@@ -98,15 +98,17 @@
 
 <!-- محصولات ویژه (حالا بعد از دُرین تایم) -->
 <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-  <div class="flex items-end justify-between">
-    <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">پیشنهاد ما</span>
-      <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات ویژه</h2></div>
-    <a href="shop.html" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
-      مشاهده همه
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-    </a>
+  <div class="rounded-3xl border border-line bg-surface p-5 sm:p-8">
+    <div class="flex items-end justify-between">
+      <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">پیشنهاد ما</span>
+        <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات ویژه</h2></div>
+      <a href="shop.html" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
+        مشاهده همه
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
+    </div>
+    <div id="carousel-featured" class="carousel-wrap relative"></div>
   </div>
-  <div id="carousel-featured" class="carousel-wrap relative"></div>
 </section>
 
 <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -327,17 +329,17 @@ function dorinTimeCardHTML(p){
   const pct = Math.round((1 - (p.discountPrice / p.price)) * 100);
   const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
   return `
-    <a href="${productUrl}" class="block w-[150px] shrink-0 rounded-2xl bg-white/[0.07] p-2.5 transition hover:bg-white/[0.11] sm:w-[170px]">
+    <a href="${productUrl}" class="block w-[150px] shrink-0 rounded-2xl bg-white p-2.5 shadow-sm transition hover:shadow-md sm:w-[170px]">
       <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
         <img src="${p.mainImageUrl || 'https://picsum.photos/300/300'}" class="h-full w-full object-cover" loading="lazy" alt="${dorinTimeEscapeHtml(p.name)}" />
-        <span class="absolute right-1.5 top-1.5 rounded-full bg-danger px-2 py-0.5 text-[10px] font-bold text-white"><span class="ticker">${dorinTimeToFa(pct)}٪</span></span>
+        <span class="absolute right-1.5 top-1.5 z-10 rounded-full bg-danger px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"><span class="ticker">${dorinTimeToFa(pct)}٪ تخفیف</span></span>
       </div>
-      <h3 class="mt-2 truncate text-xs font-semibold text-white">${dorinTimeEscapeHtml(p.name)}</h3>
+      <h3 class="mt-2 truncate text-xs font-semibold text-black">${dorinTimeEscapeHtml(p.name)}</h3>
       <div class="mt-1 flex items-baseline gap-1">
-        <span class="ticker text-sm font-bold text-white">${dorinTimeFmtPrice(p.discountPrice)}</span>
-        <span class="text-[10px] text-white/50">تومان</span>
+        <span class="ticker text-sm font-bold text-black">${dorinTimeFmtPrice(p.discountPrice)}</span>
+        <span class="text-[10px] text-black/50">تومان</span>
       </div>
-      <div class="ticker text-[11px] text-white/40 line-through">${dorinTimeFmtPrice(p.price)}</div>
+      <div class="ticker text-[11px] text-black/40 line-through">${dorinTimeFmtPrice(p.price)}</div>
     </a>`;
 }
 
