@@ -56,7 +56,7 @@
       <!-- ============ STEP 1: PHONE ============ -->
       <section id="step-phone" class="step">
           <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl">
-              <img src="images/logo_header.png" alt="Dorin Market" class="h-full w-full object-contain scale-150"
+              <img src="images/logo_header.png" alt="Dorin Market" class="h-full w-full object-contain scale-[1.75]"
                    draggable="false" oncontextmenu="return false"
                    style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />
           </div>
@@ -66,7 +66,7 @@
         <form id="phone-form" class="mt-7" onsubmit="return submitPhone(event)">
           <label for="phone-input" class="mb-2 block text-xs font-medium text-muted">شماره همراه</label>
           <div id="phone-field" class="flex items-center gap-2 rounded-2xl border border-line bg-surface-muted px-4 py-3.5 transition focus-within:border-emerald focus-within:ring-4 focus-within:ring-emerald-soft">
-            <input id="phone-input" inputmode="numeric" maxlength="11" placeholder="۰۹۱۲ ۳۴۵ ۶۷۸۹" autofocus
+            <input id="phone-input" type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" maxlength="11" placeholder="۰۹۱۲ ۳۴۵ ۶۷۸۹" autofocus
               class="ticker w-full bg-transparent text-left text-[15px] tracking-wide outline-none placeholder:text-muted/60" />
           </div>
           <p id="phone-error" class="mt-2 hidden text-xs text-danger">شماره همراه را به‌درستی وارد کنید (۱۱ رقم و با ۰۹ شروع شود)</p>
@@ -95,11 +95,11 @@
         </p>
 
         <div id="otp-boxes" dir="ltr" class="mt-7 flex items-center justify-center gap-2.5 sm:gap-3">
-          <input data-idx="0" type="text" inputmode="numeric" maxlength="1" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
-          <input data-idx="1" type="text" inputmode="numeric" maxlength="1" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
-          <input data-idx="2" type="text" inputmode="numeric" maxlength="1" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
-          <input data-idx="3" type="text" inputmode="numeric" maxlength="1" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
-          <input data-idx="4" type="text" inputmode="numeric" maxlength="1" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
+          <input data-idx="0" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="5" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
+          <input data-idx="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="5" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
+          <input data-idx="2" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="5" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
+          <input data-idx="3" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="5" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
+          <input data-idx="4" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="5" class="otp-box ticker h-14 w-12 rounded-2xl border border-line bg-surface-muted text-center text-xl font-bold sm:h-16 sm:w-14" />
         </div>
         <p id="otp-error" class="mt-3 hidden text-center text-xs text-danger">کد وارد شده صحیح نیست</p>
 
@@ -227,6 +227,7 @@ const confirmBtn = document.getElementById('otp-confirm-btn');
 function resetOtpBoxes(){
   otpBoxes.forEach(b => { b.value = ''; b.classList.remove('border-danger', 'shake'); });
   document.getElementById('otp-error').classList.add('hidden');
+  confirmBtn.dataset.loading = '0';
   updateConfirmState();
   setTimeout(() => otpBoxes[0].focus(), 350);
 }
@@ -236,17 +237,50 @@ function updateConfirmState(){
   confirmBtn.disabled = !filled;
   confirmBtn.classList.toggle('opacity-40', !filled);
   confirmBtn.classList.toggle('opacity-100', filled);
+  return filled;
+}
+
+// وقتی کاربر تازه ۵ رقم رو کامل کرده (نه وقتی فقط داریم بعد از یه خطا دوباره
+// وضعیت دکمه رو رفرش می‌کنیم)، بلافاصله و خودکار دکمه تایید زده بشه
+function autoSubmitIfComplete(){
+  if(updateConfirmState() && confirmBtn.dataset.loading !== '1'){
+    confirmOtp();
+  }
+}
+
+// پخش یک رشته کد (که ممکنه از تایپ سریع، پیست، یا پرشدن خودکار کیبورد/پیامک گوشی اومده باشه)
+// روی خانه‌های ورودی، از یک ایندکس مشخص به بعد
+function distributeOtpDigits(digits, startIdx){
+  const clean = toEn(digits).replace(/[^0-9]/g, '');
+  let i = startIdx;
+  for(const ch of clean){
+    if(!otpBoxes[i]) break;
+    otpBoxes[i].value = ch;
+    i++;
+  }
+  const nextEmpty = otpBoxes.findIndex(b => b.value === '');
+  (nextEmpty === -1 ? otpBoxes[otpBoxes.length - 1] : otpBoxes[nextEmpty]).focus();
+  autoSubmitIfComplete();
 }
 
 otpBoxes.forEach((box, idx) => {
   box.addEventListener('input', () => {
-    box.value = toEn(box.value).replace(/[^0-9]/g, '').slice(0, 1);
     document.getElementById('otp-error').classList.add('hidden');
     otpBoxes.forEach(b => b.classList.remove('border-danger'));
+
+    const digits = toEn(box.value).replace(/[^0-9]/g, '');
+    if(digits.length > 1){
+      // کیبورد/پیامک گوشی کد کامل رو یک‌جا تو همین خونه گذاشته (SMS autofill)
+      box.value = '';
+      distributeOtpDigits(digits, idx);
+      return;
+    }
+
+    box.value = digits.slice(0, 1);
     if(box.value && idx < otpBoxes.length - 1){
       otpBoxes[idx + 1].focus();
     }
-    updateConfirmState();
+    autoSubmitIfComplete();
   });
 
   box.addEventListener('keydown', (e) => {
@@ -267,18 +301,16 @@ otpBoxes.forEach((box, idx) => {
   box.addEventListener('paste', (e) => {
     e.preventDefault();
     const pasted = toEn(e.clipboardData.getData('text')).replace(/[^0-9]/g, '').slice(0, otpBoxes.length);
-    pasted.split('').forEach((ch, i) => { if(otpBoxes[i]) otpBoxes[i].value = ch; });
-    const nextEmpty = otpBoxes.findIndex(b => b.value === '');
-    (nextEmpty === -1 ? otpBoxes[otpBoxes.length - 1] : otpBoxes[nextEmpty]).focus();
-    updateConfirmState();
+    distributeOtpDigits(pasted, 0);
   });
 });
 
 async function confirmOtp(){
-  if(confirmBtn.disabled) return;
+  if(confirmBtn.disabled || confirmBtn.dataset.loading === '1') return;
   const original = confirmBtn.textContent;
   confirmBtn.innerHTML = spinnerSVG;
   confirmBtn.disabled = true;
+  confirmBtn.dataset.loading = '1';
 
   const code = otpBoxes.map(b => b.value).join('');
 
@@ -294,6 +326,7 @@ async function confirmOtp(){
     document.getElementById('otp-error').textContent = err.message || 'کد تایید نادرست است';
     document.getElementById('otp-error').classList.remove('hidden');
     confirmBtn.textContent = original;
+    confirmBtn.dataset.loading = '0';
     updateConfirmState();
     setTimeout(() => otpBoxes.forEach(b => b.classList.remove('shake')), 400);
     showToast('error', err.message || 'کد تایید نادرست است');
