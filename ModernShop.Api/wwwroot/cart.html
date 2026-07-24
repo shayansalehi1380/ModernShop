@@ -35,6 +35,8 @@
   .item-row.removing{opacity:0; transform:translateX(12px)}
   .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
   @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .no-scrollbar{scrollbar-width:none}
 </style>
 </head>
 <body class="bg-bg">
@@ -48,21 +50,21 @@
 
 <!-- breadcrumb / step indicator -->
 <div class="border-b border-line bg-surface">
-  <div class="mx-auto flex max-w-7xl items-center justify-center gap-3 px-4 py-4 text-xs font-medium sm:px-6 lg:px-8">
-    <span class="flex items-center gap-2 text-emerald">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald text-[11px] text-white">۱</span>
-      سبد خرید
-    </span>
-    <span class="h-px w-8 bg-line"></span>
-    <span class="flex items-center gap-2 text-muted">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full border border-line text-[11px]">۲</span>
-      تسویه‌حساب
-    </span>
-    <span class="h-px w-8 bg-line"></span>
-    <span class="flex items-center gap-2 text-muted">
-      <span class="flex h-6 w-6 items-center justify-center rounded-full border border-line text-[11px]">۳</span>
-      تکمیل سفارش
-    </span>
+  <div class="mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto no-scrollbar px-4 py-4 sm:justify-center sm:gap-2 sm:px-6 lg:px-8">
+    <div class="flex shrink-0 items-center gap-1.5 rounded-xl border border-emerald bg-emerald px-2.5 py-1.5">
+      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/25 text-[11px] text-white">۱</span>
+      <span class="whitespace-nowrap text-xs font-medium text-white">سبد خرید</span>
+    </div>
+    <span class="h-0 w-6 shrink-0 border-t-2 border-dotted border-line sm:w-10"></span>
+    <div class="flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-surface px-2.5 py-1.5">
+      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line text-[11px] text-muted">۲</span>
+      <span class="whitespace-nowrap text-xs font-medium text-muted">تسویه‌حساب</span>
+    </div>
+    <span class="h-0 w-6 shrink-0 border-t-2 border-dotted border-line sm:w-10"></span>
+    <div class="flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-surface px-2.5 py-1.5">
+      <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line text-[11px] text-muted">۳</span>
+      <span class="whitespace-nowrap text-xs font-medium text-muted">تکمیل سفارش</span>
+    </div>
   </div>
 </div>
 
