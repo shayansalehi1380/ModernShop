@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title id="page-title">آتلیه | وبلاگ</title>
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+<link rel="shortcut icon" href="images/favicon.ico" />
+<title id="page-title">دُرین مارکت | وبلاگ</title>
 <meta id="meta-description" name="description" content="" />
 <meta name="robots" content="index, follow" />
 
@@ -89,7 +93,7 @@
             <span id="author-initials" class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-soft text-sm font-bold text-emerald"></span>
             <div>
               <div id="author-name" class="text-[13px] font-semibold text-foreground"></div>
-              <div>نویسنده وبلاگ آتلیه</div>
+              <div>نویسنده وبلاگ دُرین مارکت</div>
             </div>
           </div>
           <span class="hidden sm:inline">·</span>
@@ -227,7 +231,7 @@ function renderPost(){
   document.getElementById('related-section').classList.remove('hidden');
   document.getElementById('comments-section').classList.remove('hidden');
 
-  document.getElementById('page-title').textContent = `${post.title} | وبلاگ آتلیه`;
+  document.getElementById('page-title').textContent = `دُرین مارکت | ${post.title}`;
   document.getElementById('meta-description').setAttribute('content', stripHtml(post.content).slice(0, 160));
   document.getElementById('breadcrumb-title').textContent = post.title;
 

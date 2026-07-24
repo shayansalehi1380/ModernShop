@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title id="page-title">آتلیه</title>
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+<link rel="shortcut icon" href="images/favicon.ico" />
+<title id="page-title">دُرین مارکت</title>
 <meta name="robots" content="index, follow" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -90,7 +94,7 @@ function renderPage(page){
   document.getElementById('loading-state').classList.add('hidden');
   document.getElementById('page-content').classList.remove('hidden');
 
-  document.getElementById('page-title').textContent = `${page.title} | آتلیه`;
+  document.getElementById('page-title').textContent = `دُرین مارکت | ${page.title}`;
   document.getElementById('breadcrumb-title').textContent = page.title;
   document.getElementById('page-heading').textContent = page.title;
   document.getElementById('page-body').innerHTML = page.content;
