@@ -405,6 +405,24 @@
   }
   .filter-chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
 
+  /* ---------- سرچ لیست‌ها ---------- */
+  .search-row{margin-bottom:14px;}
+  .search-box{position:relative;max-width:360px;}
+  .search-box svg{position:absolute;top:50%;right:13px;transform:translateY(-50%);color:var(--text-faint);pointer-events:none;}
+  .search-box input{width:100%;padding:9px 38px 9px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;outline:none;transition:.15s;}
+  .search-box input:focus{border-color:var(--wine);box-shadow:0 0 0 3px var(--wine-soft);}
+
+  /* ---------- صفحه‌بندی ---------- */
+  .pager{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;flex-wrap:wrap;}
+  .page-btn{
+    min-width:34px;height:34px;padding:0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);
+    font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .page-btn:hover:not(:disabled):not(.active){border-color:var(--wine);color:var(--wine);}
+  .page-btn.active{background:var(--wine);border-color:var(--wine);color:#fff;}
+  .page-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .page-ellipsis{min-width:20px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px;}
+
   /* ---------- نظرات ---------- */
   .review-card{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
   .review-card:last-child{margin-bottom:0;}
@@ -533,18 +551,65 @@ const state = {
   products: [],
   productsLoaded: false,
   showInactiveProducts: false,
+  productsSearch: "",
+  productsPage: 1,
   blogPosts: [],
   blogPostsLoaded: false,
+  blogSearch: "",
+  blogPage: 1,
   orders: [],
+  ordersSearch: "",
+  ordersPage: 1,
   reviews: [],
   reviewsLoaded: false,
   reviewFilter: null, // null=همه، true=تایید شده، false=در انتظار تایید
   reviewType: "product", // product | blog
+  reviewsPage: 1,
   blogComments: [],
   blogCommentsLoaded: false,
+  blogCommentsPage: 1,
   staticPages: [],
   staticPagesLoaded: false,
+  staticPagesPage: 1,
 };
+
+/* ============ سرچ + صفحه‌بندی مشترک لیست‌ها ============ */
+const PAGE_SIZE = 10;
+
+function paginateArray(arr, page){
+  const start = (page - 1) * PAGE_SIZE;
+  return arr.slice(start, start + PAGE_SIZE);
+}
+
+// دراپ‌داون/سرچ‌باکس‌های لیست، بعد از هر تایپ باید صفحه رو به ۱ برگردونن
+function searchBoxHtml(id, placeholder, value, onInputFn){
+  return `
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="${id}" value="${escapeHtml(value)}" placeholder="${placeholder}" oninput="${onInputFn}(this.value)" />
+      </div>
+    </div>`;
+}
+
+function renderPager(totalItems, currentPage, gotoFnName){
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  if(totalPages <= 1) return "";
+  const pages = [];
+  for(let p = 1; p <= totalPages; p++){
+    if(p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) pages.push(p);
+    else if(pages[pages.length - 1] !== "...") pages.push("...");
+  }
+  let html = `<div class="pager">`;
+  html += `<button class="page-btn" ${currentPage <= 1 ? "disabled" : ""} onclick="${gotoFnName}(${currentPage - 1})" aria-label="صفحه قبل">‹</button>`;
+  html += pages.map(p => p === "..."
+    ? `<span class="page-ellipsis">…</span>`
+    : `<button class="page-btn ${p === currentPage ? "active" : ""}" onclick="${gotoFnName}(${p})">${p.toLocaleString("fa-IR")}</button>`
+  ).join("");
+  html += `<button class="page-btn" ${currentPage >= totalPages ? "disabled" : ""} onclick="${gotoFnName}(${currentPage + 1})" aria-label="صفحه بعد">›</button>`;
+  html += `</div>`;
+  return html;
+}
 
 /* ============ helpers ============ */
 function toman(n){
@@ -790,7 +855,22 @@ function viewDesc(){
   }[state.view];
 }
 function refreshView(){
+  // اگه موقع رفرش، فوکوس رو یه اینپوت سرچ بوده (تایپ در حال انجام)، بعد از جایگزینی
+  // innerHTML باید فوکوس و موقعیت مکان‌نما برگرده، وگرنه با هر حرف فوکوس از دست می‌ره
+  const active = document.activeElement;
+  const activeId = (active && active.tagName === "INPUT" && active.id) ? active.id : null;
+  const selStart = activeId ? active.selectionStart : null;
+  const selEnd = activeId ? active.selectionEnd : null;
+
   document.getElementById("view-content").innerHTML = renderView();
+
+  if(activeId){
+    const el = document.getElementById(activeId);
+    if(el){
+      el.focus();
+      try { el.setSelectionRange(selStart, selEnd); } catch(e){}
+    }
+  }
 }
 function renderView(){
   if(state.view === "products") return renderProductsView();
@@ -848,9 +928,14 @@ function renderProductsView(){
 
   // پیش‌فرض فقط محصولات فعال نشون داده می‌شن؛ وگرنه بعد از «حذف» محصول همچنان تو لیست می‌موند
   // (چون حذف در واقع IsActive=false هست، نه پاک شدن واقعی) و به نظر می‌رسید دکمه حذف کار نمی‌کنه.
-  const visibleProducts = state.showInactiveProducts ? state.products : state.products.filter(p=>p.isActive);
+  let visibleProducts = state.showInactiveProducts ? state.products : state.products.filter(p=>p.isActive);
+  if(state.productsSearch.trim()){
+    const q = state.productsSearch.trim().toLowerCase();
+    visibleProducts = visibleProducts.filter(p => (p.name || "").toLowerCase().includes(q));
+  }
+  const pageItems = paginateArray(visibleProducts, state.productsPage);
 
-  const rows = visibleProducts.map(p => `
+  const rows = pageItems.map(p => `
     <tr>
       <td>
         <div class="cell-main">
@@ -891,14 +976,18 @@ function renderProductsView(){
       <div class="filter-chip ${!state.showInactiveProducts?"active":""}" onclick="setShowInactiveProducts(false)">فقط فعال</div>
       <div class="filter-chip ${state.showInactiveProducts?"active":""}" onclick="setShowInactiveProducts(true)">همه (شامل ${inactiveCount.toLocaleString('fa-IR')} حذف‌شده)</div>
     </div>
+    ${searchBoxHtml("products-search", "جستجوی نام محصول...", state.productsSearch, "setProductsSearch")}
     <div class="card">
       <div class="table-wrap">
-        ${visibleProducts.length ? `
+        ${pageItems.length ? `
         <table>
           <thead><tr><th>محصول</th><th>دسته‌بندی</th><th>قیمت</th><th>موجودی</th><th>وضعیت</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
-        </table>` : emptyState("box","هنوز محصولی ثبت نشده","با دکمه «محصول جدید» اولین محصول را اضافه کنید.")}
+        </table>` : (state.products.length === 0
+            ? emptyState("box","هنوز محصولی ثبت نشده","با دکمه «محصول جدید» اولین محصول را اضافه کنید.")
+            : emptyState("box","محصولی یافت نشد","عبارت جستجوشده با هیچ محصولی مطابقت ندارد."))}
       </div>
+      ${renderPager(visibleProducts.length, state.productsPage, "gotoProductsPage")}
     </div>
   `;
 }
@@ -909,6 +998,16 @@ function emptyState(icon, title, desc){
 
 function setShowInactiveProducts(value){
   state.showInactiveProducts = value;
+  state.productsPage = 1;
+  refreshView();
+}
+function setProductsSearch(value){
+  state.productsSearch = value;
+  state.productsPage = 1;
+  refreshView();
+}
+function gotoProductsPage(p){
+  state.productsPage = p;
   refreshView();
 }
 
@@ -1350,7 +1449,16 @@ function renderBlogView(){
 
   const published = state.blogPosts.filter(b=>b.isPublished).length;
 
-  const rows = state.blogPosts.map(b => `
+  let visibleBlogPosts = state.blogPosts;
+  if(state.blogSearch.trim()){
+    const q = state.blogSearch.trim().toLowerCase();
+    visibleBlogPosts = visibleBlogPosts.filter(b =>
+      (b.title || "").toLowerCase().includes(q) || (b.authorName || "").toLowerCase().includes(q)
+    );
+  }
+  const pageItems = paginateArray(visibleBlogPosts, state.blogPage);
+
+  const rows = pageItems.map(b => `
     <tr>
       <td>
         <div class="cell-main">
@@ -1381,16 +1489,30 @@ function renderBlogView(){
       </div>
       <button class="btn btn-primary" onclick="openBlogForm()">${ICONS.plus} مطلب جدید</button>
     </div>
+    ${searchBoxHtml("blog-search", "جستجوی عنوان یا نویسنده...", state.blogSearch, "setBlogSearch")}
     <div class="card">
       <div class="table-wrap">
-        ${state.blogPosts.length ? `
+        ${pageItems.length ? `
         <table>
           <thead><tr><th>عنوان</th><th>تاریخ انتشار</th><th>بازدید</th><th>وضعیت</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
-        </table>` : emptyState("blog","هنوز مطلبی ثبت نشده","با دکمه «مطلب جدید» اولین پست وبلاگ را بنویسید.")}
+        </table>` : (state.blogPosts.length === 0
+            ? emptyState("blog","هنوز مطلبی ثبت نشده","با دکمه «مطلب جدید» اولین پست وبلاگ را بنویسید.")
+            : emptyState("blog","مطلبی یافت نشد","عبارت جستجوشده با هیچ مطلبی مطابقت ندارد."))}
       </div>
+      ${renderPager(visibleBlogPosts.length, state.blogPage, "gotoBlogPage")}
     </div>
   `;
+}
+
+function setBlogSearch(value){
+  state.blogSearch = value;
+  state.blogPage = 1;
+  refreshView();
+}
+function gotoBlogPage(p){
+  state.blogPage = p;
+  refreshView();
 }
 
 async function deleteBlogPost(id){
@@ -1552,7 +1674,9 @@ async function loadStaticPages(){
 function renderStaticPagesView(){
   if(!state.staticPagesLoaded) return loadingRow();
 
-  const rows = state.staticPages.map(p => `
+  const pageItems = paginateArray(state.staticPages, state.staticPagesPage);
+
+  const rows = pageItems.map(p => `
     <tr>
       <td>
         <div class="cell-main">
@@ -1575,14 +1699,19 @@ function renderStaticPagesView(){
   return `
     <div class="card">
       <div class="table-wrap">
-        ${state.staticPages.length ? `
+        ${pageItems.length ? `
         <table>
           <thead><tr><th>صفحه</th><th>آخرین ویرایش</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>` : emptyState("file","صفحه‌ای یافت نشد","صفحات ثابت فوتر هنوز تو دیتابیس ثبت نشده‌اند.")}
       </div>
+      ${renderPager(state.staticPages.length, state.staticPagesPage, "gotoStaticPagesPage")}
     </div>
   `;
+}
+function gotoStaticPagesPage(p){
+  state.staticPagesPage = p;
+  refreshView();
 }
 
 async function openStaticPageForm(slug){
@@ -1688,7 +1817,19 @@ function renderOrdersView(){
     <div class="filter-chip ${state.orderFilter===f.key?"active":""}" onclick="setOrderFilter(${f.key===null?"null":f.key})">${f.label}</div>
   `).join("");
 
-  const rows = state.orders.map(o => `
+  // سرچ: شماره سفارش یا نام مشتری یا شماره موبایل مشتری، هرکدوم که مچ باشه کافیه
+  let visibleOrders = state.orders;
+  if(state.ordersSearch.trim()){
+    const q = state.ordersSearch.trim().toLowerCase();
+    visibleOrders = visibleOrders.filter(o =>
+      String(o.orderNumber || "").toLowerCase().includes(q) ||
+      String(o.customerName || "").toLowerCase().includes(q) ||
+      String(o.customerPhone || "").includes(q)
+    );
+  }
+  const pageItems = paginateArray(visibleOrders, state.ordersPage);
+
+  const rows = pageItems.map(o => `
     <tr>
       <td>
         <div class="cell-title">${o.orderNumber}</div>
@@ -1711,14 +1852,16 @@ function renderOrdersView(){
 
   return `
     <div class="filter-row">${filterChips}</div>
+    ${searchBoxHtml("orders-search", "جستجو با شماره سفارش، نام یا شماره موبایل مشتری...", state.ordersSearch, "setOrdersSearch")}
     <div class="card">
       <div class="table-wrap">
-        ${state.orders.length ? `
+        ${pageItems.length ? `
         <table>
           <thead><tr><th>سفارش</th><th>مشتری</th><th>اقلام</th><th>مبلغ کل</th><th>وضعیت</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
-        </table>` : emptyState("order","سفارشی یافت نشد","برای فیلتر انتخاب‌شده سفارشی ثبت نشده است.")}
+        </table>` : emptyState("order","سفارشی یافت نشد","برای فیلتر یا جستجوی انتخاب‌شده سفارشی ثبت نشده است.")}
       </div>
+      ${renderPager(visibleOrders.length, state.ordersPage, "gotoOrdersPage")}
     </div>
   `;
 }
@@ -1730,7 +1873,17 @@ function orderBadge(status){
 
 function setOrderFilter(key){
   state.orderFilter = key;
+  state.ordersPage = 1;
   loadOrders();
+}
+function setOrdersSearch(value){
+  state.ordersSearch = value;
+  state.ordersPage = 1;
+  refreshView();
+}
+function gotoOrdersPage(p){
+  state.ordersPage = p;
+  refreshView();
 }
 
 async function openOrderDetail(id){
@@ -1855,12 +2008,24 @@ const REVIEW_FILTERS = [
 
 function setReviewType(type){
   state.reviewType = type;
+  state.reviewsPage = 1;
+  state.blogCommentsPage = 1;
   loadReviews();
 }
 
 function setReviewFilter(key){
   state.reviewFilter = key === "null" ? null : key === "true";
+  state.reviewsPage = 1;
+  state.blogCommentsPage = 1;
   loadReviews();
+}
+function gotoReviewsPage(p){
+  state.reviewsPage = p;
+  refreshView();
+}
+function gotoBlogCommentsPage(p){
+  state.blogCommentsPage = p;
+  refreshView();
 }
 
 async function loadReviews(){
@@ -1902,7 +2067,8 @@ function renderReviewsView(){
 
   if(state.reviewType === "blog"){
     const pendingCount = state.blogComments.filter(c=>!c.isApproved).length;
-    const cards = state.blogComments.map(c => `
+    const pageItems = paginateArray(state.blogComments, state.blogCommentsPage);
+    const cards = pageItems.map(c => `
       <div class="review-card">
         <div class="review-head">
           <div class="review-who">
@@ -1933,14 +2099,16 @@ function renderReviewsView(){
       ${typeToggle}
       <div class="filter-row">${filterChips}</div>
       <div class="card" style="padding:16px;">
-        ${state.blogComments.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+        ${pageItems.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+        ${renderPager(state.blogComments.length, state.blogCommentsPage, "gotoBlogCommentsPage")}
       </div>
     `;
   }
 
   const pendingCount = state.reviews.filter(r=>!r.isApproved).length;
+  const pageItems = paginateArray(state.reviews, state.reviewsPage);
 
-  const cards = state.reviews.map(r => `
+  const cards = pageItems.map(r => `
     <div class="review-card">
       <div class="review-head">
         <div class="review-who">
@@ -1983,7 +2151,8 @@ function renderReviewsView(){
     ${typeToggle}
     <div class="filter-row">${filterChips}</div>
     <div class="card" style="padding:16px;">
-      ${state.reviews.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+      ${pageItems.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+      ${renderPager(state.reviews.length, state.reviewsPage, "gotoReviewsPage")}
     </div>
   `;
 }

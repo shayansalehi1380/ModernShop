@@ -32,8 +32,10 @@
   .hover\:border-emerald:hover{border-color:var(--emerald)}
   .hover\:text-emerald:hover{color:var(--emerald)}
   .bg-emerald-hover:hover{background:#195d4d}
-  input:focus,textarea:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
-  .field.invalid input,.field.invalid textarea{border-color:var(--danger)}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
+  select.pretty-select{cursor:pointer}
+  select.pretty-select:disabled{cursor:not-allowed}
+  .field.invalid input,.field.invalid textarea,.field.invalid select{border-color:var(--danger)}
   .field.invalid .error-text{display:block}
   .error-text{display:none}
   .pay-opt.selected{border-color:var(--emerald);background:var(--emerald-soft)}
@@ -113,23 +115,33 @@
             </div>
             <div class="field">
               <label for="province" class="mb-1.5 block text-xs font-medium text-muted">استان</label>
-              <input id="province" type="text" class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition placeholder:text-muted" />
-              <p class="error-text mt-1.5 text-xs text-danger">لطفاً استان را وارد کنید</p>
+              <div class="relative">
+                <select id="province" class="pretty-select w-full appearance-none rounded-xl border border-line bg-surface-muted py-3 pl-9 pr-4 text-sm transition">
+                  <option value="">انتخاب استان</option>
+                </select>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              <p class="error-text mt-1.5 text-xs text-danger">لطفاً استان را انتخاب کنید</p>
             </div>
             <div class="field">
               <label for="city" class="mb-1.5 block text-xs font-medium text-muted">شهر</label>
-              <input id="city" type="text" class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition placeholder:text-muted" />
-              <p class="error-text mt-1.5 text-xs text-danger">لطفاً شهر را وارد کنید</p>
-            </div>
-            <div class="field sm:col-span-2">
-              <label for="address" class="mb-1.5 block text-xs font-medium text-muted">آدرس کامل</label>
-              <textarea id="address" rows="3" placeholder="خیابان، کوچه، پلاک، واحد" class="w-full resize-none rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition placeholder:text-muted"></textarea>
-              <p class="error-text mt-1.5 text-xs text-danger">لطفاً آدرس را کامل بنویسید</p>
+              <div class="relative">
+                <select id="city" disabled class="pretty-select w-full appearance-none rounded-xl border border-line bg-surface-muted py-3 pl-9 pr-4 text-sm text-muted transition disabled:cursor-not-allowed">
+                  <option value="">ابتدا استان را انتخاب کنید</option>
+                </select>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              <p class="error-text mt-1.5 text-xs text-danger">لطفاً شهر را انتخاب کنید</p>
             </div>
             <div class="field">
               <label for="postal" class="mb-1.5 block text-xs font-medium text-muted">کد پستی</label>
               <input id="postal" type="text" placeholder="۱۰ رقمی" class="ticker w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm text-left transition placeholder:text-muted" />
               <p class="error-text mt-1.5 text-xs text-danger">کد پستی باید ۱۰ رقم باشد</p>
+            </div>
+            <div class="field sm:col-span-2">
+              <label for="address" class="mb-1.5 block text-xs font-medium text-muted">آدرس کامل</label>
+              <textarea id="address" rows="3" placeholder="خیابان، کوچه، پلاک، واحد" class="w-full resize-none rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition placeholder:text-muted"></textarea>
+              <p class="error-text mt-1.5 text-xs text-danger">لطفاً آدرس را کامل بنویسید</p>
             </div>
           </div>
         </div>
@@ -179,15 +191,15 @@
         <div class="mt-4 space-y-3 text-sm">
           <div class="flex items-center justify-between">
             <span class="text-muted">جمع کالاها</span>
-            <span class="ticker font-semibold" id="sum-subtotal">۰</span>
+            <span><span class="ticker font-semibold" id="sum-subtotal">۰</span> <span class="text-xs text-muted">تومان</span></span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-muted">هزینه ارسال</span>
-            <span class="ticker font-semibold" id="sum-shipping">۰</span>
+            <span><span class="ticker font-semibold" id="sum-shipping">۰</span> <span class="text-xs text-muted" id="sum-shipping-unit">تومان</span></span>
           </div>
           <div class="flex items-center justify-between" id="sum-discount-row" style="display:none">
             <span class="text-muted">تخفیف (<span id="applied-code"></span>)</span>
-            <span class="ticker font-semibold text-danger" id="sum-discount">۰</span>
+            <span><span class="ticker font-semibold text-danger" id="sum-discount">۰</span> <span class="text-xs text-muted">تومان</span></span>
           </div>
         </div>
 
@@ -221,6 +233,7 @@
 <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
 <script src="js/mobile-nav.js"></script>
+<script src="js/iran-locations.js"></script>
 <script>
 function showToast(kind, message){
   const root = document.getElementById('toast-root');
@@ -308,6 +321,31 @@ async function refreshCartOnly(){
   } catch(e) { /* بی‌سروصدا رد شو */ }
 }
 
+/* ---------- استان/شهر (از js/iran-locations.js) ---------- */
+function initProvinceCity(){
+  const provinceSelect = document.getElementById('province');
+  const citySelect = document.getElementById('city');
+  Object.keys(IRAN_PROVINCES).forEach(name => {
+    provinceSelect.insertAdjacentHTML('beforeend', `<option value="${name}">${name}</option>`);
+  });
+  provinceSelect.addEventListener('change', () => populateCities(provinceSelect.value));
+}
+
+function populateCities(provinceName, selectedCity){
+  const citySelect = document.getElementById('city');
+  const cities = IRAN_PROVINCES[provinceName];
+  if(!cities){
+    citySelect.innerHTML = '<option value="">ابتدا استان را انتخاب کنید</option>';
+    citySelect.disabled = true;
+    citySelect.classList.add('text-muted');
+    return;
+  }
+  citySelect.disabled = false;
+  citySelect.classList.remove('text-muted');
+  citySelect.innerHTML = '<option value="">انتخاب شهر</option>' + cities.map(c => `<option value="${c}" ${c === selectedCity ? 'selected' : ''}>${c}</option>`).join('');
+}
+initProvinceCity();
+
 function prefillAddress(addresses){
   if(!addresses || addresses.length === 0) return;
   const def = addresses.find(a => a.isDefault) || addresses[0];
@@ -315,7 +353,7 @@ function prefillAddress(addresses){
   document.getElementById('fname').value = def.receiverFullName || '';
   document.getElementById('phone').value = def.receiverPhone || '';
   document.getElementById('province').value = def.province || '';
-  document.getElementById('city').value = def.city || '';
+  populateCities(def.province, def.city);
   document.getElementById('address').value = def.fullAddress || '';
   document.getElementById('postal').value = def.postalCode || '';
 }
@@ -328,12 +366,13 @@ function renderSummary(){
         <span class="ticker absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white">${toFaDigits(item.quantity)}</span>
       </div>
       <span class="flex-1 truncate text-xs">${item.productName}</span>
-      <span class="ticker shrink-0 text-xs font-semibold">${formatPrice(item.totalPrice)}</span>
+      <span class="shrink-0 text-left text-xs font-semibold"><span class="ticker">${formatPrice(item.totalPrice)}</span> <span class="text-[10px] font-normal text-muted">تومان</span></span>
     </div>
   `).join('');
 
   document.getElementById('sum-subtotal').textContent = formatPrice(currentCart.subTotal);
   document.getElementById('sum-shipping').textContent = currentCart.shippingCost === 0 ? 'رایگان' : formatPrice(currentCart.shippingCost);
+  document.getElementById('sum-shipping-unit').style.display = currentCart.shippingCost === 0 ? 'none' : '';
   document.getElementById('sum-total').textContent = formatPrice(currentCart.total);
 
   const discRow = document.getElementById('sum-discount-row');

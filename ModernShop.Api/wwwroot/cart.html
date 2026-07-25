@@ -111,11 +111,11 @@
         <div class="mt-5 space-y-3 text-sm">
           <div class="flex items-center justify-between">
             <span class="text-muted">جمع کالاها</span>
-            <span class="ticker font-semibold" id="sum-subtotal">۰</span>
+            <span><span class="ticker font-semibold" id="sum-subtotal">۰</span> <span class="text-xs text-muted">تومان</span></span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-muted">هزینه ارسال</span>
-            <span class="ticker font-semibold" id="sum-shipping">۰</span>
+            <span><span class="ticker font-semibold" id="sum-shipping">۰</span> <span class="text-xs text-muted" id="sum-shipping-unit">تومان</span></span>
           </div>
         </div>
 
@@ -263,6 +263,7 @@ function renderSummary(){
 
   document.getElementById('sum-subtotal').textContent = formatPrice(subtotal);
   document.getElementById('sum-shipping').textContent = shipping === 0 ? 'رایگان' : formatPrice(shipping);
+  document.getElementById('sum-shipping-unit').style.display = shipping === 0 ? 'none' : '';
   document.getElementById('sum-total').textContent = formatPrice(total);
 
   document.getElementById('go-checkout').disabled = !currentCart || currentCart.items.length === 0;

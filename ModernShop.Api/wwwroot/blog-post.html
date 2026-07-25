@@ -165,7 +165,9 @@
     <p class="mx-auto max-w-md text-sm text-white/70">عضو خبرنامه وبلاگ شوید و جدیدترین راهنماها و مطالب را زودتر از همه دریافت کنید.</p>
     <form class="flex w-full max-w-md flex-col gap-3 sm:flex-row" onsubmit="return submitNewsletter(event)">
       <label for="newsletter-email" class="sr-only">آدرس ایمیل</label>
-      <input id="newsletter-email" type="email" required placeholder="آدرس ایمیل شما" class="w-full rounded-full bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/50 outline-none ring-1 ring-white/20" />
+      <input id="newsletter-email" type="email" required placeholder="آدرس ایمیل شما" class="w-full rounded-full bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/50 outline-none ring-1 ring-white/20"
+        oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'لطفاً آدرس ایمیل خود را وارد کنید' : 'لطفاً یک آدرس ایمیل معتبر وارد کنید')"
+        oninput="this.setCustomValidity('')" />
       <button id="newsletter-btn" type="submit" class="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-deep">عضویت</button>
     </form>
   </div>

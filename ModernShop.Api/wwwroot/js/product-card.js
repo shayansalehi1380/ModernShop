@@ -57,23 +57,26 @@ const ProductCard = (function () {
 
     // کل کارت یک لینک به صفحه محصوله (به‌جز دکمه‌ی علاقه‌مندی که به‌صورت خواهر/برادرِ همین لینک،
     // با موقعیت absolute روش قرار می‌گیره تا کلیکش با ناوبری کارت تداخل نکنه)
-    return `<div class="tilt-card product-card relative w-full rounded-2xl border border-line bg-surface p-3" data-product-id="${p.id}">
+    // کارت با flex-col و h-full کل ارتفاع سلول گرید/کروسل رو پر می‌کنه و ردیف قیمت با mt-auto
+    // همیشه ته کارت می‌چسبه، تا وقتی اسم محصول یک یا دو خط بشه یا تخفیف داشته/نداشته باشه،
+    // کارت‌های کنار هم دقیقاً میزان (هم‌ارتفاع) بمونن.
+    return `<div class="tilt-card product-card relative flex h-full w-full flex-col rounded-2xl border border-line bg-surface p-3" data-product-id="${p.id}">
       <button type="button" class="pc-wishlist-btn absolute left-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-surface shadow-sm ${inWishlist ? 'text-danger' : 'text-foreground/70'}" data-pid="${p.id}" aria-label="افزودن به علاقه‌مندی‌ها">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="${inWishlist ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
       </button>
-      <a href="${productUrl}" class="block">
+      <a href="${productUrl}" class="flex flex-1 flex-col">
         <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
           <img src="${p.mainImageUrl || 'https://picsum.photos/400/400'}" class="h-full w-full object-cover" loading="lazy" alt="${escapeHtmlPC(p.name)}" />
           ${badge}${outOfStock}
         </div>
-        <div class="mt-3 px-1">
+        <div class="mt-3 flex flex-1 flex-col px-1">
           <div class="text-xs text-muted">${escapeHtmlPC(p.categoryName || '')}</div>
-          <h3 class="mt-1 text-sm font-semibold leading-tight hover:text-emerald">${escapeHtmlPC(p.name)}</h3>
+          <h3 class="mt-1 line-clamp-2 min-h-[2.5em] text-sm font-semibold leading-tight hover:text-emerald">${escapeHtmlPC(p.name)}</h3>
           <div class="mt-1.5 flex items-center gap-1 text-xs text-muted">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg>
             <span class="ticker">${toFaPC(p.averageRating ?? 0)}</span><span class="ticker">(${toFaPC(p.reviewCount ?? 0)})</span>
           </div>
-          <div class="price-row mt-2.5">
+          <div class="price-row mt-auto pt-2.5">
             <span class="ticker text-[15px] font-bold">${fmtPC(price)}</span>
             <span class="text-[11px] text-muted">تومان</span>
             ${oldPrice ? `<span class="old-price ticker text-xs text-muted line-through">${fmtPC(oldPrice)}</span>` : ''}

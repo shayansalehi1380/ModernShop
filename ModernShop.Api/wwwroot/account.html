@@ -140,7 +140,11 @@
           </div>
           <div>
             <label class="mb-1.5 block text-xs font-medium text-muted">تاریخ تولد</label>
-            <input id="p-birthdate" type="date" class="ticker w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm text-left transition" />
+            <div class="relative">
+              <input id="p-birthdate" type="text" readonly placeholder="مثلاً ۱۴۰۰/۰۵/۱۲" class="ticker w-full cursor-pointer rounded-xl border border-line bg-surface-muted px-4 py-3 pl-11 text-sm text-left transition" />
+              <input id="p-birthdate-iso" type="hidden" />
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
           </div>
           <div>
             <label class="mb-1.5 block text-xs font-medium text-muted">جنسیت</label>
@@ -249,6 +253,7 @@
 <script src="js/layout.js"></script>
 <script src="js/search.js"></script>
 <script src="js/mobile-nav.js"></script>
+<script src="js/jalali.js"></script>
 <script>
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
 
@@ -304,7 +309,7 @@ async function loadProfile(){
     document.getElementById('p-lastname').value = profile.lastName || '';
     document.getElementById('p-phone').value = toFaDigits(profile.phoneNumber);
     document.getElementById('p-email').value = profile.email || '';
-    document.getElementById('p-birthdate').value = profile.birthDate ? profile.birthDate.split('T')[0] : '';
+    birthdatePicker.setFromIso(profile.birthDate ? profile.birthDate.split('T')[0] : '');
     document.getElementById('p-gender').value = String(profile.gender ?? 0);
 
     document.getElementById('profile-loading').classList.add('hidden');
@@ -340,7 +345,7 @@ async function saveProfile(e){
       firstName: document.getElementById('p-firstname').value.trim() || null,
       lastName: document.getElementById('p-lastname').value.trim() || null,
       email: document.getElementById('p-email').value.trim() || null,
-      birthDate: document.getElementById('p-birthdate').value || null,
+      birthDate: document.getElementById('p-birthdate-iso').value || null,
       gender: parseInt(document.getElementById('p-gender').value, 10)
     });
     showToast('success', 'اطلاعات با موفقیت ذخیره شد');
@@ -567,6 +572,8 @@ function confirmLogout(){
   showToast('success', 'با موفقیت از حساب کاربری خارج شدید');
   setTimeout(() => { window.location.href = 'index.html'; }, 900);
 }
+
+const birthdatePicker = PersianDatePicker.attach(document.getElementById('p-birthdate'), document.getElementById('p-birthdate-iso'));
 
 loadProfile();
 

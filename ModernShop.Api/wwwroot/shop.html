@@ -38,6 +38,8 @@
   .no-scrollbar::-webkit-scrollbar{display:none}
   .no-scrollbar{scrollbar-width:none}
   input:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 3px var(--emerald-soft)}
+  #shop-search-input:focus{box-shadow:none;border-color:transparent}
+  #sort-select:focus{box-shadow:none}
   input[type=checkbox]{accent-color:var(--emerald)}
   .fade-card{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease}
   .fade-card.show{opacity:1;transform:translateY(0)}
@@ -102,7 +104,7 @@
     <!-- ============ PRODUCTS ============ -->
     <div>
       <!-- جستجوی محصول -->
-      <div class="mb-4 flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-3 transition focus-within:border-emerald">
+      <div class="mb-4 flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-3 transition focus-within:border-emerald focus-within:ring-1 focus-within:ring-emerald">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-muted"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input id="shop-search-input" type="text" placeholder="جستجوی نام محصول (حداقل ۲ حرف)..." class="w-full bg-transparent text-sm outline-none placeholder:text-muted" autocomplete="off" />
         <button id="shop-search-clear" onclick="clearSearch()" class="hidden shrink-0 rounded-full p-1 text-muted hover:text-danger" aria-label="پاک کردن جستجو">
@@ -124,13 +126,16 @@
           </button>
           <div class="hidden items-center gap-2 lg:flex">
             <label class="text-xs text-muted">نمایش بر اساس</label>
-            <select id="sort-select" class="rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs font-medium">
-              <option value="newest">جدیدترین</option>
-              <option value="bestselling">پرفروش‌ترین</option>
-              <option value="cheap">ارزان‌ترین</option>
-              <option value="expensive">گران‌ترین</option>
-              <option value="rating">بهترین امتیاز</option>
-            </select>
+            <div class="relative">
+              <select id="sort-select" class="appearance-none rounded-full border border-line bg-surface-muted py-2 pl-9 pr-4 text-xs font-medium outline-none transition hover:border-emerald focus:border-emerald focus:ring-1 focus:ring-emerald">
+                <option value="newest">جدیدترین</option>
+                <option value="bestselling">پرفروش‌ترین</option>
+                <option value="cheap">ارزان‌ترین</option>
+                <option value="expensive">گران‌ترین</option>
+                <option value="rating">بهترین امتیاز</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
           </div>
         </div>
       </div>
