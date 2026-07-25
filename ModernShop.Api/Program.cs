@@ -5,6 +5,8 @@ using ModernShop.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("Admin"));
+builder.Services.AddScoped<SeoPageRenderer>();
 
 // ===== احراز هویت با JWT =====
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -128,6 +131,27 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// سئوی صفحه محصول/مطلب وبلاگ: ربات‌های AI (GPTBot، ClaudeBot و ...) برخلاف گوگل جاوااسکریپت
+// اجرا نمی‌کنن، پس بدون این میان‌افزار فقط یه اسکلت خالی می‌دیدن. اینجا قبل از سرو شدن فایل
+// استاتیک، عنوان/توضیح‌متا/Schema.org رو با اطلاعات واقعی محصول یا مطلب از دیتابیس پر می‌کنیم -
+// ظاهر صفحه برای کاربر واقعی هیچ فرقی نمی‌کنه (همون HTML همیشگی + جاوااسکریپت همیشگی)
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    var slug = context.Request.Query["slug"].FirstOrDefault();
+
+    if (!string.IsNullOrWhiteSpace(slug) && (path == "/product" || path == "/blog-post"))
+    {
+        var renderer = context.RequestServices.GetRequiredService<SeoPageRenderer>();
+        var handled = path == "/product"
+            ? await renderer.TryRenderProductAsync(context, slug)
+            : await renderer.TryRenderBlogPostAsync(context, slug);
+        if (handled) return;
+    }
+
+    await next();
+});
+
 // حذف پسوند .html از آدرس صفحات: وقتی مسیر پسوند نداره (مثلاً /shop یا /product) و فایل
 // متناظرش با .html تو wwwroot وجود داره، فقط مسیر داخلی درخواست عوض می‌شه (نه ریدایرکت)
 // تا هم نوار آدرس مرورگر همیشه بدون .html بمونه، هم لینک‌های api/swagger/فایل‌های استاتیک دیگه دست‌نخورده بمونن
@@ -143,6 +167,47 @@ app.Use(async (context, next) =>
         if (app.Environment.WebRootFileProvider.GetFileInfo(htmlPath).Exists)
         {
             context.Request.Path = htmlPath;
+        }
+    }
+    await next();
+});
+
+// تامبنیل تصاویر محصول: /uploads/products/thumb/{width}/{filename} اولین‌بار که درخواست
+// بشه، از فایل اصلی (که ممکنه چندمگابایتی باشه) یه نسخه‌ی کوچیک‌شده می‌سازه و رو دیسک کش
+// می‌کنه؛ درخواست‌های بعدیِ همون آدرس مستقیم توسط UseStaticFiles زیر همین میان‌افزار سرو
+// می‌شن (بدون هیچ پردازش عکسی) - یعنی به‌سرعت هر فایل استاتیک دیگه. این باعث می‌شه کارت
+// محصول همه‌جای سایت به‌جای عکس اصلی، نسخه‌ی سبک‌شده رو بارگذاری کنه، حتی برای عکس‌هایی که
+// از قبل (قبل از این تغییر) آپلود شدن.
+var allowedThumbWidths = new HashSet<int> { 96, 160, 240, 320, 480, 640, 960 };
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    if (path is not null && path.StartsWith("/uploads/products/thumb/", StringComparison.OrdinalIgnoreCase))
+    {
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 5 && int.TryParse(segments[3], out var width) && allowedThumbWidths.Contains(width))
+        {
+            var fileName = segments[4];
+            var webRoot = app.Environment.WebRootPath;
+            var originalPath = Path.Combine(webRoot, "uploads", "products", fileName);
+            var thumbDir = Path.Combine(webRoot, "uploads", "products", "thumb", width.ToString());
+            var thumbPath = Path.Combine(thumbDir, fileName);
+
+            if (!File.Exists(thumbPath) && File.Exists(originalPath))
+            {
+                Directory.CreateDirectory(thumbDir);
+                try
+                {
+                    using var image = await Image.LoadAsync(originalPath);
+                    image.Mutate(x => x.Resize(new ResizeOptions { Mode = ResizeMode.Max, Size = new Size(width, width) }));
+                    await image.SaveAsync(thumbPath);
+                }
+                catch
+                {
+                    // اگه پردازش عکس شکست خورد (مثلاً فرمت پشتیبانی‌نشده)، همون فایل اصلی رو بدون تغییر کپی کن
+                    File.Copy(originalPath, thumbPath, overwrite: true);
+                }
+            }
         }
     }
     await next();

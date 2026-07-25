@@ -150,6 +150,20 @@ function formatPrice(n) {
   return toFaDigits(Number(n || 0).toLocaleString('en-US'));
 }
 
+// اگه آدرس عکس از آپلودهای خودمون باشه (uploads/products)، یه نسخه‌ی کوچیک‌شده و کش‌شده‌ی
+// همون عکس رو درخواست می‌کنه (خیلی سبک‌تر از فایل اصلی که ممکنه چندمگابایتی باشه و کارت‌های
+// محصول رو کل سایت کند بارگذاری کنه). برای آدرس‌های خارجی (لینک مستقیم از یه سایت دیگه)
+// دست‌نخورده برمی‌گرده، چون این قابلیت فقط سمت سرور خودمون کار می‌کنه.
+function productThumb(url, width) {
+  if (!url) return url;
+  const marker = '/uploads/products/';
+  const idx = url.indexOf(marker);
+  if (idx === -1) return url;
+  const fileName = url.slice(idx + marker.length);
+  if (!fileName || fileName.includes('/')) return url; // از قبل تامبنیل بوده یا مسیر غیرمنتظره
+  return `${url.slice(0, idx)}${marker}thumb/${width}/${fileName}`;
+}
+
 function updateAuthUI() {
   const loggedIn = isLoggedIn();
   document.querySelectorAll('[data-auth-link]').forEach(el => {

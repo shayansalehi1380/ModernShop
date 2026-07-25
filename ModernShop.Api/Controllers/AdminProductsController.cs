@@ -5,6 +5,8 @@ using ModernShop.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace ModernShop.Api.Controllers;
 
@@ -180,9 +182,31 @@ public class AdminProductsController : ControllerBase
         var fileName = $"{Guid.NewGuid():N}{ext}";
         var filePath = Path.Combine(uploadsDir, fileName);
 
-        await using (var stream = new FileStream(filePath, FileMode.Create))
+        // عکس‌های خام موبایل/دوربین می‌تونن چند مگابایتی و چند هزار پیکسل باشن؛ چون همین آدرس
+        // رو کارت محصول تو کل سایت (که فقط چندصد پیکسل نشونش می‌ده) هم استفاده می‌شه، بدون این
+        // کوچیک‌سازی، بارگذاری کارت‌های محصول تو کل سایت کند می‌شه. گیف متحرک رو دست نمی‌زنیم
+        // چون تغییر سایز با ImageSharp انیمیشنش رو از بین می‌بره.
+        const int maxDimension = 1600;
+        if (ext == ".gif")
         {
+            await using var stream = new FileStream(filePath, FileMode.Create);
             await file.CopyToAsync(stream);
+        }
+        else
+        {
+            await using (var inputStream = file.OpenReadStream())
+            using (var image = await Image.LoadAsync(inputStream))
+            {
+                if (image.Width > maxDimension || image.Height > maxDimension)
+                {
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Mode = ResizeMode.Max,
+                        Size = new Size(maxDimension, maxDimension)
+                    }));
+                }
+                await image.SaveAsync(filePath);
+            }
         }
 
         return Ok(new { url = $"/uploads/products/{fileName}" });

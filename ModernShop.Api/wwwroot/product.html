@@ -9,6 +9,10 @@
     <link id="favicon-shortcut" rel="shortcut icon" href="images/favicon-loading.gif" />
     <script>window.addEventListener('load',()=>{const a=document.getElementById('favicon-32'),b=document.getElementById('favicon-16'),c=document.getElementById('favicon-shortcut');if(a)a.href='images/favicon-32x32.png';if(b)b.href='images/favicon-16x16.png';if(c)c.href='images/favicon.ico';});</script>
     <title id="page-title">دُرین مارکت | در حال بارگذاری...</title>
+    <meta id="meta-description" name="description" content="" />
+    <meta name="robots" content="index, follow" />
+    <script type="application/ld+json" id="jsonld-product"></script>
+    <!--SEO_META_INJECT-->
 
     <!-- فونت وزیرمتن -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -462,15 +466,44 @@
             document.getElementById('tab-review-count').textContent = toFaDigits(product.reviewCount);
             document.getElementById('sku-display').textContent = product.sku ? `کد کالا: ${product.sku}` : '';
 
+            // متادیتای سئو (توضیح متا + Schema.org) - سمت سرور هم همین اطلاعات از قبل تو HTML
+            // اولیه تزریق می‌شن (برای ربات‌هایی که جاوااسکریپت اجرا نمی‌کنن)؛ این‌جا فقط برای
+            // ناوبری سمت کلاینت (وقتی کاربر از یه محصول به محصول دیگه می‌ره) به‌روزشون می‌کنیم
+            const metaDescEl = document.getElementById('meta-description');
+            if (metaDescEl) metaDescEl.setAttribute('content', stripHtmlPdp(product.description).slice(0, 160));
+            const jsonLdEl = document.getElementById('jsonld-product');
+            if (jsonLdEl) {
+                const offer = {
+                    '@type': 'Offer',
+                    url: window.location.href,
+                    priceCurrency: 'IRR',
+                    price: String(Math.round((product.discountPrice || product.price) * 10)),
+                    availability: product.stockQuantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                    itemCondition: 'https://schema.org/NewCondition'
+                };
+                const productLd = {
+                    '@context': 'https://schema.org',
+                    '@type': 'Product',
+                    name: product.name,
+                    description: stripHtmlPdp(product.description).slice(0, 500),
+                    image: (product.images || []).map(i => i.imageUrl).filter(Boolean),
+                    sku: product.sku || undefined,
+                    offers: offer
+                };
+                if (product.brandName) productLd.brand = { '@type': 'Brand', name: product.brandName };
+                if (product.reviewCount > 0) productLd.aggregateRating = { '@type': 'AggregateRating', ratingValue: product.averageRating, reviewCount: product.reviewCount };
+                jsonLdEl.textContent = JSON.stringify(productLd);
+            }
+
             // گالری - تصویر شاخص همیشه پیش‌فرضه؛ فلش‌های راست/چپ بین تصاویر جابه‌جا می‌کنن
             const images = product.images.length ? product.images : [{ imageUrl: '', isMain: true }];
             const mainImg = images.find(i => i.isMain) || images[0];
             galleryImages = images;
             galleryIndex = Math.max(0, images.indexOf(mainImg));
-            document.getElementById('main-image').src = mainImg.imageUrl;
+            document.getElementById('main-image').src = productThumb(mainImg.imageUrl, 1200);
             document.getElementById('thumb-row').innerHTML = images.map((img, i) => `
             <button onclick="setMainImage(this, '${img.imageUrl}')" class="thumb ${img.imageUrl === mainImg.imageUrl ? 'active' : ''} h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-line">
-              <img src="${img.imageUrl}" class="h-full w-full object-cover" />
+              <img src="${productThumb(img.imageUrl, 160)}" class="h-full w-full object-cover" />
             </button>
           `).join('');
             updateGalleryArrows();
@@ -557,7 +590,7 @@
         let galleryIndex = 0;
 
         function setMainImage(btn, url) {
-            document.getElementById('main-image').src = url;
+            document.getElementById('main-image').src = productThumb(url, 1200);
             document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
             const idx = galleryImages.findIndex(img => img.imageUrl === url);
@@ -567,7 +600,7 @@
         function galleryStep(dir) {
             if (galleryImages.length < 2) return;
             galleryIndex = (galleryIndex + dir + galleryImages.length) % galleryImages.length;
-            document.getElementById('main-image').src = galleryImages[galleryIndex].imageUrl;
+            document.getElementById('main-image').src = productThumb(galleryImages[galleryIndex].imageUrl, 1200);
             document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === galleryIndex));
         }
 
@@ -769,6 +802,12 @@
             return String(str ?? '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
         }
 
+        function stripHtmlPdp(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html || '';
+            return div.textContent || '';
+        }
+
         function pdpVariantLabel(variant) {
             if (!variant) return '';
             if (variant.size && variant.size !== '-') return `${variant.color || ''} · سایز ${variant.size}`;
@@ -796,7 +835,7 @@
                 return `
                 <div class="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
                     <div class="flex items-center gap-3">
-                        <img src="${mainImage?.imageUrl || ''}" class="h-12 w-12 shrink-0 rounded-lg object-cover" alt="" />
+                        <img src="${productThumb(mainImage?.imageUrl, 96) || ''}" class="h-12 w-12 shrink-0 rounded-lg object-cover" alt="" />
                         <div>
                             <p class="text-xs font-semibold leading-snug">${escapeHtmlPdp(product.name)}</p>
                             ${label ? `<p class="mt-0.5 text-[11px] text-muted">${escapeHtmlPdp(label)}</p>` : ''}

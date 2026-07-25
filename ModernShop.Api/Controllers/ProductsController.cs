@@ -1,3 +1,4 @@
+using System.Text;
 using ModernShop.Core.DTOs;
 using ModernShop.Core.Entities;
 using ModernShop.Core.Interfaces;
@@ -175,6 +176,53 @@ public class ProductsController : ControllerBase
         };
 
         return Ok(dto);
+    }
+
+    // نسخه‌ی متنی تمیز محصول برای مصرف مستقیم توسط دستیارها/ربات‌های هوش مصنوعی (llms.txt بهش اشاره می‌کنه)
+    [HttpGet("{slug}/markdown")]
+    public async Task<IActionResult> GetMarkdown(string slug)
+    {
+        var product = await _db.Products.AsNoTracking()
+            .Include(p => p.Category)
+            .Include(p => p.Brand)
+            .Include(p => p.Specifications)
+            .FirstOrDefaultAsync(p => p.Slug == slug && p.IsActive);
+
+        if (product is null) return NotFound();
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"# {product.Name}");
+        sb.AppendLine();
+        sb.AppendLine($"دسته‌بندی: {product.Category.Name}" + (product.Brand is null ? "" : $" · برند: {product.Brand.Name}"));
+        sb.AppendLine();
+        var price = product.DiscountPrice ?? product.Price;
+        sb.AppendLine($"قیمت: {price:N0} تومان" + (product.DiscountPrice.HasValue ? $" (قیمت اصلی: {product.Price:N0} تومان)" : ""));
+        sb.AppendLine();
+        sb.AppendLine(product.StockQuantity > 0 ? "موجود در انبار" : "ناموجود");
+        sb.AppendLine();
+
+        if (!string.IsNullOrWhiteSpace(product.Description))
+        {
+            sb.AppendLine("## توضیحات");
+            sb.AppendLine(StripHtmlToText(product.Description));
+            sb.AppendLine();
+        }
+
+        if (product.Specifications.Count > 0)
+        {
+            sb.AppendLine("## مشخصات فنی");
+            foreach (var spec in product.Specifications.OrderBy(s => s.DisplayOrder))
+                sb.AppendLine($"- **{spec.Key}**: {spec.Value}");
+        }
+
+        return Content(sb.ToString(), "text/markdown; charset=utf-8");
+    }
+
+    private static string StripHtmlToText(string html)
+    {
+        var noTags = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        var decoded = System.Net.WebUtility.HtmlDecode(noTags);
+        return System.Text.RegularExpressions.Regex.Replace(decoded, @"\s+", " ").Trim();
     }
 
     // مربوط به تب «نظرات» تو product.html

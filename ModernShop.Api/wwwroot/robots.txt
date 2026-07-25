@@ -1,0 +1,35 @@
+# دُرین مارکت — robots.txt
+# قبل از انتشار رو دامنه‌ی واقعی، آدرس زیر (Sitemap) رو با دامنه‌ی واقعی سایتت جایگزین کن.
+
+# ---------- خزنده‌های عمومی جستجو ----------
+User-agent: *
+Disallow: /admin
+Disallow: /api/
+Allow: /
+
+# ---------- ربات‌های هوش مصنوعی (برای دیده‌شدن تو پاسخ‌های ChatGPT/Claude/Perplexity و ...) ----------
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+Sitemap: https://dorinmarket.ir/sitemap.xml

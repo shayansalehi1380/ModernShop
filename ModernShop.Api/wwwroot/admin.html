@@ -1367,6 +1367,20 @@ async function uploadGalleryImage(fileInput){
   }
 }
 
+async function uploadBlogImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("bf-image").value = url;
+    refreshImagePreview("bf-image", "bf-image-preview");
+    toast("تصویر آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
 async function saveProduct(existingId){
   const name = document.getElementById("pf-name").value.trim();
   if(!name){ toast("نام محصول را وارد کنید.", "error"); return; }
@@ -1586,7 +1600,14 @@ async function openBlogForm(id){
             </div>
             <div class="field">
               <label>تصویر شاخص (آدرس تصویر - اختیاری)</label>
-              <input class="input" id="bf-image" value="${escapeHtml(b.featuredImageUrl||"")}" placeholder="https://..." />
+              <div class="image-upload-row">
+                <input class="input" id="bf-image" oninput="refreshImagePreview('bf-image','bf-image-preview')" value="${escapeHtml(b.featuredImageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+                <label class="btn btn-ghost image-upload-btn">
+                  ${ICONS.plus} آپلود از سیستم
+                  <input type="file" accept="image/*" style="display:none;" onchange="uploadBlogImage(this)" />
+                </label>
+              </div>
+              <div class="image-preview-row" id="bf-image-preview">${b.featuredImageUrl ? `<img src="${escapeHtml(b.featuredImageUrl)}" onerror="this.style.display='none'">` : ""}</div>
             </div>
           </div>
           <div class="field">

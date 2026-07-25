@@ -1,3 +1,4 @@
+using System.Text;
 using ModernShop.Core.DTOs;
 using ModernShop.Core.Entities;
 using ModernShop.Core.Interfaces;
@@ -110,6 +111,41 @@ public class BlogController : ControllerBase
                 })
                 .ToList()
         });
+    }
+
+    // نسخه‌ی متنی تمیز مطلب برای مصرف مستقیم توسط دستیارها/ربات‌های هوش مصنوعی (llms.txt بهش اشاره می‌کنه)
+    [HttpGet("posts/{slug}/markdown")]
+    public async Task<IActionResult> GetPostMarkdown(string slug)
+    {
+        var post = await _db.BlogPosts.AsNoTracking()
+            .Include(p => p.BlogCategory)
+            .Include(p => p.Author)
+            .FirstOrDefaultAsync(p => p.Slug == slug && p.IsPublished);
+
+        if (post is null) return NotFound();
+
+        var authorName = !string.IsNullOrEmpty(post.AuthorName) ? post.AuthorName : $"{post.Author.FirstName} {post.Author.LastName}".Trim();
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"# {post.Title}");
+        sb.AppendLine();
+        sb.AppendLine($"دسته‌بندی: {post.BlogCategory.Name} · نویسنده: {authorName}" + (post.PublishedAt.HasValue ? $" · تاریخ انتشار: {post.PublishedAt:yyyy-MM-dd}" : ""));
+        sb.AppendLine();
+        if (!string.IsNullOrWhiteSpace(post.Excerpt))
+        {
+            sb.AppendLine($"> {post.Excerpt}");
+            sb.AppendLine();
+        }
+        sb.AppendLine(StripHtmlToText(post.Content));
+
+        return Content(sb.ToString(), "text/markdown; charset=utf-8");
+    }
+
+    private static string StripHtmlToText(string html)
+    {
+        var noTags = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        var decoded = System.Net.WebUtility.HtmlDecode(noTags);
+        return System.Text.RegularExpressions.Regex.Replace(decoded, @"\s+", " ").Trim();
     }
 
     // مربوط به فرم «دیدگاه خود را بنویسید» تو blog-post.html

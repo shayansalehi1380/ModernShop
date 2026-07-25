@@ -224,7 +224,7 @@ function renderCart(){
   list.innerHTML = items.map(item => `
     <div class="item-row flex gap-4 rounded-2xl border border-line bg-surface p-4" data-item-id="${item.id}">
       <a href="product?slug=${encodeURIComponent(item.productSlug)}" class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-media sm:h-24 sm:w-24">
-        <img src="${item.imageUrl}" class="h-full w-full object-cover" />
+        <img src="${productThumb(item.imageUrl, 160)}" class="h-full w-full object-cover" />
       </a>
       <div class="flex flex-1 flex-col justify-between">
         <div class="flex items-start justify-between gap-3">

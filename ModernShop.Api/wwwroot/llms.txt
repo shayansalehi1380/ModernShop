@@ -1,0 +1,38 @@
+# دُرین مارکت (Dorin Market)
+
+> فروشگاه اینترنتی ایرانی با تمرکز بر پوشاک، کالای دیجیتال، لوازم خانه و آشپزخانه، و محصولات
+> زیبایی و سلامت. این سند برای دستیارها و ربات‌های هوش مصنوعی نوشته شده تا ساختار سایت و مسیرهای
+> اصلی محتوا رو سریع و دقیق پیدا کنن.
+
+## صفحات اصلی
+
+- [صفحه اصلی](https://dorinmarket.ir/home): معرفی فروشگاه، محصولات ویژه، تخفیف‌های روز
+- [فروشگاه](https://dorinmarket.ir/shop): فهرست کامل محصولات با فیلتر دسته‌بندی/برند/قیمت
+- [وبلاگ](https://dorinmarket.ir/blog): مقالات راهنمای خرید، مد و سبک زندگی
+
+## دسته‌بندی‌های محصول
+
+- پوشاک: /shop?category=fashion
+- کالای دیجیتال: /shop?category=digital
+- خانه و آشپزخانه: /shop?category=home-kitchen
+- زیبایی و سلامت: /shop?category=beauty-health
+
+## داده‌ی ساخت‌یافته و خروجی تمیز
+
+- [نقشه‌ی سایت](https://dorinmarket.ir/sitemap.xml): فهرست کامل و به‌روز همه‌ی محصولات و مطالب
+- هر صفحه‌ی محصول، نسخه‌ی متنی تمیز خودش رو هم داره: `/api/products/{slug}/markdown`
+- هر مطلب وبلاگ هم همینطور: `/api/blog/posts/{slug}/markdown`
+- داده‌ی ساخت‌یافته‌ی Schema.org (Product / BlogPosting / Organization) مستقیم داخل HTML هر صفحه‌ی
+  محصول و مطلب وبلاگ قرار داره.
+
+## درباره‌ی ما
+
+- [داستان ما](https://dorinmarket.ir/page?slug=about-us)
+- [تماس با ما](https://dorinmarket.ir/page?slug=contact-us)
+- [سوالات متداول](https://dorinmarket.ir/page?slug=faq)
+- [شرایط بازگشت کالا](https://dorinmarket.ir/page?slug=return-policy)
+- [قوانین و مقررات](https://dorinmarket.ir/page?slug=terms-and-conditions)
+
+## اختیاری
+
+- [ارتباط با پشتیبانی](https://dorinmarket.ir/page?slug=contact-us)
