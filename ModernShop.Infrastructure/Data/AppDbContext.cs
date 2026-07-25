@@ -39,6 +39,7 @@ public class AppDbContext : DbContext
 
         ConfigureDecimalPrecision(modelBuilder);
         ConfigureUniqueIndexes(modelBuilder);
+        ConfigurePerformanceIndexes(modelBuilder);
         ConfigureDeleteBehavior(modelBuilder);
     }
 
@@ -73,6 +74,23 @@ public class AppDbContext : DbContext
 
         // یک کاربر نمی‌تونه یک محصول رو دوبار به علاقه‌مندی‌ها اضافه کنه
         modelBuilder.Entity<WishlistItem>().HasIndex(x => new { x.UserId, x.ProductId }).IsUnique();
+    }
+
+    /// <summary>
+    /// این دو فیلتر (IsActive رو محصولات، IsPublished رو مطالب وبلاگ) به‌همراه مرتب‌سازی بر
+    /// اساس تاریخ، تقریباً تو هر بازکردن فروشگاه/صفحه اصلی/وبلاگ اجرا می‌شن؛ بدون ایندکس روی
+    /// این ستون‌ها، هرکدوم باید کل جدول رو اسکن کنن که با رشد تعداد محصولات/مطالب کند می‌شه.
+    /// </summary>
+    private static void ConfigurePerformanceIndexes(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Product>().HasIndex(p => new { p.IsActive, p.CreatedAt });
+        modelBuilder.Entity<BlogPost>().HasIndex(p => new { p.IsPublished, p.PublishedAt });
+
+        // GuestSessionId همیشه یک GUID (حداکثر ۳۶ کاراکتر) یا مشابهشه؛ محدودش می‌کنیم چون
+        // SQL Server روی nvarchar(max) اجازه ساخت ایندکس نمی‌ده، و این ستون تقریباً تو هر
+        // درخواست سبد خرید کاربر مهمان (که اکثر بازدیدکننده‌ها هستن) جستجو می‌شه
+        modelBuilder.Entity<Cart>().Property(c => c.GuestSessionId).HasMaxLength(64);
+        modelBuilder.Entity<Cart>().HasIndex(c => c.GuestSessionId);
     }
 
     /// <summary>

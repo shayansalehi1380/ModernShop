@@ -83,7 +83,7 @@
         </form>
 
         <p class="mt-5 text-center text-[11px] leading-6 text-muted">
-          با ورود یا ثبت‌نام، <a href="page.html?slug=terms-and-conditions" class="text-emerald hover:underline">قوانین و مقررات</a> دُرین مارکت را می‌پذیرید
+          با ورود یا ثبت‌نام، <a href="page?slug=terms-and-conditions" class="text-emerald hover:underline">قوانین و مقررات</a> دُرین مارکت را می‌پذیرید
         </p>
       </section>
 
@@ -157,7 +157,7 @@ function showToast(kind, message){
 }
 
 /* ---------- اگه از یه صفحه محافظت‌شده (مثل checkout) به اینجا هدایت شده، بعد از لاگین برگرده همونجا ---------- */
-const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || 'home';
 
 /* ---------- اگه از قبل لاگین بوده، لازم نیست دوباره این صفحه رو ببینه ---------- */
 if(isLoggedIn()){

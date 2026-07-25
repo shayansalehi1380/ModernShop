@@ -115,7 +115,43 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseDefaultFiles();
+
+// صفحه اصلی سایت به "/home" منتقل شده (قبلاً index.html)؛ ریشه‌ی سایت واقعاً (نه فقط داخلی)
+// به /home ریدایرکت می‌شه تا در نوار آدرس مرورگر هم "home" دیده بشه
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/home", permanent: false);
+        return;
+    }
+    await next();
+});
+
+// حذف پسوند .html از آدرس صفحات: وقتی مسیر پسوند نداره (مثلاً /shop یا /product) و فایل
+// متناظرش با .html تو wwwroot وجود داره، فقط مسیر داخلی درخواست عوض می‌شه (نه ریدایرکت)
+// تا هم نوار آدرس مرورگر همیشه بدون .html بمونه، هم لینک‌های api/swagger/فایل‌های استاتیک دیگه دست‌نخورده بمونن
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    if (!string.IsNullOrEmpty(path)
+        && !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase)
+        && !path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase)
+        && !System.IO.Path.HasExtension(path))
+    {
+        var htmlPath = path.TrimEnd('/') + ".html";
+        if (app.Environment.WebRootFileProvider.GetFileInfo(htmlPath).Exists)
+        {
+            context.Request.Path = htmlPath;
+        }
+    }
+    await next();
+});
+
+app.UseDefaultFiles(new DefaultFilesOptions
+{
+    DefaultFileNames = new List<string> { "home.html" }
+});
 app.UseStaticFiles();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();

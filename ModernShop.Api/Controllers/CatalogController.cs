@@ -15,7 +15,7 @@ public class CategoriesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var categories = await _db.Categories
+        var categories = await _db.Categories.AsNoTracking()
             .OrderBy(c => c.DisplayOrder)
             .Select(c => new
             {
@@ -43,7 +43,7 @@ public class BrandsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] bool featuredOnly = false)
     {
-        var query = _db.Brands.AsQueryable();
+        var query = _db.Brands.AsNoTracking().AsQueryable();
         if (featuredOnly) query = query.Where(b => b.IsFeatured);
 
         var brands = await query

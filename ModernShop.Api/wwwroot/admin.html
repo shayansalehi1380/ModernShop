@@ -1203,7 +1203,7 @@ function pfSetType(type){
 }
 
 /* نگاشت نام رنگ فارسی به HEX برای پیش‌نمایش دایره‌ی رنگ، از js/color-map.js (مشترک با
-   product.html تا رنگی که این‌جا انتخاب می‌شه دقیقاً همون‌جا هم نشون داده بشه) */
+   product تا رنگی که این‌جا انتخاب می‌شه دقیقاً همون‌جا هم نشون داده بشه) */
 function variantColorHex(name){
   return ColorMap.hexFor(name);
 }
@@ -1778,7 +1778,7 @@ async function saveStaticPage(slug){
 
 /* =========================================================
    ORDERS — Status enum بک‌اند: 0 در انتظار پرداخت، 1 در حال پردازش،
-   2 ارسال‌شده، 3 تحویل‌شده، 4 لغوشده، 5 ناموفق (دقیقا مطابق account.html)
+   2 ارسال‌شده، 3 تحویل‌شده، 4 لغوشده، 5 ناموفق (دقیقا مطابق account)
 ========================================================= */
 const ORDER_STATUS_META = {
   0: { label: "در انتظار پرداخت", badge: "badge-processing" },
@@ -2074,7 +2074,7 @@ function renderReviewsView(){
           <div class="review-who">
             <b>${escapeHtml(c.userFullName)}</b>
             <div class="cell-sub">
-              <a href="/blog-post.html?slug=${encodeURIComponent(c.blogPostSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(c.blogPostTitle)}</a>
+              <a href="/blog-post?slug=${encodeURIComponent(c.blogPostSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(c.blogPostTitle)}</a>
               · ${faDate(c.createdAt)}
             </div>
           </div>
@@ -2114,7 +2114,7 @@ function renderReviewsView(){
         <div class="review-who">
           <b>${escapeHtml(r.userFullName)}</b>
           <div class="cell-sub">
-            <a href="/product.html?slug=${encodeURIComponent(r.productSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(r.productName)}</a>
+            <a href="/product?slug=${encodeURIComponent(r.productSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(r.productName)}</a>
             · ${faDate(r.createdAt)}
           </div>
         </div>

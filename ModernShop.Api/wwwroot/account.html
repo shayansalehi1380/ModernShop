@@ -172,7 +172,7 @@
         <div id="orders-list" class="hidden flex-col gap-4"></div>
         <div id="orders-empty" class="hidden flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface py-14 text-center">
           <p class="text-sm text-muted">هنوز سفارشی ثبت نکرده‌اید</p>
-          <a href="shop.html" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده محصولات</a>
+          <a href="shop" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده محصولات</a>
         </div>
       </section>
 
@@ -186,7 +186,7 @@
         <div id="wishlist-grid" class="hidden grid-cols-2 gap-4 sm:grid-cols-3"></div>
         <div id="wishlist-empty" class="hidden flex-col items-center gap-3 rounded-2xl border border-dashed border-line bg-surface py-14 text-center">
           <p class="text-sm text-muted">هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌اید</p>
-          <a href="shop.html" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده محصولات</a>
+          <a href="shop" class="rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">مشاهده محصولات</a>
         </div>
       </section>
 
@@ -254,6 +254,7 @@
 <script src="js/search.js"></script>
 <script src="js/mobile-nav.js"></script>
 <script src="js/jalali.js"></script>
+<script src="js/pretty-select.js"></script>
 <script>
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
 
@@ -273,7 +274,7 @@ function showToast(kind, message){
 
 /* ---------- گیت لاگین ---------- */
 if(!isLoggedIn()){
-  window.location.href = 'auth.html?redirect=account.html';
+  window.location.href = 'auth?redirect=account';
 }
 
 /* ---------- تب‌ها ---------- */
@@ -310,7 +311,9 @@ async function loadProfile(){
     document.getElementById('p-phone').value = toFaDigits(profile.phoneNumber);
     document.getElementById('p-email').value = profile.email || '';
     birthdatePicker.setFromIso(profile.birthDate ? profile.birthDate.split('T')[0] : '');
-    document.getElementById('p-gender').value = String(profile.gender ?? 0);
+    const genderSelect = document.getElementById('p-gender');
+    genderSelect.value = String(profile.gender ?? 0);
+    genderSelect._prettySelect?.refresh();
 
     document.getElementById('profile-loading').classList.add('hidden');
     const form = document.getElementById('profile-form');
@@ -514,14 +517,14 @@ async function loadWishlist(){
     grid.classList.add('grid');
     grid.innerHTML = items.map(p => `
       <div class="group relative overflow-hidden rounded-2xl border border-line bg-surface" id="wish-card-${p.productId}">
-        <a href="${p.productSlug ? `product.html?slug=${p.productSlug}` : '#'}" class="relative block aspect-square overflow-hidden bg-media">
+        <a href="${p.productSlug ? `product?slug=${p.productSlug}` : '#'}" class="relative block aspect-square overflow-hidden bg-media">
           <img src="${p.imageUrl}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         </a>
         <button onclick="removeWish(${p.productId})" class="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-danger" aria-label="حذف از علاقه‌مندی">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
         </button>
         <div class="p-3">
-          <a href="${p.productSlug ? `product.html?slug=${p.productSlug}` : '#'}"><h3 class="truncate text-xs font-semibold hover:text-emerald sm:text-sm">${p.productName}</h3></a>
+          <a href="${p.productSlug ? `product?slug=${p.productSlug}` : '#'}"><h3 class="truncate text-xs font-semibold hover:text-emerald sm:text-sm">${p.productName}</h3></a>
           <span class="ticker mt-1 block text-xs font-bold sm:text-sm">${formatPrice(p.price)} <span class="text-[10px] font-normal text-muted">تومان</span></span>
         </div>
       </div>
@@ -570,10 +573,11 @@ function confirmLogout(){
   closeLogoutModal();
   clearToken();
   showToast('success', 'با موفقیت از حساب کاربری خارج شدید');
-  setTimeout(() => { window.location.href = 'index.html'; }, 900);
+  setTimeout(() => { window.location.href = 'home'; }, 900);
 }
 
 const birthdatePicker = PersianDatePicker.attach(document.getElementById('p-birthdate'), document.getElementById('p-birthdate-iso'));
+PrettySelect.attach(document.getElementById('p-gender'));
 
 loadProfile();
 
@@ -581,7 +585,7 @@ loadProfile();
 loadOrders();
 loadWishlist();
 
-/* ---------- دیپ‌لینک به تب مشخص، مثلاً از order-complete.html?tab=orders ---------- */
+/* ---------- دیپ‌لینک به تب مشخص، مثلاً از order-complete?tab=orders ---------- */
 const initialTab = new URLSearchParams(window.location.search).get('tab');
 if(initialTab === 'orders' || initialTab === 'wishlist') switchTab(initialTab);
 </script>

@@ -126,16 +126,13 @@
           </button>
           <div class="hidden items-center gap-2 lg:flex">
             <label class="text-xs text-muted">نمایش بر اساس</label>
-            <div class="relative">
-              <select id="sort-select" class="appearance-none rounded-full border border-line bg-surface-muted py-2 pl-9 pr-4 text-xs font-medium outline-none transition hover:border-emerald focus:border-emerald focus:ring-1 focus:ring-emerald">
-                <option value="newest">جدیدترین</option>
-                <option value="bestselling">پرفروش‌ترین</option>
-                <option value="cheap">ارزان‌ترین</option>
-                <option value="expensive">گران‌ترین</option>
-                <option value="rating">بهترین امتیاز</option>
-              </select>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6"/></svg>
-            </div>
+            <select id="sort-select" class="rounded-full border border-line bg-surface-muted px-4 py-2 text-xs font-medium outline-none transition hover:border-emerald focus:border-emerald focus:ring-1 focus:ring-emerald">
+              <option value="newest">جدیدترین</option>
+              <option value="bestselling">پرفروش‌ترین</option>
+              <option value="cheap">ارزان‌ترین</option>
+              <option value="expensive">گران‌ترین</option>
+              <option value="rating">بهترین امتیاز</option>
+            </select>
           </div>
         </div>
       </div>
@@ -175,6 +172,7 @@
 <script src="js/color-map.js"></script>
 <script src="js/product-card.js"></script>
 <script src="js/social-fab.js"></script>
+<script src="js/pretty-select.js"></script>
 <script>
 const spinnerSVG = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
 
@@ -422,7 +420,9 @@ function clearSearch() {
 
 function setSort(val) {
   filterState.sort = val;
-  document.getElementById('sort-select').value = val;
+  const sortSelect = document.getElementById('sort-select');
+  sortSelect.value = val;
+  if (sortSelect._prettySelect) sortSelect._prettySelect.refresh();
   document.querySelectorAll('.sort-radio').forEach(r => r.checked = (r.value === val));
   resetAndRender();
   closeSheet(); // رو موبایل، بعد از انتخاب گزینه مرتب‌سازی، شیت خودش بسته بشه
@@ -601,6 +601,7 @@ function closeSheet(){
 }
 
 /* ================= INIT ================= */
+PrettySelect.attach(document.getElementById('sort-select'));
 document.getElementById('sort-select').addEventListener('change', (e) => setSort(e.target.value));
 document.getElementById('shop-search-input').addEventListener('input', debouncedShopSearch);
 ProductCard.bind(document.getElementById('product-grid'));
@@ -608,7 +609,7 @@ ProductCard.bind(document.getElementById('product-grid'));
 async function init(){
   await loadCategoriesAndBrands();
 
-  // اگه از صفحه اصلی روی یه دسته‌بندی کلیک شده (shop.html?category=fashion)، همون دسته تیک بخوره
+  // اگه از صفحه اصلی روی یه دسته‌بندی کلیک شده (shop?category=fashion)، همون دسته تیک بخوره
   const params = new URLSearchParams(window.location.search);
   const categorySlug = params.get('category');
   if(categorySlug){
@@ -616,7 +617,7 @@ async function init(){
     if(match) filterState.categoryIds = [match.id];
   }
 
-  // اگه از جستجوی هدر با اینتر اومده (shop.html?search=...)
+  // اگه از جستجوی هدر با اینتر اومده (shop?search=...)
   const searchTerm = params.get('search');
   if(searchTerm){
     filterState.search = searchTerm;
@@ -624,7 +625,7 @@ async function init(){
     document.getElementById('shop-search-clear').classList.remove('hidden');
   }
 
-  // اگه از بخش «تخفیف‌دارها»ی صفحه اصلی اومده (shop.html?onSale=1)، فقط تخفیف‌دارها نشون داده بشن
+  // اگه از بخش «تخفیف‌دارها»ی صفحه اصلی اومده (shop?onSale=1)، فقط تخفیف‌دارها نشون داده بشن
   if(params.get('onSale') === '1') filterState.onSaleOnly = true;
 
   renderFilters();

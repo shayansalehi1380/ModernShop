@@ -61,9 +61,9 @@
 
 <nav aria-label="مسیر صفحه" class="border-b border-line bg-surface">
   <ol class="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
-    <li><a href="index.html" class="hover:text-emerald">صفحه اصلی</a></li>
+    <li><a href="home" class="hover:text-emerald">صفحه اصلی</a></li>
     <li aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></li>
-    <li><a href="blog.html" class="hover:text-emerald">وبلاگ</a></li>
+    <li><a href="blog" class="hover:text-emerald">وبلاگ</a></li>
     <li aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></li>
     <li id="breadcrumb-title" class="truncate text-foreground/70" aria-current="page">در حال بارگذاری...</li>
   </ol>
@@ -80,7 +80,7 @@
 
   <div id="not-found-state" class="hidden py-24 text-center">
     <p class="text-lg font-bold">این مطلب یافت نشد</p>
-    <a href="blog.html" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به وبلاگ</a>
+    <a href="blog" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به وبلاگ</a>
   </div>
 
   <div id="post-content" class="hidden grid-cols-1 gap-10 lg:grid-cols-[1fr_260px]">
@@ -369,7 +369,7 @@ async function submitComment(e){
   e.preventDefault();
   if(!isLoggedIn()){
     showToast('error', 'برای ثبت دیدگاه ابتدا وارد شوید');
-    setTimeout(() => { window.location.href = `auth.html?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`; }, 900);
+    setTimeout(() => { window.location.href = `auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`; }, 900);
     return false;
   }
 
@@ -407,12 +407,12 @@ async function loadRelated(){
     }
     grid.innerHTML = related.map(p => `
       <article class="tilt-card group overflow-hidden rounded-2xl border border-line bg-surface">
-        <a href="blog-post.html?slug=${p.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media">
+        <a href="blog-post?slug=${p.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media">
           <img src="${p.featuredImageUrl || ''}" alt="${p.title}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
         </a>
         <div class="p-4">
           <span class="text-[11px] font-semibold text-emerald">${p.categoryName}</span>
-          <h3 class="mt-1.5 text-sm font-bold leading-snug"><a href="blog-post.html?slug=${p.slug}" class="hover:text-emerald">${p.title}</a></h3>
+          <h3 class="mt-1.5 text-sm font-bold leading-snug"><a href="blog-post?slug=${p.slug}" class="hover:text-emerald">${p.title}</a></h3>
           <div class="mt-3 flex items-center gap-1.5 border-t border-line pt-3 text-[11px] text-muted">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
             <span class="ticker">زمان انتشار: ${p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('fa-IR') : ''}</span>

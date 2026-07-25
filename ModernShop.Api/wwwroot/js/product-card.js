@@ -1,7 +1,7 @@
 /* ==============================================================
    Atelier — کامپوننت مشترک کارت محصول (علاقه‌مندی + کلیک برای رفتن به صفحه محصول)
    این فایل باید بعد از js/api.js لود بشه. روی هر صفحه‌ای که کارت محصول
-   نشون می‌ده (index.html، shop.html، محصولات مرتبط تو product.html) استفاده می‌شه:
+   نشون می‌ده (home، shop، محصولات مرتبط تو product) استفاده می‌شه:
 
      await ProductCard.loadState();     // وضعیت واقعی علاقه‌مندی‌ها رو از سرور می‌خونه
      grid.innerHTML = products.map(ProductCard.render).join('');
@@ -46,7 +46,7 @@ const ProductCard = (function () {
     const price = p.discountPrice || p.price;
     const oldPrice = p.discountPrice ? p.price : null;
     const inWishlist = wishlistState.has(p.id);
-    const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
+    const productUrl = `product?slug=${encodeURIComponent(p.slug)}`;
 
     const badge = p.badge
       ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${p.badge === 'جدید' ? 'bg-emerald-soft text-emerald' : 'bg-danger/10 text-danger'}">${escapeHtmlPC(p.badge)}</span>`
@@ -101,7 +101,7 @@ const ProductCard = (function () {
       // بعد از لاگین باید بلافاصله همین محصول به علاقه‌مندی‌ها اضافه بشه
       localStorage.setItem(PENDING_WISHLIST_KEY, String(pid));
       const here = window.location.pathname.split('/').pop() + window.location.search;
-      window.location.href = 'auth.html?redirect=' + encodeURIComponent(here || 'index.html');
+      window.location.href = 'auth?redirect=' + encodeURIComponent(here || 'home');
       return;
     }
     try {

@@ -185,9 +185,9 @@
     <!-- breadcrumb -->
     <div class="border-b border-line bg-surface">
         <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
-            <a href="index.html" class="hover:text-emerald">صفحه اصلی</a>
+            <a href="home" class="hover:text-emerald">صفحه اصلی</a>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
-            <a id="breadcrumb-category" href="shop.html" class="hover:text-emerald">دسته‌بندی</a>
+            <a id="breadcrumb-category" href="shop" class="hover:text-emerald">دسته‌بندی</a>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
             <span id="breadcrumb-title" class="truncate text-foreground/70">در حال بارگذاری...</span>
         </div>
@@ -210,7 +210,7 @@
     <!-- ============ empty / not found ============ -->
     <div id="not-found-state" class="mx-auto hidden max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
         <p class="text-lg font-bold">محصول مورد نظر یافت نشد</p>
-        <a href="shop.html" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به فروشگاه</a>
+        <a href="shop" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به فروشگاه</a>
     </div>
 
     <!-- ============ PRODUCT MAIN ============ -->
@@ -583,7 +583,7 @@
             if (!isLoggedIn()) {
                 // بعد از لاگین باید بلافاصله همین محصول به علاقه‌مندی‌ها اضافه بشه
                 localStorage.setItem(PENDING_WISHLIST_KEY, String(product.id));
-                window.location.href = 'auth.html?redirect=' + encodeURIComponent(`product.html?slug=${slug}`);
+                window.location.href = 'auth?redirect=' + encodeURIComponent(`product?slug=${slug}`);
                 return;
             }
             const btn = document.getElementById('gallery-wish');

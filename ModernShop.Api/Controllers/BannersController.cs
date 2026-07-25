@@ -17,7 +17,7 @@ public class BannersController : ControllerBase
     {
         var now = DateTime.UtcNow;
 
-        var banners = await _db.Banners
+        var banners = await _db.Banners.AsNoTracking()
             .Where(b => b.IsActive)
             .Where(b => (b.StartsAt == null || b.StartsAt <= now) && (b.EndsAt == null || b.EndsAt >= now))
             .OrderBy(b => b.DisplayOrder)

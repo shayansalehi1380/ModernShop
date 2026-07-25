@@ -20,7 +20,7 @@ public class StaticPagesController : ControllerBase
     [HttpGet("{slug}")]
     public async Task<ActionResult<StaticPageDto>> GetBySlug(string slug)
     {
-        var page = await _db.StaticPages.FirstOrDefaultAsync(p => p.Slug == slug);
+        var page = await _db.StaticPages.AsNoTracking().FirstOrDefaultAsync(p => p.Slug == slug);
         if (page is null) return NotFound();
 
         return Ok(new StaticPageDto { Slug = page.Slug, Title = page.Title, Content = page.Content });

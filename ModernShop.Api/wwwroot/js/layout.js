@@ -23,7 +23,7 @@ async function loadPartial(url, mountSelector) {
 
 /* لینک ناوبری مطابق صفحه فعلی رنگی می‌شه (مقایسه بر اساس اسم فایل، بدون در نظر گرفتن query string) */
 function highlightActiveNav() {
-  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  const currentPath = window.location.pathname.split('/').pop() || 'home';
 
   document.querySelectorAll('[data-nav-link]').forEach(link => {
     const linkPath = link.getAttribute('href').split('?')[0];
@@ -34,18 +34,18 @@ function highlightActiveNav() {
 }
 
 /* دکمه‌ی «بازگشت به بالا» - رو همه صفحات بجز auth/cart/checkout/account (طبق درخواست) */
-const BACK_TO_TOP_EXCLUDED_PAGES = ['auth.html', 'cart.html', 'checkout.html', 'account.html'];
+const BACK_TO_TOP_EXCLUDED_PAGES = ['auth', 'cart', 'checkout', 'account'];
 
 function initBackToTop() {
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const currentPage = window.location.pathname.split('/').pop() || 'home';
   if (BACK_TO_TOP_EXCLUDED_PAGES.includes(currentPage)) return;
   if (document.getElementById('back-to-top')) return;
 
   const btn = document.createElement('button');
   btn.id = 'back-to-top';
   btn.setAttribute('aria-label', 'بازگشت به بالای صفحه');
-  // product.html یه نوار چسبان قیمت/افزودن-به-سبد اضافه رو موبایل داره که این دکمه رو می‌پوشوند، پس رو این صفحه باید بالاتر قرار بگیره
-  const bottomOffsetClass = currentPage === 'product.html' ? 'bottom-[9.5rem]' : 'bottom-20';
+  // product یه نوار چسبان قیمت/افزودن-به-سبد اضافه رو موبایل داره که این دکمه رو می‌پوشوند، پس رو این صفحه باید بالاتر قرار بگیره
+  const bottomOffsetClass = currentPage === 'product' ? 'bottom-[9.5rem]' : 'bottom-20';
   btn.className = `fixed ${bottomOffsetClass} right-4 z-[94] flex h-11 w-11 translate-y-3 items-center justify-center rounded-full border border-line bg-surface text-foreground opacity-0 shadow-lg backdrop-blur transition-all duration-300 pointer-events-none hover:border-emerald hover:text-emerald lg:bottom-6`;
   btn.innerHTML = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', loadLayout);
 function toggleAccountMenu(e) {
   if (e) e.stopPropagation();
   if (!isLoggedIn()) {
-    window.location.href = 'auth.html';
+    window.location.href = 'auth';
     return;
   }
   const dropdown = document.getElementById('account-menu-dropdown');
@@ -103,7 +103,7 @@ function toggleAccountMenu(e) {
 
 function handleHeaderLogout() {
   clearToken();
-  window.location.href = 'index.html';
+  window.location.href = 'home';
 }
 
 document.addEventListener('click', (e) => {

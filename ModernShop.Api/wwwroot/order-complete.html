@@ -63,7 +63,7 @@
     </span>
     <h1 class="text-lg font-extrabold">سفارشی یافت نشد</h1>
     <p class="text-sm text-muted">لینکی که از آن وارد شده‌اید معتبر نیست یا این سفارش متعلق به شما نیست.</p>
-    <a href="account.html?tab=orders" class="mt-2 rounded-2xl bg-emerald bg-emerald-hover px-6 py-3 text-sm font-bold text-white transition-colors duration-200">
+    <a href="account?tab=orders" class="mt-2 rounded-2xl bg-emerald bg-emerald-hover px-6 py-3 text-sm font-bold text-white transition-colors duration-200">
       مشاهده سفارش‌های من
     </a>
   </div>
@@ -124,7 +124,7 @@
       <button id="goto-orders-btn" class="flex w-full items-center justify-center rounded-2xl bg-emerald bg-emerald-hover py-3.5 text-sm font-bold text-white transition-colors duration-200">
         مشاهده سفارش‌های من
       </button>
-      <a href="shop.html" class="flex w-full items-center justify-center rounded-2xl border border-line py-3.5 text-sm font-semibold text-foreground hover:border-emerald hover:text-emerald">
+      <a href="shop" class="flex w-full items-center justify-center rounded-2xl border border-line py-3.5 text-sm font-semibold text-foreground hover:border-emerald hover:text-emerald">
         ادامه خرید
       </a>
     </div>
@@ -162,7 +162,7 @@ function toFaDigits(str){
 
 /* ---------- گیت لاگین: مشاهده نتیجه سفارش نیاز به ورود داره ---------- */
 if(!isLoggedIn()){
-  window.location.href = 'auth.html?redirect=' + encodeURIComponent('order-complete.html' + window.location.search);
+  window.location.href = 'auth?redirect=' + encodeURIComponent('order-complete' + window.location.search);
 }
 
 const ORDER_STATUS = { PENDING_PAYMENT: 0, PROCESSING: 1, SHIPPED: 2, DELIVERED: 3, CANCELLED: 4, FAILED: 5 };
@@ -173,7 +173,7 @@ const params = new URLSearchParams(window.location.search);
 const orderNumber = params.get('orderNumber');
 
 function goToOrders(){
-  window.location.href = 'account.html?tab=orders';
+  window.location.href = 'account?tab=orders';
 }
 
 function cancelAutoRedirect(){

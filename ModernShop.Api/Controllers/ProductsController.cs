@@ -23,7 +23,7 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PagedResultDto<ProductListItemDto>>> GetProducts([FromQuery] ProductFilterRequestDto filter)
     {
-        var query = _db.Products.Where(p => p.IsActive).AsQueryable();
+        var query = _db.Products.AsNoTracking().Where(p => p.IsActive).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
             query = query.Where(p => p.Name.Contains(filter.Search));
@@ -102,7 +102,7 @@ public class ProductsController : ControllerBase
         if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
             return Ok(new List<ProductSearchSuggestionDto>());
 
-        var results = await _db.Products
+        var results = await _db.Products.AsNoTracking()
             .Where(p => p.IsActive && p.Name.Contains(q))
             .OrderByDescending(p => p.CreatedAt)
             .Take(6)
@@ -124,7 +124,7 @@ public class ProductsController : ControllerBase
     [HttpGet("{slug}")]
     public async Task<ActionResult<ProductDetailDto>> GetBySlug(string slug)
     {
-        var product = await _db.Products
+        var product = await _db.Products.AsNoTracking()
             .Include(p => p.Category)
             .Include(p => p.Brand)
             .Include(p => p.Images)

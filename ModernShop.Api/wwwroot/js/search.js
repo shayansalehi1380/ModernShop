@@ -1,7 +1,7 @@
 /* ==============================================================
    Atelier — جستجوی زنده (پیشنهاد لحظه‌ای همراه با عکس + اینتر برای جستجوی کلی)
    بعد از js/api.js لود بشه. هم تو هدر دسکتاپ (partials/header.html، توسط
-   js/layout.js صدا زده می‌شه) و هم تو شیت جستجوی موبایل (index.html) استفاده می‌شه.
+   js/layout.js صدا زده می‌شه) و هم تو شیت جستجوی موبایل (home) استفاده می‌شه.
    ============================================================== */
 
 const AtelierSearch = (function () {
@@ -19,7 +19,7 @@ const AtelierSearch = (function () {
 
   function suggestionItemHTML(p) {
     const price = p.discountPrice || p.price;
-    return `<a href="product.html?slug=${encodeURIComponent(p.slug)}" class="flex items-center gap-3 px-4 py-2.5 text-right hover:bg-surface-muted">
+    return `<a href="product?slug=${encodeURIComponent(p.slug)}" class="flex items-center gap-3 px-4 py-2.5 text-right hover:bg-surface-muted">
       <img src="${p.imageUrl || 'https://picsum.photos/100/100'}" class="h-10 w-10 shrink-0 rounded-lg object-cover bg-media" />
       <div class="min-w-0 flex-1">
         <div class="truncate text-sm">${escapeHtmlS(p.name)}</div>
@@ -29,7 +29,7 @@ const AtelierSearch = (function () {
   }
 
   function goToShopSearch(q) {
-    window.location.href = 'shop.html?search=' + encodeURIComponent(q);
+    window.location.href = 'shop?search=' + encodeURIComponent(q);
   }
 
   function attach(input, dropdown, wrapper) {

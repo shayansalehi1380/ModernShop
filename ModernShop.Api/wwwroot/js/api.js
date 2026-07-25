@@ -1,6 +1,6 @@
 /* ==============================================================
    Atelier — کلاینت مشترک برای صحبت با Atelier.Api
-   این فایل تو همه صفحات include می‌شه (index.html و بعداً بقیه صفحات).
+   این فایل تو همه صفحات include می‌شه (home و بعداً بقیه صفحات).
    ============================================================== */
 
 // چون فرانت از همون wwwroot خود Api سرو می‌شه، مسیر نسبی کافیه و به CORS نیازی نیست.
@@ -91,6 +91,9 @@ const Api = {
 
   // سبد خرید (هم کاربر مهمان هم لاگین‌کرده)
   getCart: () => apiFetch('/cart'),
+  // فقط تعداد آیتم‌های سبد (برای نشان روی آیکون سبد خرید تو هدر/منوی موبایل) - خیلی سبک‌تر از
+  // گرفتن کل سبد با جزئیات محصولات، چون این یکی تقریباً تو هر صفحه‌ای صدا زده می‌شه
+  getCartCount: () => apiFetch('/cart/count'),
   addToCart: async (productId, quantity = 1, productVariantId = null) => {
     const cart = await apiFetch('/cart/items', { method: 'POST', body: JSON.stringify({ productId, quantity, productVariantId }) });
     notifyCartChanged();
@@ -156,11 +159,11 @@ function updateAuthUI() {
     if (loggedIn) {
       const text = el.dataset.authLoggedinText || 'حساب کاربری';
       if (label) label.textContent = text; else el.textContent = text;
-      el.setAttribute('href', 'account.html');
+      el.setAttribute('href', 'account');
     } else {
       const text = el.dataset.authLoggedoutText || (label ? label.textContent : el.textContent);
       if (label) label.textContent = text; else el.textContent = text;
-      el.setAttribute('href', 'auth.html');
+      el.setAttribute('href', 'auth');
     }
   });
 
@@ -168,15 +171,15 @@ function updateAuthUI() {
   const menuLabel = document.getElementById('account-menu-label');
   if (menuLabel) menuLabel.textContent = loggedIn ? 'حساب کاربری' : 'ورود | ثبت‌نام';
 
-  // وقتی کاربر لاگین نکرده، دکمه فقط به auth.html می‌ره (دراپ‌دانی نداره)، پس فلش کشویی نمایش داده نشه
+  // وقتی کاربر لاگین نکرده، دکمه فقط به auth می‌ره (دراپ‌دانی نداره)، پس فلش کشویی نمایش داده نشه
   const menuArrow = document.getElementById('account-menu-arrow');
   if (menuArrow) menuArrow.classList.toggle('hidden', !loggedIn);
 }
 
 async function updateCartBadge() {
   try {
-    const cart = await Api.getCart();
-    const count = (cart?.items || []).reduce((sum, i) => sum + i.quantity, 0);
+    const res = await Api.getCartCount();
+    const count = res?.count || 0;
     document.querySelectorAll('[data-cart-badge]').forEach(el => {
       el.textContent = count;
       el.style.display = count > 0 ? '' : 'none';

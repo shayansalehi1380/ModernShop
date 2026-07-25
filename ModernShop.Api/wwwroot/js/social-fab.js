@@ -1,6 +1,6 @@
 /* ==============================================================
    Atelier — دکمه شناور تماس سریع (اینستاگرام/واتساپ/تماس)
-   فقط تو index.html، shop.html و product.html صدا زده می‌شه (نه بقیه صفحات).
+   فقط تو home، shop و product صدا زده می‌شه (نه بقیه صفحات).
    ============================================================== */
 (function () {
   const INSTAGRAM_URL = 'https://instagram.com/dorinmarket.ir';
@@ -70,9 +70,9 @@
     const iconEl = document.getElementById('social-fab-icon');
     let open = false;
 
-    // product.html یه نوار چسبان قیمت/افزودن-به-سبد اضافه رو موبایل داره که باید ازش رد بشیم
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    if (currentPage === 'product.html') root.classList.add('fab-tall-clearance');
+    // product یه نوار چسبان قیمت/افزودن-به-سبد اضافه رو موبایل داره که باید ازش رد بشیم
+    const currentPage = window.location.pathname.split('/').pop() || 'home';
+    if (currentPage === 'product') root.classList.add('fab-tall-clearance');
 
     function setOpen(next) {
       open = next;

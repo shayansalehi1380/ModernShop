@@ -4,10 +4,10 @@
    صفحه‌ای تزریق می‌شه؛ باید بعد از js/api.js و js/search.js لود بشه.
 
    قبلاً هر صفحه یا از این partial استفاده می‌کرد (با یک تب «حساب/ورود» که فقط
-   لینک بود) یا index.html یک نسخه‌ی کاملاً جدا و دستی از منوی پایین (با شیت
-   دسته‌بندی/جستجو/منو) داشت. این دوتایی بودن باعث می‌شد فقط index.html درست
+   لینک بود) یا home یک نسخه‌ی کاملاً جدا و دستی از منوی پایین (با شیت
+   دسته‌بندی/جستجو/منو) داشت. این دوتایی بودن باعث می‌شد فقط home درست
    کار کنه و بقیه‌ی صفحات یک تجربه‌ی متفاوت (و به‌قول کاربر گیج‌کننده) داشته
-   باشن. الان فقط همین یک پیاده‌سازی هست و همه‌ی صفحات (از جمله خود index.html)
+   باشن. الان فقط همین یک پیاده‌سازی هست و همه‌ی صفحات (از جمله خود home)
    دقیقاً از همینِ یکی استفاده می‌کنن — پس دیگه هیچ‌وقت از هم عقب نمی‌افتن.
    ============================================================== */
 const MobileNavSheet = (function () {
@@ -16,13 +16,13 @@ const MobileNavSheet = (function () {
 
   // فقط صفحاتی که واقعاً یک تب مستقیم (نه شیت) دارن این‌جا نگاشت می‌شن؛ بقیه‌ی صفحات
   // (فروشگاه/محصول/تسویه‌حساب/حساب کاربری/وبلاگ/...) هیچ‌کدوم از ۵ تب رو «فعال» نشون نمی‌دن
-  const PAGE_TAB_MAP = { 'index.html': 'home', 'cart.html': 'cart', 'checkout.html': 'cart' };
+  const PAGE_TAB_MAP = { 'home': 'home', 'cart': 'cart', 'checkout': 'cart' };
 
   const sheetTitles = { categories: 'دسته‌بندی‌ها', search: 'جستجو', menu: 'منو' };
 
   function menuSheetHTML() {
     return `<div class="flex flex-col gap-1">
-      ${[["صفحه اصلی", "index.html"], ["پوشاک", "shop.html?category=fashion"], ["دیجیتال", "shop.html?category=digital"], ["خانه و آشپزخانه", "shop.html?category=home-kitchen"], ["زیبایی", "shop.html?category=beauty-health"], ["وبلاگ", "blog.html"]]
+      ${[["صفحه اصلی", "home"], ["پوشاک", "shop?category=fashion"], ["دیجیتال", "shop?category=digital"], ["خانه و آشپزخانه", "shop?category=home-kitchen"], ["زیبایی", "shop?category=beauty-health"], ["وبلاگ", "blog"]]
         .map(([l, href]) => `<a href="${href}" class="rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted">${l}</a>`).join('')}
     </div>`;
   }
@@ -32,7 +32,7 @@ const MobileNavSheet = (function () {
       return `<p class="py-10 text-center text-sm text-muted">هنوز دسته‌بندی‌ای ثبت نشده است</p>`;
     }
     return `<div class="grid grid-cols-2 gap-3">${categoriesData.map(c => `
-      <a href="shop.html?category=${c.id}" class="group relative aspect-[4/3] overflow-hidden rounded-2xl text-right">
+      <a href="shop?category=${c.id}" class="group relative aspect-[4/3] overflow-hidden rounded-2xl text-right">
         <img src="${c.image}" class="h-full w-full object-cover" alt="${c.title}" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
         <div class="absolute bottom-3 right-3 text-white">
@@ -64,7 +64,7 @@ const MobileNavSheet = (function () {
 
   function open(type) {
     if (currentSheet === type) { close(); return; }
-    // اگه صفحه‌ای مثل shop.html شیت مخصوص خودش (فیلتر/مرتب‌سازی) رو باز داره،
+    // اگه صفحه‌ای مثل shop شیت مخصوص خودش (فیلتر/مرتب‌سازی) رو باز داره،
     // اول همون بسته بشه که این شیت روش قرار نگیره، بلافاصله بعدش این شیت باز بشه
     if (typeof closeSheet === 'function') closeSheet();
     currentSheet = type;
@@ -98,7 +98,7 @@ const MobileNavSheet = (function () {
     document.getElementById('mnav-sheet-overlay').classList.add('hidden');
     setTimeout(() => panel.classList.add('hidden'), 300);
 
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPath = window.location.pathname.split('/').pop() || 'home';
     setActiveTab(PAGE_TAB_MAP[currentPath] || null);
   }
 
@@ -112,7 +112,7 @@ const MobileNavSheet = (function () {
       categoriesData = [];
     }
 
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPath = window.location.pathname.split('/').pop() || 'home';
     setActiveTab(PAGE_TAB_MAP[currentPath] || null);
   }
 

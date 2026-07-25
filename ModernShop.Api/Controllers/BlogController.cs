@@ -24,7 +24,7 @@ public class BlogController : ControllerBase
     [HttpGet("categories")]
     public async Task<IActionResult> GetCategories()
     {
-        var categories = await _db.BlogCategories
+        var categories = await _db.BlogCategories.AsNoTracking()
             .Select(c => new BlogCategoryDto { Id = c.Id, Name = c.Name, Slug = c.Slug })
             .ToListAsync();
 
@@ -36,7 +36,7 @@ public class BlogController : ControllerBase
     public async Task<ActionResult<PagedResultDto<BlogPostListItemDto>>> GetPosts(
         [FromQuery] string? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 9)
     {
-        var query = _db.BlogPosts.Where(p => p.IsPublished).AsQueryable();
+        var query = _db.BlogPosts.AsNoTracking().Where(p => p.IsPublished).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(category) && category != "all")
             query = query.Where(p => p.BlogCategory.Slug == category);

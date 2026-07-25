@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link id="favicon-32" rel="icon" type="image/png" sizes="32x32" href="images/favicon-loading.gif" />
+<link id="favicon-16" rel="icon" type="image/png" sizes="16x16" href="images/favicon-loading.gif" />
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+<link id="favicon-shortcut" rel="shortcut icon" href="images/favicon-loading.gif" />
+<script>window.addEventListener('load',()=>{const a=document.getElementById('favicon-32'),b=document.getElementById('favicon-16'),c=document.getElementById('favicon-shortcut');if(a)a.href='images/favicon-32x32.png';if(b)b.href='images/favicon-16x16.png';if(c)c.href='images/favicon.ico';});</script>
+<title>دُرین مارکت | فروشگاه اینترنتی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  :root{
+    --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
+    --line:#E1DED3; --muted:#6B7280; --emerald:#1F6F5C; --emerald-deep:#123B31;
+    --emerald-soft:#E4EFEB; --gold:#B8903E; --gold-soft:#F3E9D3; --danger:#B4432F; --media:#16181C;
+  }
+  body{font-family:'Vazirmatn',Tahoma,sans-serif;color:var(--foreground);transition:.3s;background:radial-gradient(1300px 700px at 12% -10%, color-mix(in srgb, var(--gold) 5%, transparent), transparent 60%),radial-gradient(1300px 700px at 100% 100%, color-mix(in srgb, var(--emerald) 5%, transparent), transparent 60%),var(--background);background-repeat:no-repeat;}
+  .ticker{font-variant-numeric:tabular-nums}
+  .bg-surface{background:var(--surface)} .bg-surface-muted{background:var(--surface-muted)}
+  .bg-bg{background:var(--background)} .border-line{border-color:var(--line)}
+  .text-muted{color:var(--muted)} .text-emerald{color:var(--emerald)} .bg-emerald{background:var(--emerald)}
+  .bg-emerald-deep{background:var(--emerald-deep)} .text-emerald-deep{color:var(--emerald-deep)} .bg-emerald-soft{background:var(--emerald-soft)}
+  .text-gold{color:var(--gold)} .bg-gold-soft{background:var(--gold-soft)}
+  .text-danger{color:var(--danger)} .bg-danger{background:var(--danger)} .bg-danger\/10{background:color-mix(in srgb, var(--danger) 10%, transparent)}
+  .bg-media{background:var(--media)}
+  .from-bg{--tw-gradient-from: var(--background) var(--tw-gradient-from-position); --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);}
+  .hover-emerald:hover{color:var(--emerald)}
+  .border-emerald{border-color:var(--emerald)}
+  .bg-surface\/90{background:color-mix(in srgb, var(--surface) 90%, transparent)}
+  .bg-surface\/95{background:color-mix(in srgb, var(--surface) 95%, transparent)}
+  .hover\:bg-surface-muted:hover{background:var(--surface-muted)}
+  .hover\:border-emerald:hover{border-color:var(--emerald)}
+  .hover\:text-emerald:hover{color:var(--emerald)}
+  .tilt-card{transition:box-shadow .2s ease,transform .2s ease}
+  .tilt-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
+  .price-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem .75rem}
+  .price-row .old-price{order:3;width:100%}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .no-scrollbar{scrollbar-width:none}
+  .cursor-grab{cursor:grab} .cursor-grabbing{cursor:grabbing}
+  .bg-emerald-hover:hover{background:#195d4d}
+  .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
+  @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body class="bg-bg">
+
+<div id="loading-bar" class="fixed inset-x-0 top-0 z-[210] h-0.5 overflow-hidden bg-transparent">
+  <div id="loading-bar-fill" class="h-full bg-emerald transition-all duration-300 ease-out" style="width:15%"></div>
+</div>
+<div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
+
+<div id="header-placeholder"></div>
+
+<!-- hero banner slider -->
+<section class="border-b border-line bg-surface">
+  <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
+    <div id="banner"
+     class="relative mx-auto aspect-[4/3] sm:aspect-[21/9] lg:aspect-[16/6] w-full max-w-3xl lg:max-w-7xl overflow-hidden rounded-[28px] bg-media"
+     onmouseenter="pauseBanner()" onmouseleave="resumeBanner()">
+      <div id="banner-slides"></div>
+      <div class="absolute inset-x-0 bottom-8 z-10 flex items-center justify-center gap-2">
+        <button onclick="bannerGo(bannerIndex-1)" aria-label="بنر قبلی" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-white opacity-60 backdrop-blur transition hover:bg-white/40 hover:opacity-100">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+        <button onclick="bannerGo(bannerIndex+1)" aria-label="بنر بعدی" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-white opacity-60 backdrop-blur transition hover:bg-white/40 hover:opacity-100">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+      </div>
+      <div id="banner-dots" class="absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-1.5"></div>
+    </div>
+  </div>
+</section>
+
+<!-- دُرین تایم: فروش ویژه با شمارش معکوس (جای تخفیف‌دارها، حالا اول از محصولات ویژه) -->
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="overflow-hidden rounded-3xl p-5 sm:p-8" style="background:linear-gradient(135deg,var(--emerald-deep),#0B2A21)">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="mb-6 flex items-center gap-3">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.545 3.75 3.75 0 0 1 3.255 3.717Z"/></svg>
+        </span>
+        <div>
+          <span class="text-xs font-medium tracking-widest text-gold">فرصت محدود</span>
+          <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">دُرین تایم</h2>
+        </div>
+      </div>
+      <a href="shop?onSale=1" class="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-white transition-colors duration-200 hover:bg-white/20 sm:text-sm">
+        مشاهده همه
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
+    </div>
+    <div id="carousel-dorintime" class="carousel-wrap-dark relative"></div>
+  </div>
+</section>
+
+<section class="border-y border-line bg-surface-muted py-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div id="brand-strip" class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4"></div>
+  </div>
+</section>
+
+<!-- دو بنر ثابت تبلیغاتی -->
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <a href="shop?category=fashion" class="relative flex aspect-[16/9] items-end overflow-hidden rounded-3xl p-6 sm:aspect-[21/9]" style="background:linear-gradient(135deg,var(--emerald),var(--emerald-deep))">
+      <div class="relative z-10">
+        <span class="text-xs font-medium tracking-widest text-white/70">پوشاک فصل</span>
+        <h3 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">کالکشن جدید پوشاک</h3>
+        <span class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-foreground shadow-sm">
+          مشاهده محصولات
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </span>
+      </div>
+      <div class="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-white/10"></div>
+    </a>
+    <a href="shop?category=digital" class="relative flex aspect-[16/9] items-end overflow-hidden rounded-3xl p-6 sm:aspect-[21/9]" style="background:linear-gradient(135deg,#7A5A1E,var(--gold))">
+      <div class="relative z-10">
+        <span class="text-xs font-medium tracking-widest text-white/70">دیجیتال</span>
+        <h3 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">جدیدترین کالای دیجیتال</h3>
+        <span class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-foreground shadow-sm">
+          مشاهده محصولات
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </span>
+      </div>
+      <div class="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-white/10"></div>
+    </a>
+  </div>
+</section>
+
+<!-- محصولات ویژه (حالا بعد از دُرین تایم) -->
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="rounded-3xl border border-line bg-surface p-5 sm:p-8">
+    <div class="flex items-end justify-between">
+      <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">پیشنهاد ما</span>
+        <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات ویژه</h2></div>
+      <a href="shop" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
+        مشاهده همه
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
+    </div>
+    <div id="carousel-featured" class="carousel-wrap relative"></div>
+  </div>
+</section>
+
+<!-- آخرین مطالب وبلاگ -->
+<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="rounded-3xl border border-line bg-surface p-5 sm:p-8">
+    <div class="flex items-end justify-between">
+      <div class="mb-7"><span class="text-xs font-medium tracking-widest text-emerald">وبلاگ</span>
+        <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">آخرین مطالب</h2></div>
+      <a href="blog" class="mb-7 inline-flex items-center gap-2 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-medium text-white transition-colors duration-200 sm:text-sm">
+        مشاهده همه
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
+    </div>
+    <div id="home-blog-grid" class="grid grid-cols-1 gap-5 sm:grid-cols-3"></div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+  <div class="flex flex-col items-center gap-6 rounded-3xl bg-emerald-deep px-6 py-12 text-center text-white sm:px-12">
+    <h3 class="text-2xl font-extrabold sm:text-3xl">از تخفیف‌های ویژه باخبر شوید</h3>
+    <p class="mx-auto max-w-md text-sm text-white/70">عضو خبرنامه شوید و پیشنهادهای شگفت‌انگیز و کدهای تخفیف را زودتر از همه دریافت کنید.</p>
+    <form class="flex w-full max-w-md flex-col gap-3 sm:flex-row" onsubmit="return submitNewsletter(event)">
+      <input id="newsletter-email" type="email" required placeholder="آدرس ایمیل شما" class="w-full rounded-full bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/50 outline-none ring-1 ring-white/20"
+        oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'لطفاً آدرس ایمیل خود را وارد کنید' : 'لطفاً یک آدرس ایمیل معتبر وارد کنید')"
+        oninput="this.setCustomValidity('')" />
+      <button id="newsletter-btn" type="submit" class="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-deep">عضویت</button>
+    </form>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<div id="mobile-nav-placeholder"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/search.js"></script>
+<script src="js/mobile-nav.js"></script>
+<script src="js/color-map.js"></script>
+<script src="js/product-card.js"></script>
+<script src="js/social-fab.js"></script>
+<script>
+/* ---------- toast + loading bar ---------- */
+window.addEventListener('load', () => {
+  const fill = document.getElementById('loading-bar-fill');
+  const bar = document.getElementById('loading-bar');
+  setTimeout(() => fill.style.width = '70%', 100);
+  setTimeout(() => fill.style.width = '100%', 400);
+  setTimeout(() => bar.style.display = 'none', 650);
+});
+
+function showToast(kind, message){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  const styles = kind === 'success' ? 'border-emerald bg-emerald-soft text-emerald-deep' : 'border-danger bg-danger/10 text-danger';
+  el.className = `pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur-md opacity-0 -translate-y-3 transition-all duration-300 ${styles}`;
+  el.innerHTML = (kind === 'success'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>')
+    + `<span>${message}</span>`;
+  root.appendChild(el);
+  requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-3'));
+  setTimeout(() => { el.classList.add('opacity-0', '-translate-y-3'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+const spinnerSVG = '<svg class="animate-spin" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+
+/* ---------- hero banner slider (حالا از API) ---------- */
+let bannerItems = [];
+let bannerIndex = 0;
+let bannerTimer = null;
+
+async function loadBanners(){
+  try {
+    bannerItems = await Api.getBanners();
+  } catch(e) {
+    bannerItems = [];
+  }
+  if(!bannerItems || bannerItems.length === 0){
+    // اگه هنوز بنری تو دیتابیس ثبت نشده، یه پس‌زمینه ساده نشون بده که خالی نمونه
+    bannerItems = [{ imageUrl: null, title: 'به دُرین مارکت خوش آمدید', linkUrl: 'shop' }];
+  }
+  renderBanners();
+  resumeBanner();
+}
+
+function renderBanners(){
+  const wrap = document.getElementById('banner-slides');
+  wrap.innerHTML = bannerItems.map((b, i) => `
+    <a href="${b.linkUrl || '#'}" class="banner-slide absolute inset-0 block transition-opacity duration-700 ease-out" style="opacity:${i===0?1:0};">
+      ${b.imageUrl
+        ? `<img src="${b.imageUrl}" alt="${b.title || ''}" class="h-full w-full object-cover"
+             draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />`
+        : `<div class="flex h-full w-full items-center justify-center bg-emerald-deep px-6 text-center"><span class="text-lg font-extrabold text-white sm:text-2xl lg:text-4xl">${b.title || ''}</span></div>`}
+    </a>
+  `).join('');
+
+  const dots = document.getElementById('banner-dots');
+  dots.innerHTML = bannerItems.map((_, i) => `
+    <button onmouseenter="bannerGo(${i})" onclick="bannerGo(${i})" aria-label="بنر ${i+1}" data-dot="${i}"
+      class="h-1.5 rounded-full opacity-70 transition-all duration-300 hover:opacity-40 ${i===0 ? 'w-5 bg-white opacity-100' : 'w-1.5 bg-white/70'}"></button>
+  `).join('');
+}
+
+function bannerGo(i){
+  const count = bannerItems.length;
+  bannerIndex = (i + count) % count;
+  document.querySelectorAll('.banner-slide').forEach((el, idx) => { el.style.opacity = idx === bannerIndex ? '1' : '0'; });
+  document.querySelectorAll('[data-dot]').forEach((el, idx) => {
+    el.classList.toggle('w-5', idx === bannerIndex);
+    el.classList.toggle('bg-white', idx === bannerIndex);
+    el.classList.toggle('opacity-100', idx === bannerIndex);
+    el.classList.toggle('w-1.5', idx !== bannerIndex);
+    el.classList.toggle('bg-white/70', idx !== bannerIndex);
+  });
+}
+
+function pauseBanner(){ if(bannerTimer){ clearInterval(bannerTimer); bannerTimer = null; } }
+function resumeBanner(){
+  pauseBanner();
+  if(bannerItems.length > 1){
+    bannerTimer = setInterval(() => bannerGo(bannerIndex + 1), 5000);
+  }
+}
+
+/* ---------- نوار برندها (حالا از API) ----------
+   اگه برند عکس لوگو داشته باشه (logoUrl)، همون عکس با اندازه‌ی ثابت و
+   object-contain نشون داده می‌شه (بدون بریدگی، هر نسبت تصویری که باشه)؛
+   وگرنه (برای برندهایی که هنوز لوگو آپلود نشده) اسم برند به‌شکل یه برچسب
+   ساده نشون داده می‌شه. لوگوها مثل بقیه‌ی عکس‌های غیرمحصولی سایت غیرقابل
+   کشیدن/ذخیره‌ی مستقیم هستن. */
+async function loadBrandStrip(){
+  const wrap = document.getElementById('brand-strip');
+  try {
+    const brands = await Api.getFeaturedBrands();
+    wrap.innerHTML = brands.map(b => b.logoUrl
+      ? `<img src="${b.logoUrl}" alt="${dorinTimeEscapeHtml(b.name)}" class="h-10 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 sm:h-12"
+           draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />`
+      : `<span class="rounded-full border border-line bg-surface px-5 py-2 text-sm font-semibold text-muted shadow-sm transition hover:border-emerald hover:text-emerald">${dorinTimeEscapeHtml(b.name)}</span>`
+    ).join('');
+  } catch(e) {
+    wrap.innerHTML = '';
+  }
+}
+
+/* منوی پایین موبایل (شیت دسته‌بندی/جستجو/منو) از js/mobile-nav.js میاد - همون کامپوننت
+   مشترکی که تو بقیه‌ی صفحات هم استفاده می‌شه، تا همه‌جا دقیقاً یک رفتار داشته باشه */
+
+/* ---------- newsletter (حالا واقعی) ---------- */
+async function submitNewsletter(e){
+  e.preventDefault();
+  const input = document.getElementById('newsletter-email');
+  const btn = document.getElementById('newsletter-btn');
+  if(btn.dataset.loading === '1' || !input.value.trim()) return false;
+
+  btn.dataset.loading = '1';
+  const original = btn.textContent;
+  btn.innerHTML = spinnerSVG;
+
+  try {
+    const res = await Api.subscribeNewsletter(input.value.trim());
+    input.value = '';
+    showToast('success', res?.message || 'با موفقیت در خبرنامه عضو شدید');
+  } catch(err) {
+    showToast('error', err.message || 'آدرس ایمیل معتبر نیست');
+  } finally {
+    btn.dataset.loading = '0';
+    btn.textContent = original;
+  }
+  return false;
+}
+
+/* ---------- کروسل: fade لبه‌ها + پیکان‌ها + کشیدن با ماوس ---------- */
+function buildCarousel(containerId, items){
+  const wrap = document.getElementById(containerId);
+
+  if(!items || items.length === 0){
+    wrap.innerHTML = `<p class="py-10 text-center text-sm text-muted">فعلاً محصولی برای نمایش وجود ندارد</p>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div class="fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+    <div class="fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+    <button class="arrow-next absolute left-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت بعدی">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="arrow-prev absolute right-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت قبلی">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="track flex cursor-grab gap-4 overflow-x-auto pt-2 pb-2 select-none no-scrollbar"></div>
+  `;
+  const track = wrap.querySelector('.track');
+  // کارت محصول از کامپوننت مشترک js/product-card.js میاد (همون که تو shop و product استفاده می‌شه)
+  // تا رفتار و ظاهرش با بقیه‌ی سایت یکی باشه؛ وضعیت سبد/علاقه‌مندی هم همون‌جا موقع رندر اعمال می‌شه
+  track.innerHTML = items.map(p => `<div class="w-[220px] shrink-0 sm:w-[240px]">${ProductCard.render(p)}</div>`).join('');
+  ProductCard.bind(track);
+
+  const fadeRight = wrap.querySelector('.fade-right');
+  const fadeLeft = wrap.querySelector('.fade-left');
+  const arrowNext = wrap.querySelector('.arrow-next');
+  const arrowPrev = wrap.querySelector('.arrow-prev');
+
+  function scrollBy(dir){ track.scrollBy({ left: track.clientWidth * 0.7 * dir, behavior: 'smooth' }); }
+  arrowNext.addEventListener('click', () => scrollBy(-1));
+  arrowPrev.addEventListener('click', () => scrollBy(1));
+
+  function updateEdges(){
+    const scrolled = Math.abs(track.scrollLeft);
+    const max = track.scrollWidth - track.clientWidth;
+    const atStart = scrolled <= 4;
+    const atEnd = max <= 4 || scrolled >= max - 4;
+    fadeRight.style.opacity = atStart ? '0' : '1';
+    fadeLeft.style.opacity = atEnd ? '0' : '1';
+    arrowNext.style.display = atEnd ? 'none' : 'flex';
+    arrowPrev.style.display = atStart ? 'none' : 'flex';
+  }
+  track.addEventListener('scroll', updateEdges, { passive: true });
+  window.addEventListener('resize', updateEdges);
+  updateEdges();
+
+  let dragActive = false, lastX = 0, moved = false;
+  track.addEventListener('mousedown', (e) => { dragActive = true; lastX = e.pageX; moved = false; track.classList.add('cursor-grabbing'); });
+  track.addEventListener('mousemove', (e) => {
+    if(!dragActive) return;
+    const dx = e.pageX - lastX;
+    if(Math.abs(dx) > 2) moved = true;
+    track.scrollBy({ left: -dx });
+    lastX = e.pageX;
+  });
+  function endDrag(){ dragActive = false; track.classList.remove('cursor-grabbing'); }
+  track.addEventListener('mouseup', endDrag);
+  track.addEventListener('mouseleave', endDrag);
+  track.addEventListener('click', (e) => { if(moved){ e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+}
+
+/* ---------- کروسل تیره‌ی «دُرین تایم» (فروش ویژه با شمارش معکوس) - همون رفتار کروسل معمولی
+   (اسکرول لمسی رو موبایل، پیکان + کشیدن با ماوس رو دسکتاپ) ولی با ظاهر تیره‌ی مخصوص خودش ---------- */
+const dorinTimeFaDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+function dorinTimeToFa(str){ return String(str).replace(/[0-9]/g, d => dorinTimeFaDigits[d]); }
+function dorinTimeFmtPrice(n){ return dorinTimeToFa(Number(n||0).toLocaleString('en-US')); }
+function dorinTimeEscapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+}
+
+function dorinTimeCardHTML(p){
+  const pct = Math.round((1 - (p.discountPrice / p.price)) * 100);
+  const productUrl = `product?slug=${encodeURIComponent(p.slug)}`;
+  return `
+    <a href="${productUrl}" class="tilt-card block w-[150px] shrink-0 rounded-2xl bg-white p-2.5 shadow-sm sm:w-[170px]">
+      <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
+        <img src="${p.mainImageUrl || 'https://picsum.photos/300/300'}" class="h-full w-full object-cover" loading="lazy" alt="${dorinTimeEscapeHtml(p.name)}" />
+        <span class="absolute right-1.5 top-1.5 z-10 rounded-full bg-danger px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"><span class="ticker">${dorinTimeToFa(pct)}٪ تخفیف</span></span>
+      </div>
+      <h3 class="mt-2 truncate text-xs font-semibold text-black">${dorinTimeEscapeHtml(p.name)}</h3>
+      <div class="mt-1 flex items-baseline gap-1">
+        <span class="ticker text-sm font-bold text-black">${dorinTimeFmtPrice(p.discountPrice)}</span>
+        <span class="text-[10px] text-black/50">تومان</span>
+      </div>
+      <div class="ticker text-[11px] text-black/40 line-through">${dorinTimeFmtPrice(p.price)}</div>
+    </a>`;
+}
+
+function buildDorinTimeCarousel(containerId, items){
+  const wrap = document.getElementById(containerId);
+  if(!items || items.length === 0){
+    wrap.innerHTML = `<p class="py-10 text-center text-sm text-white/60">فعلاً پیشنهاد ویژه‌ای وجود ندارد</p>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <button class="arrow-next absolute left-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-emerald-deep shadow-lg transition hover:bg-white/90 active:scale-95" aria-label="کارت بعدی">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="arrow-prev absolute right-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-emerald-deep shadow-lg transition hover:bg-white/90 active:scale-95" aria-label="کارت قبلی">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="track flex cursor-grab gap-3 overflow-x-auto pt-2 pb-2 select-none no-scrollbar"></div>
+  `;
+  const track = wrap.querySelector('.track');
+  track.innerHTML = items.map(dorinTimeCardHTML).join('');
+
+  const arrowNext = wrap.querySelector('.arrow-next');
+  const arrowPrev = wrap.querySelector('.arrow-prev');
+  function scrollBy(dir){ track.scrollBy({ left: track.clientWidth * 0.7 * dir, behavior: 'smooth' }); }
+  arrowNext.addEventListener('click', () => scrollBy(-1));
+  arrowPrev.addEventListener('click', () => scrollBy(1));
+
+  function updateEdges(){
+    const scrolled = Math.abs(track.scrollLeft);
+    const max = track.scrollWidth - track.clientWidth;
+    const atStart = scrolled <= 4;
+    const atEnd = max <= 4 || scrolled >= max - 4;
+    arrowNext.style.display = atEnd ? 'none' : 'flex';
+    arrowPrev.style.display = atStart ? 'none' : 'flex';
+  }
+  track.addEventListener('scroll', updateEdges, { passive: true });
+  window.addEventListener('resize', updateEdges);
+  updateEdges();
+
+  let dragActive = false, lastX = 0, moved = false;
+  track.addEventListener('mousedown', (e) => { dragActive = true; lastX = e.pageX; moved = false; track.classList.add('cursor-grabbing'); });
+  track.addEventListener('mousemove', (e) => {
+    if(!dragActive) return;
+    const dx = e.pageX - lastX;
+    if(Math.abs(dx) > 2) moved = true;
+    track.scrollBy({ left: -dx });
+    lastX = e.pageX;
+  });
+  function endDrag(){ dragActive = false; track.classList.remove('cursor-grabbing'); }
+  track.addEventListener('mouseup', endDrag);
+  track.addEventListener('mouseleave', endDrag);
+  track.addEventListener('click', (e) => { if(moved){ e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+}
+
+/* ---------- آخرین مطالب وبلاگ ---------- */
+async function loadHomeBlog(){
+  const grid = document.getElementById('home-blog-grid');
+  try {
+    const result = await Api.getBlogPosts('?page=1&pageSize=3');
+    if(!result.items || result.items.length === 0){ grid.innerHTML = ''; return; }
+    grid.innerHTML = result.items.map(post => `
+      <a href="blog-post?slug=${post.slug}" class="tilt-card group block overflow-hidden rounded-2xl border border-line bg-surface">
+        <div class="relative aspect-[16/10] overflow-hidden bg-media">
+          <img src="${post.featuredImageUrl || ''}" alt="${dorinTimeEscapeHtml(post.title)}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
+          <span class="absolute right-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold text-emerald">${dorinTimeEscapeHtml(post.categoryName)}</span>
+        </div>
+        <div class="p-4">
+          <h3 class="text-[15px] font-bold leading-snug hover:text-emerald">${dorinTimeEscapeHtml(post.title)}</h3>
+          <div class="mt-3 flex items-center gap-1.5 border-t border-line pt-3 text-[11px] text-muted">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="ticker">زمان انتشار: ${post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : ''}</span>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  } catch(e) {
+    grid.innerHTML = '';
+  }
+}
+
+/* ---------- بارگذاری محصولات ویژه و تخفیف‌دار از API ---------- */
+async function loadFeaturedProducts(){
+  try {
+    const result = await Api.getProducts('?sortBy=newest&pageSize=8');
+    buildCarousel('carousel-featured', result.items);
+  } catch(e) {
+    buildCarousel('carousel-featured', []);
+  }
+}
+
+async function loadDiscountedProducts(){
+  try {
+    // فیلتر «تخفیف‌دار» مستقیم تو API نیست، پس یه بچ بزرگ می‌گیریم و سمت کلاینت فیلتر می‌کنیم
+    const result = await Api.getProducts('?sortBy=newest&pageSize=50');
+    const discounted = result.items.filter(p => p.discountPrice != null).slice(0, 8);
+    buildDorinTimeCarousel('carousel-dorintime', discounted);
+  } catch(e) {
+    buildDorinTimeCarousel('carousel-dorintime', []);
+  }
+}
+
+/* ---------- شروع ---------- */
+(async function init(){
+  updateAuthUI();
+  updateCartBadge();
+
+  // باید قبل از ساخت کارت‌های محصول آماده باشه، وگرنه بعد از رفرش صفحه
+  // دکمه‌ها همیشه «افزودن به سبد» خام نشون می‌دن حتی اگه محصول قبلا اضافه شده باشه
+  await ProductCard.loadState();
+
+  await Promise.all([
+    loadBanners(),
+    loadBrandStrip(),
+    loadFeaturedProducts(),
+    loadDiscountedProducts(),
+    loadHomeBlog(),
+  ]);
+
+  ProductCard.resolvePendingWishlist();
+})();
+</script>
+
+</body>
+</html>

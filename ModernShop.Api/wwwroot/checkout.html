@@ -33,9 +33,9 @@
   .hover\:text-emerald:hover{color:var(--emerald)}
   .bg-emerald-hover:hover{background:#195d4d}
   input:focus,textarea:focus,select:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 4px var(--emerald-soft)}
-  select.pretty-select{cursor:pointer}
-  select.pretty-select:disabled{cursor:not-allowed}
-  .field.invalid input,.field.invalid textarea,.field.invalid select{border-color:var(--danger)}
+  .pretty-select-wrap>button{cursor:pointer}
+  .pretty-select-wrap>button:disabled{cursor:not-allowed}
+  .field.invalid input,.field.invalid textarea,.field.invalid select,.field.invalid .pretty-select-wrap>button{border-color:var(--danger)}
   .field.invalid .error-text{display:block}
   .error-text{display:none}
   .pay-opt.selected{border-color:var(--emerald);background:var(--emerald-soft)}
@@ -76,7 +76,7 @@
 
 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-  <a href="cart.html" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-emerald">
+  <a href="cart" class="inline-flex items-center gap-1.5 text-sm text-muted hover:text-emerald">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
     بازگشت به سبد خرید
   </a>
@@ -115,22 +115,16 @@
             </div>
             <div class="field">
               <label for="province" class="mb-1.5 block text-xs font-medium text-muted">استان</label>
-              <div class="relative">
-                <select id="province" class="pretty-select w-full appearance-none rounded-xl border border-line bg-surface-muted py-3 pl-9 pr-4 text-sm transition">
-                  <option value="">انتخاب استان</option>
-                </select>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6"/></svg>
-              </div>
+              <select id="province" class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm transition">
+                <option value="">انتخاب استان</option>
+              </select>
               <p class="error-text mt-1.5 text-xs text-danger">لطفاً استان را انتخاب کنید</p>
             </div>
             <div class="field">
               <label for="city" class="mb-1.5 block text-xs font-medium text-muted">شهر</label>
-              <div class="relative">
-                <select id="city" disabled class="pretty-select w-full appearance-none rounded-xl border border-line bg-surface-muted py-3 pl-9 pr-4 text-sm text-muted transition disabled:cursor-not-allowed">
-                  <option value="">ابتدا استان را انتخاب کنید</option>
-                </select>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6"/></svg>
-              </div>
+              <select id="city" disabled class="w-full rounded-xl border border-line bg-surface-muted px-4 py-3 text-sm text-muted transition disabled:cursor-not-allowed">
+                <option value="">ابتدا استان را انتخاب کنید</option>
+              </select>
               <p class="error-text mt-1.5 text-xs text-danger">لطفاً شهر را انتخاب کنید</p>
             </div>
             <div class="field">
@@ -218,7 +212,7 @@
         <button id="submit-order" class="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3.5 text-sm font-bold text-white transition-colors duration-200">
           ثبت نهایی سفارش
         </button>
-        <a href="cart.html" class="mt-2.5 flex w-full items-center justify-center rounded-2xl border border-line py-3.5 text-sm font-semibold text-foreground hover:border-emerald hover:text-emerald">
+        <a href="cart" class="mt-2.5 flex w-full items-center justify-center rounded-2xl border border-line py-3.5 text-sm font-semibold text-foreground hover:border-emerald hover:text-emerald">
           بازگشت به سبد خرید
         </a>
       </div>
@@ -234,6 +228,7 @@
 <script src="js/search.js"></script>
 <script src="js/mobile-nav.js"></script>
 <script src="js/iran-locations.js"></script>
+<script src="js/pretty-select.js"></script>
 <script>
 function showToast(kind, message){
   const root = document.getElementById('toast-root');
@@ -261,7 +256,7 @@ const DISCOUNT_STORAGE_KEY = 'atelier_discount_code';
 
 /* ---------- گیت لاگین: تسویه‌حساب نیاز به ورود داره ---------- */
 if(!isLoggedIn()){
-  window.location.href = 'auth.html?redirect=checkout.html';
+  window.location.href = 'auth?redirect=checkout';
 }
 
 let currentCart = null;
@@ -273,7 +268,7 @@ async function init(){
     currentCart = cart;
 
     if(!currentCart.items || currentCart.items.length === 0){
-      window.location.href = 'cart.html';
+      window.location.href = 'cart';
       return;
     }
 
@@ -308,7 +303,7 @@ async function refreshCartOnly(){
   try {
     let cart = await Api.getCart();
     if(!cart.items || cart.items.length === 0){
-      window.location.href = 'cart.html';
+      window.location.href = 'cart';
       return;
     }
     const storedCode = localStorage.getItem(DISCOUNT_STORAGE_KEY);
@@ -329,6 +324,8 @@ function initProvinceCity(){
     provinceSelect.insertAdjacentHTML('beforeend', `<option value="${name}">${name}</option>`);
   });
   provinceSelect.addEventListener('change', () => populateCities(provinceSelect.value));
+  PrettySelect.attach(provinceSelect);
+  PrettySelect.attach(citySelect);
 }
 
 function populateCities(provinceName, selectedCity){
@@ -338,11 +335,13 @@ function populateCities(provinceName, selectedCity){
     citySelect.innerHTML = '<option value="">ابتدا استان را انتخاب کنید</option>';
     citySelect.disabled = true;
     citySelect.classList.add('text-muted');
+    citySelect._prettySelect?.refresh();
     return;
   }
   citySelect.disabled = false;
   citySelect.classList.remove('text-muted');
   citySelect.innerHTML = '<option value="">انتخاب شهر</option>' + cities.map(c => `<option value="${c}" ${c === selectedCity ? 'selected' : ''}>${c}</option>`).join('');
+  citySelect._prettySelect?.refresh();
 }
 initProvinceCity();
 
@@ -352,7 +351,9 @@ function prefillAddress(addresses){
   existingAddressId = def.id;
   document.getElementById('fname').value = def.receiverFullName || '';
   document.getElementById('phone').value = def.receiverPhone || '';
-  document.getElementById('province').value = def.province || '';
+  const provinceSelect = document.getElementById('province');
+  provinceSelect.value = def.province || '';
+  provinceSelect._prettySelect?.refresh();
   populateCities(def.province, def.city);
   document.getElementById('address').value = def.fullAddress || '';
   document.getElementById('postal').value = def.postalCode || '';
@@ -478,7 +479,7 @@ document.getElementById('submit-order').addEventListener('click', async () => {
       // انتقال به درگاه پرداخت زرین‌پال
       window.location.href = result.paymentUrl;
     } else {
-      window.location.href = `order-complete.html?orderNumber=${encodeURIComponent(result.order.orderNumber)}`;
+      window.location.href = `order-complete?orderNumber=${encodeURIComponent(result.order.orderNumber)}`;
     }
   } catch(err) {
     showToast('error', err.message || 'ثبت سفارش با خطا مواجه شد');

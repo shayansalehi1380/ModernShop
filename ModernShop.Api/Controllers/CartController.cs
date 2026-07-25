@@ -31,6 +31,30 @@ public class CartController : ControllerBase
         return Ok(ToDto(cart, shippingCost, threshold, 0, null));
     }
 
+    // فقط تعداد آیتم‌های سبد (نشان روی آیکون سبد خرید تو هدر/منوی موبایل که تقریباً تو هر
+    // صفحه‌ای صدا زده می‌شه)؛ برخلاف GetCart بالا، هیچ رابطه‌ای (محصول/عکس/تنوع) لود نمی‌کنه
+    [HttpGet("count")]
+    public async Task<ActionResult<object>> GetCartItemCount()
+    {
+        int count;
+        if (_currentUser.UserId is int userId)
+        {
+            count = await _db.CartItems.AsNoTracking()
+                .Where(ci => ci.Cart.UserId == userId)
+                .SumAsync(ci => (int?)ci.Quantity) ?? 0;
+        }
+        else
+        {
+            var guestSessionId = Request.Headers["X-Guest-Session-Id"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(guestSessionId)) return Ok(new { count = 0 });
+
+            count = await _db.CartItems.AsNoTracking()
+                .Where(ci => ci.Cart.GuestSessionId == guestSessionId)
+                .SumAsync(ci => (int?)ci.Quantity) ?? 0;
+        }
+        return Ok(new { count });
+    }
+
     // مربوط به دکمه «افزودن به سبد» روی کارت محصول
     [HttpPost("items")]
     public async Task<ActionResult<CartDto>> AddItem([FromBody] AddToCartRequestDto request)

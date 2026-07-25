@@ -63,7 +63,7 @@ public class AccountController : ControllerBase
     {
         var userId = _currentUser.UserId!.Value;
 
-        var addresses = await _db.Addresses
+        var addresses = await _db.Addresses.AsNoTracking()
             .Where(a => a.UserId == userId)
             .Select(a => new AddressDto
             {
@@ -147,7 +147,7 @@ public class AccountController : ControllerBase
     {
         var userId = _currentUser.UserId!.Value;
 
-        var items = await _db.WishlistItems
+        var items = await _db.WishlistItems.AsNoTracking()
             .Where(w => w.UserId == userId)
             .Select(w => new WishlistItemDto
             {
