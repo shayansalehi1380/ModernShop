@@ -154,14 +154,45 @@ function formatPrice(n) {
 // همون عکس رو درخواست می‌کنه (خیلی سبک‌تر از فایل اصلی که ممکنه چندمگابایتی باشه و کارت‌های
 // محصول رو کل سایت کند بارگذاری کنه). برای آدرس‌های خارجی (لینک مستقیم از یه سایت دیگه)
 // دست‌نخورده برمی‌گرده، چون این قابلیت فقط سمت سرور خودمون کار می‌کنه.
+// دامنه‌های خارجی که تأیید شده از داخل ایران در دسترس نیستن (مثلاً Unsplash - هر درخواست
+// بهش با net::ERR_CONNECTION_REFUSED بعد از چند ثانیه معطلی شکست می‌خوره). بعضی محصولات/
+// پست‌های وبلاگ قدیمی تو دیتابیس عکسشون یه لینک از همین دامنه‌هاست؛ چون این معطلی روی هر
+// تصویر می‌تونه اتصال‌های همزمان مرورگر رو اشغال کنه و حتی درخواست‌های API خود سایت (که
+// ربطی به عکس ندارن) رو هم کند کنه، این آدرس‌ها اصلاً نباید امتحان بشن - باید همون اول رد بشن
+const BLOCKED_IMG_HOSTS = ['images.unsplash.com', 'picsum.photos'];
+function isBlockedImgHost(url) {
+  return !!url && BLOCKED_IMG_HOSTS.some(h => url.includes(h));
+}
+
+// اگه آدرس عکس متعلق به یکی از دامنه‌های بالا باشه، رشته‌ی خالی برمی‌گرده (یعنی مرورگر
+// اصلاً درخواستی به اون سمت نمی‌فرسته) - برای هر جایی که عکس مستقیماً (بدون productThumb)
+// از دیتابیس نمایش داده می‌شه، مثل عکس شاخص پست‌های وبلاگ
+function safeImageUrl(url) {
+  return isBlockedImgHost(url) ? PRODUCT_IMG_FALLBACK : (url || '');
+}
+
 function productThumb(url, width) {
   if (!url) return url;
+  if (isBlockedImgHost(url)) return PRODUCT_IMG_FALLBACK;
   const marker = '/uploads/products/';
   const idx = url.indexOf(marker);
   if (idx === -1) return url;
   const fileName = url.slice(idx + marker.length);
   if (!fileName || fileName.includes('/')) return url; // از قبل تامبنیل بوده یا مسیر غیرمنتظره
   return `${url.slice(0, idx)}${marker}thumb/${width}/${fileName}`;
+}
+
+// SVG محلی (بدون هیچ درخواست شبکه‌ای) - جایگزین فوری وقتی عکس اصلی (مثلاً یه لینک خارجی
+// قدیمی/خراب که تو ایران در دسترس نیست) لود نشه، به‌جای اینکه مرورگر چند ثانیه معطل بمونه
+const PRODUCT_IMG_FALLBACK = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgNDAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzE2MTgxQyIvPjxjaXJjbGUgY3g9IjE2NSIgY3k9IjE1NSIgcj0iMjgiIGZpbGw9IiMzMzM2M2MiLz48cGF0aCBkPSJNMTIwIDI5MGw1NS03MCA0MiA0NiAzNC00MCA1OCA2NEgxMjB6IiBmaWxsPSIjMzMzNjNjIi8+PC9zdmc+';
+
+// روی هر <img> که ممکنه لینک خارجی/قدیمی داشته باشه صدا زده می‌شه: اگه لود نشد، بی‌سروصدا
+// و فوری با تصویر جایگزین محلی عوض می‌شه (به‌جای آیکون شکسته یا معطلی چندثانیه‌ای مرورگر).
+// این همچنان لازمه چون safeImageUrl فقط دامنه‌های شناخته‌شده رو رد می‌کنه؛ لینک‌های خارجی
+// دیگه که خرابن (نه لزوماً Unsplash) هنوز باید موقع خطا جایگزین بشن
+function onProductImgError(img) {
+  img.onerror = null;
+  img.src = PRODUCT_IMG_FALLBACK;
 }
 
 function updateAuthUI() {

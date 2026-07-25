@@ -116,7 +116,7 @@
       </header>
 
       <figure class="mt-6">
-        <img id="post-image" src="" alt="" class="aspect-[16/9] w-full rounded-3xl object-cover" loading="eager" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
+        <img id="post-image" src="" alt="" onerror="onProductImgError(this)" class="aspect-[16/9] w-full rounded-3xl object-cover" loading="eager" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
       </figure>
 
       <div id="post-body" class="mt-8 max-w-2xl text-[15px] text-foreground/85"></div>
@@ -248,7 +248,7 @@ function renderPost(){
   document.getElementById('author-name').textContent = post.authorName;
   document.getElementById('post-date').textContent = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : '';
   document.getElementById('post-readtime').textContent = toFaDigits(post.readTimeMinutes);
-  document.getElementById('post-image').src = post.featuredImageUrl || '';
+  document.getElementById('post-image').src = safeImageUrl(post.featuredImageUrl);
   document.getElementById('post-image').alt = post.title;
 
   // بدنه مقاله + ساخت فهرست مطالب پویا از روی H2 های موجود تو محتوا
@@ -409,7 +409,7 @@ async function loadRelated(){
     grid.innerHTML = related.map(p => `
       <article class="tilt-card group overflow-hidden rounded-2xl border border-line bg-surface">
         <a href="blog-post?slug=${p.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media">
-          <img src="${p.featuredImageUrl || ''}" alt="${p.title}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
+          <img src="${safeImageUrl(p.featuredImageUrl)}" alt="${p.title}" onerror="onProductImgError(this)" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
         </a>
         <div class="p-4">
           <span class="text-[11px] font-semibold text-emerald">${p.categoryName}</span>

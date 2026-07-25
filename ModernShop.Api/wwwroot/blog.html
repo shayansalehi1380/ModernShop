@@ -186,7 +186,7 @@ async function loadFeatured(){
     el.classList.add('grid');
     el.innerHTML = `
       <a href="blog-post?slug=${post.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media md:aspect-auto">
-        <img src="${post.featuredImageUrl || ''}" alt="${post.title}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="eager" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
+        <img src="${safeImageUrl(post.featuredImageUrl)}" alt="${post.title}" onerror="onProductImgError(this)" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="eager" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
         <span class="absolute right-4 top-4 rounded-full bg-emerald px-3 py-1.5 text-[11px] font-semibold text-white">مطلب ویژه</span>
       </a>
       <div class="flex flex-col justify-center p-6 sm:p-8">
@@ -270,7 +270,7 @@ async function loadPosts(){
     grid.innerHTML = result.items.map(post => `
       <article class="tilt-card group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface">
         <a href="blog-post?slug=${post.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media">
-          <img src="${post.featuredImageUrl || ''}" alt="${post.title}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
+          <img src="${safeImageUrl(post.featuredImageUrl)}" alt="${post.title}" onerror="onProductImgError(this)" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
           <span class="absolute right-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold text-emerald">${post.categoryName}</span>
         </a>
         <div class="flex flex-1 flex-col p-4">

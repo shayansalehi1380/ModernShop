@@ -66,7 +66,7 @@ const ProductCard = (function () {
       </button>
       <a href="${productUrl}" class="flex flex-1 flex-col">
         <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
-          <img src="${productThumb(p.mainImageUrl, 480) || 'https://picsum.photos/400/400'}" class="h-full w-full object-cover" loading="lazy" alt="${escapeHtmlPC(p.name)}" />
+          <img src="${productThumb(p.mainImageUrl, 480) || PRODUCT_IMG_FALLBACK}" onerror="onProductImgError(this)" class="h-full w-full object-cover" loading="lazy" alt="${escapeHtmlPC(p.name)}" />
           ${badge}${outOfStock}
         </div>
         <div class="mt-3 flex flex-1 flex-col px-1">

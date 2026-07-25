@@ -20,7 +20,7 @@ const AtelierSearch = (function () {
   function suggestionItemHTML(p) {
     const price = p.discountPrice || p.price;
     return `<a href="product?slug=${encodeURIComponent(p.slug)}" class="flex items-center gap-3 px-4 py-2.5 text-right hover:bg-surface-muted">
-      <img src="${productThumb(p.imageUrl, 96) || 'https://picsum.photos/100/100'}" class="h-10 w-10 shrink-0 rounded-lg object-cover bg-media" />
+      <img src="${productThumb(p.imageUrl, 96) || PRODUCT_IMG_FALLBACK}" onerror="onProductImgError(this)" class="h-10 w-10 shrink-0 rounded-lg object-cover bg-media" />
       <div class="min-w-0 flex-1">
         <div class="truncate text-sm">${escapeHtmlS(p.name)}</div>
         <div class="ticker text-xs text-muted">${toFaDigits(Number(price || 0).toLocaleString('en-US'))} تومان</div>

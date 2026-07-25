@@ -424,7 +424,7 @@ function dorinTimeCardHTML(p){
   return `
     <a href="${productUrl}" class="tilt-card block w-[150px] shrink-0 rounded-2xl bg-white p-2.5 shadow-sm sm:w-[170px]">
       <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
-        <img src="${productThumb(p.mainImageUrl, 320) || 'https://picsum.photos/300/300'}" class="h-full w-full object-cover" loading="lazy" alt="${dorinTimeEscapeHtml(p.name)}" />
+        <img src="${productThumb(p.mainImageUrl, 320) || PRODUCT_IMG_FALLBACK}" onerror="onProductImgError(this)" class="h-full w-full object-cover" loading="lazy" alt="${dorinTimeEscapeHtml(p.name)}" />
         <span class="absolute right-1.5 top-1.5 z-10 rounded-full bg-danger px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"><span class="ticker">${dorinTimeToFa(pct)}٪ تخفیف</span></span>
       </div>
       <h3 class="mt-2 truncate text-xs font-semibold text-black">${dorinTimeEscapeHtml(p.name)}</h3>
@@ -497,7 +497,7 @@ async function loadHomeBlog(){
     grid.innerHTML = result.items.map(post => `
       <a href="blog-post?slug=${post.slug}" class="tilt-card group block overflow-hidden rounded-2xl border border-line bg-surface">
         <div class="relative aspect-[16/10] overflow-hidden bg-media">
-          <img src="${post.featuredImageUrl || ''}" alt="${dorinTimeEscapeHtml(post.title)}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
+          <img src="${safeImageUrl(post.featuredImageUrl)}" alt="${dorinTimeEscapeHtml(post.title)}" onerror="onProductImgError(this)" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
           <span class="absolute right-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold text-emerald">${dorinTimeEscapeHtml(post.categoryName)}</span>
         </div>
         <div class="p-4">
