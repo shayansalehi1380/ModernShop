@@ -37,6 +37,8 @@
   .hover\:border-emerald:hover{border-color:var(--emerald)}
   .hover\:text-emerald:hover{color:var(--emerald)}
   .bg-emerald-hover:hover{background:#195d4d}
+  .tilt-card{transition:box-shadow .2s ease,transform .2s ease}
+  .tilt-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
   .prose-article :where(h2){scroll-margin-top:6rem; margin-top:2.5rem; margin-bottom:.75rem; font-size:1.25rem; font-weight:800}
   .prose-article :where(p){margin-top:.75rem; line-height:2}
   .prose-article :where(ul){margin-top:1rem; padding-right:1.25rem; list-style:disc}
@@ -97,7 +99,7 @@
             </div>
           </div>
           <span class="hidden sm:inline">·</span>
-          <time id="post-date"></time>
+          <time id="post-date" class="ticker"></time>
           <span>·</span>
           <span><span id="post-readtime"></span> دقیقه مطالعه</span>
 
@@ -240,7 +242,7 @@ function renderPost(){
   document.getElementById('author-initials').textContent = initials(post.authorName);
   document.getElementById('author-name').textContent = post.authorName;
   document.getElementById('post-date').textContent = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : '';
-  document.getElementById('post-readtime').textContent = post.readTimeMinutes;
+  document.getElementById('post-readtime').textContent = toFaDigits(post.readTimeMinutes);
   document.getElementById('post-image').src = post.featuredImageUrl || '';
   document.getElementById('post-image').alt = post.title;
 
@@ -351,7 +353,7 @@ function renderComments(){
       <div class="flex-1 rounded-2xl border border-line bg-surface p-4">
         <div class="flex items-center justify-between">
           <span class="text-sm font-bold">${c.userFullName}</span>
-          <span class="text-[11px] text-muted">${new Date(c.createdAt).toLocaleDateString('fa-IR')}</span>
+          <span class="ticker text-[11px] text-muted">${new Date(c.createdAt).toLocaleDateString('fa-IR')}</span>
         </div>
         <p class="mt-2 text-sm leading-6 text-foreground/80">${c.content}</p>
       </div>
@@ -400,14 +402,14 @@ async function loadRelated(){
       return;
     }
     grid.innerHTML = related.map(p => `
-      <article class="group overflow-hidden rounded-2xl border border-line bg-surface">
+      <article class="tilt-card group overflow-hidden rounded-2xl border border-line bg-surface">
         <a href="blog-post.html?slug=${p.slug}" class="relative block aspect-[16/10] overflow-hidden bg-media">
           <img src="${p.featuredImageUrl || ''}" alt="${p.title}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
         </a>
         <div class="p-4">
           <span class="text-[11px] font-semibold text-emerald">${p.categoryName}</span>
           <h3 class="mt-1.5 text-sm font-bold leading-snug"><a href="blog-post.html?slug=${p.slug}" class="hover:text-emerald">${p.title}</a></h3>
-          <time class="mt-2 block text-[11px] text-muted">${p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('fa-IR') : ''}</time>
+          <time class="ticker mt-2 block text-[11px] text-muted">${p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('fa-IR') : ''}</time>
         </div>
       </article>
     `).join('');

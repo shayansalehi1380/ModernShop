@@ -367,7 +367,7 @@ async function loadOrders(){
   try {
     const orders = await Api.getMyOrders();
     ordersLoaded = true;
-    document.getElementById('orders-count').textContent = orders.length;
+    document.getElementById('orders-count').textContent = toFaDigits(orders.length);
     document.getElementById('orders-loading').classList.add('hidden');
 
     if(orders.length === 0){
@@ -392,7 +392,7 @@ async function loadOrders(){
               <span class="ticker text-sm font-bold">${o.orderNumber}</span>
               <span class="order-status ${status.cls}">${status.text}</span>
             </div>
-            <p class="ticker mt-1 text-xs text-muted">${new Date(o.createdAt).toLocaleDateString('fa-IR')} &middot; ${o.itemCount} کالا</p>
+            <p class="ticker mt-1 text-xs text-muted">${new Date(o.createdAt).toLocaleDateString('fa-IR')} &middot; ${toFaDigits(o.itemCount)} کالا</p>
           </div>
         </div>
         <div class="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-2">
@@ -455,7 +455,7 @@ function renderOrderDetail(order){
     <div class="flex items-center gap-3">
       <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-media">
         <img src="${item.imageUrl}" class="h-full w-full object-cover" />
-        <span class="ticker absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white">${item.quantity}</span>
+        <span class="ticker absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white">${toFaDigits(item.quantity)}</span>
       </div>
       <span class="flex-1 truncate text-xs">${item.productName}</span>
       <span class="ticker shrink-0 text-xs font-semibold">${formatPrice(item.totalPrice)}</span>
@@ -494,7 +494,7 @@ async function loadWishlist(){
   try {
     const items = await Api.getWishlist();
     wishlistLoaded = true;
-    document.getElementById('wishlist-count').textContent = items.length;
+    document.getElementById('wishlist-count').textContent = toFaDigits(items.length);
     document.getElementById('wishlist-loading').classList.add('hidden');
 
     if(items.length === 0){
@@ -536,7 +536,7 @@ async function removeWish(productId){
       setTimeout(() => {
         card.remove();
         const remaining = document.querySelectorAll('#wishlist-grid > div').length;
-        document.getElementById('wishlist-count').textContent = remaining;
+        document.getElementById('wishlist-count').textContent = toFaDigits(remaining);
         if(remaining === 0){
           document.getElementById('wishlist-grid').classList.add('hidden');
           document.getElementById('wishlist-empty').classList.remove('hidden');

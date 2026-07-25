@@ -264,6 +264,12 @@
                     <div class="flex-1" id="pdp-cart-area"></div>
                 </div>
 
+                <!-- کالاهای انتخابی شما - لیست همه‌ی رنگ/سایزهایی از همین محصول که تا الان به سبد اضافه شده -->
+                <div id="pdp-selected-list" class="mt-4 hidden rounded-2xl border border-line bg-surface-muted p-4">
+                    <p class="mb-3 text-sm font-semibold">کالاهای انتخابی شما</p>
+                    <div id="pdp-selected-items" class="flex flex-col gap-2"></div>
+                </div>
+
                 <!-- trust strip -->
                 <div class="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-2">
                     <div class="flex items-center gap-2.5 text-xs text-muted">
@@ -439,9 +445,9 @@
             document.getElementById('breadcrumb-title').textContent = product.name;
             document.getElementById('info-category').textContent = product.categoryName;
             document.getElementById('product-name').textContent = product.name;
-            document.getElementById('avg-rating').textContent = product.averageRating.toFixed(1);
-            document.getElementById('review-count').textContent = product.reviewCount;
-            document.getElementById('tab-review-count').textContent = product.reviewCount;
+            document.getElementById('avg-rating').textContent = toFaDigits(product.averageRating.toFixed(1));
+            document.getElementById('review-count').textContent = toFaDigits(product.reviewCount);
+            document.getElementById('tab-review-count').textContent = toFaDigits(product.reviewCount);
             document.getElementById('sku-display').textContent = product.sku ? `کد کالا: ${product.sku}` : '';
 
             // گالری - تصویر شاخص همیشه پیش‌فرضه؛ فلش‌های راست/چپ بین تصاویر جابه‌جا می‌کنن
@@ -489,16 +495,16 @@
                 reviewsWrap.innerHTML = `
               <div class="mb-6 flex items-center gap-4 rounded-2xl bg-surface-muted p-5">
                 <div class="text-center">
-                  <div class="ticker text-3xl font-extrabold">${product.averageRating.toFixed(1)}</div>
+                  <div class="ticker text-3xl font-extrabold">${toFaDigits(product.averageRating.toFixed(1))}</div>
                 </div>
-                <div class="text-xs text-muted">بر اساس ${product.reviewCount} نظر خریداران</div>
+                <div class="text-xs text-muted">بر اساس ${toFaDigits(product.reviewCount)} نظر خریداران</div>
               </div>
               <div class="space-y-5">
                 ${product.reviews.map((r, i) => `
                   <div class="${i < product.reviews.length - 1 ? 'border-b border-line' : ''} pb-5">
                     <div class="flex items-center justify-between">
                       <span class="text-sm font-semibold">${r.userFullName}</span>
-                      <span class="text-[11px] text-muted">${new Date(r.createdAt).toLocaleDateString('fa-IR')}</span>
+                      <span class="ticker text-[11px] text-muted">${new Date(r.createdAt).toLocaleDateString('fa-IR')}</span>
                     </div>
                     <div class="mt-1 flex gap-0.5">${starsHtml(r.rating)}</div>
                     <p class="mt-2 text-sm leading-7 text-foreground/80">${r.comment || ''}</p>
@@ -744,6 +750,64 @@
             const html = pdpCartAreaHTML(qty, currentStock() > 0);
             document.getElementById('pdp-cart-area').innerHTML = html;
             document.getElementById('mobile-cart-area').innerHTML = html;
+            refreshSelectedList();
+        }
+
+        function escapeHtmlPdp(str) {
+            return String(str ?? '').replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+        }
+
+        function pdpVariantLabel(variant) {
+            if (!variant) return '';
+            if (variant.size && variant.size !== '-') return `${variant.color || ''} · سایز ${variant.size}`;
+            return variant.color || '';
+        }
+
+        // بعد از افزودن به سبد (چه محصول ساده چه متغیر)، لیست همه‌ی رنگ/سایزهایی که از همین
+        // محصول تا الان انتخاب و به سبد اضافه شده، همین‌جا تو صفحه محصول و در دید کاربر نشون داده می‌شه
+        function refreshSelectedList() {
+            const wrap = document.getElementById('pdp-selected-list');
+            const itemsWrap = document.getElementById('pdp-selected-items');
+            const lines = (cartSnapshot?.items || []).filter(i => i.productId === product.id);
+
+            if (!lines.length) {
+                wrap.classList.add('hidden');
+                itemsWrap.innerHTML = '';
+                return;
+            }
+
+            const mainImage = (product.images || []).find(i => i.isMain) || product.images?.[0];
+            wrap.classList.remove('hidden');
+            itemsWrap.innerHTML = lines.map(line => {
+                const variant = (product.variants || []).find(v => v.id === line.productVariantId) || null;
+                const label = pdpVariantLabel(variant);
+                return `
+                <div class="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
+                    <div class="flex items-center gap-3">
+                        <img src="${mainImage?.imageUrl || ''}" class="h-12 w-12 shrink-0 rounded-lg object-cover" alt="" />
+                        <div>
+                            <p class="text-xs font-semibold leading-snug">${escapeHtmlPdp(product.name)}</p>
+                            ${label ? `<p class="mt-0.5 text-[11px] text-muted">${escapeHtmlPdp(label)}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="ticker text-xs font-bold text-emerald-deep">${toFaDigits(line.quantity)} عدد</span>
+                        <button type="button" onclick="removeSelectedLine(${line.id})" class="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger" aria-label="حذف از سبد">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function removeSelectedLine(cartItemId) {
+            try {
+                cartSnapshot = await Api.removeCartItem(cartItemId);
+                refreshPdpCartArea();
+                updateCartBadge();
+            } catch (e) {
+                showToast('error', e.message || 'خطا در حذف از سبد خرید');
+            }
         }
 
         async function pdpAddToCart() {

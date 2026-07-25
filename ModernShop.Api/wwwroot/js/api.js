@@ -137,8 +137,14 @@ const Api = {
 };
 
 /* ---------------- کمکی‌های مشترک UI (چون همه صفحات به این‌ها نیاز دارن) ---------------- */
+// همه‌ی اعداد سایت (قیمت‌ها، تعدادها، امتیازها...) با همین دو تابع به رقم فارسی تبدیل می‌شن
+// تا سبک نمایش عدد رو کل سایت یکسان باشه (دقیقاً همون سبکی که تو فوتر و کارت محصولات هست)
+function toFaDigits(str) {
+  const d = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return String(str).replace(/[0-9]/g, x => d[x]);
+}
 function formatPrice(n) {
-  return Number(n).toLocaleString('en-US');
+  return toFaDigits(Number(n || 0).toLocaleString('en-US'));
 }
 
 function updateAuthUI() {
