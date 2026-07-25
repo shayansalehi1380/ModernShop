@@ -23,7 +23,7 @@ const AtelierSearch = (function () {
       <img src="${p.imageUrl || 'https://picsum.photos/100/100'}" class="h-10 w-10 shrink-0 rounded-lg object-cover bg-media" />
       <div class="min-w-0 flex-1">
         <div class="truncate text-sm">${escapeHtmlS(p.name)}</div>
-        <div class="ticker text-xs text-muted">${Number(price || 0).toLocaleString('en-US')} تومان</div>
+        <div class="ticker text-xs text-muted">${toFaDigits(Number(price || 0).toLocaleString('en-US'))} تومان</div>
       </div>
     </a>`;
   }

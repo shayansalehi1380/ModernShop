@@ -37,6 +37,8 @@
   .hover\:text-emerald:hover{color:var(--emerald)}
   .tilt-card{transition:box-shadow .2s ease,transform .2s ease}
   .tilt-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
+  .price-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem .75rem}
+  .price-row .old-price{order:3;width:100%}
   .no-scrollbar::-webkit-scrollbar{display:none}
   .no-scrollbar{scrollbar-width:none}
   .cursor-grab{cursor:grab} .cursor-grabbing{cursor:grabbing}
@@ -96,10 +98,9 @@
   </div>
 </section>
 
-<section class="border-y border-line bg-surface-muted py-10">
+<section class="border-y border-line bg-surface-muted py-8">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <p class="mb-5 text-center text-xs font-medium tracking-widest text-muted">برندهای معتبر</p>
-    <div id="brand-strip" class="flex flex-wrap items-center justify-center gap-3"></div>
+    <div id="brand-strip" class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4"></div>
   </div>
 </section>
 
@@ -231,7 +232,8 @@ function renderBanners(){
   wrap.innerHTML = bannerItems.map((b, i) => `
     <a href="${b.linkUrl || '#'}" class="banner-slide absolute inset-0 block transition-opacity duration-700 ease-out" style="opacity:${i===0?1:0};">
       ${b.imageUrl
-        ? `<img src="${b.imageUrl}" alt="${b.title || ''}" class="h-full w-full object-cover" />`
+        ? `<img src="${b.imageUrl}" alt="${b.title || ''}" class="h-full w-full object-cover"
+             draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />`
         : `<div class="flex h-full w-full items-center justify-center bg-emerald-deep px-6 text-center"><span class="text-lg font-extrabold text-white sm:text-2xl lg:text-4xl">${b.title || ''}</span></div>`}
     </a>
   `).join('');
@@ -264,12 +266,21 @@ function resumeBanner(){
   }
 }
 
-/* ---------- نوار برندها (حالا از API) ---------- */
+/* ---------- نوار برندها (حالا از API) ----------
+   اگه برند عکس لوگو داشته باشه (logoUrl)، همون عکس با اندازه‌ی ثابت و
+   object-contain نشون داده می‌شه (بدون بریدگی، هر نسبت تصویری که باشه)؛
+   وگرنه (برای برندهایی که هنوز لوگو آپلود نشده) اسم برند به‌شکل یه برچسب
+   ساده نشون داده می‌شه. لوگوها مثل بقیه‌ی عکس‌های غیرمحصولی سایت غیرقابل
+   کشیدن/ذخیره‌ی مستقیم هستن. */
 async function loadBrandStrip(){
   const wrap = document.getElementById('brand-strip');
   try {
     const brands = await Api.getFeaturedBrands();
-    wrap.innerHTML = brands.map(b => `<span class="rounded-full border border-line bg-surface px-5 py-2 text-sm font-semibold text-muted shadow-sm transition hover:border-emerald hover:text-emerald">${dorinTimeEscapeHtml(b.name)}</span>`).join('');
+    wrap.innerHTML = brands.map(b => b.logoUrl
+      ? `<img src="${b.logoUrl}" alt="${dorinTimeEscapeHtml(b.name)}" class="h-10 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 sm:h-12"
+           draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />`
+      : `<span class="rounded-full border border-line bg-surface px-5 py-2 text-sm font-semibold text-muted shadow-sm transition hover:border-emerald hover:text-emerald">${dorinTimeEscapeHtml(b.name)}</span>`
+    ).join('');
   } catch(e) {
     wrap.innerHTML = '';
   }
@@ -454,12 +465,15 @@ async function loadHomeBlog(){
     grid.innerHTML = result.items.map(post => `
       <a href="blog-post.html?slug=${post.slug}" class="tilt-card group block overflow-hidden rounded-2xl border border-line bg-surface">
         <div class="relative aspect-[16/10] overflow-hidden bg-media">
-          <img src="${post.featuredImageUrl || ''}" alt="${dorinTimeEscapeHtml(post.title)}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
+          <img src="${post.featuredImageUrl || ''}" alt="${dorinTimeEscapeHtml(post.title)}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
           <span class="absolute right-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-[11px] font-semibold text-emerald">${dorinTimeEscapeHtml(post.categoryName)}</span>
         </div>
         <div class="p-4">
           <h3 class="text-[15px] font-bold leading-snug hover:text-emerald">${dorinTimeEscapeHtml(post.title)}</h3>
-          <time class="ticker mt-2 block text-[11px] text-muted">${post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : ''}</time>
+          <div class="mt-3 flex items-center gap-1.5 border-t border-line pt-3 text-[11px] text-muted">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="ticker">زمان انتشار: ${post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : ''}</span>
+          </div>
         </div>
       </a>
     `).join('');

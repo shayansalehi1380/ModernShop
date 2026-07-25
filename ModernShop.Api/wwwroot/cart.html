@@ -35,7 +35,8 @@
   .hover\:text-emerald:hover{color:var(--emerald)}
   .bg-emerald-hover:hover{background:#195d4d}
   .qty-btn:hover{color:var(--emerald)}
-  .item-row{transition:opacity .25s ease, transform .25s ease}
+  .item-row{transition:opacity .25s ease, transform .25s ease, box-shadow .2s ease}
+  .item-row:hover{box-shadow:0 4px 16px rgba(0,0,0,.05)}
   .item-row.removing{opacity:0; transform:translateX(12px)}
   .skeleton{background:linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);background-size:400% 100%;animation:skeleton-loading 1.4s ease infinite}
   @keyframes skeleton-loading{0%{background-position:100% 50%}100%{background-position:0 50%}}
@@ -102,7 +103,7 @@
     </div>
 
     <!-- summary -->
-    <aside class="lg:col-span-1">
+    <aside class="lg:col-span-1 lg:sticky lg:top-24">
       <div class="rounded-3xl border border-line bg-surface p-6">
         <h2 class="text-base font-bold">خلاصه سفارش</h2>
 
