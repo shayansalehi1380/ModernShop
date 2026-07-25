@@ -202,10 +202,14 @@ app.Use(async (context, next) =>
                     image.Mutate(x => x.Resize(new ResizeOptions { Mode = ResizeMode.Max, Size = new Size(width, width) }));
                     await image.SaveAsync(thumbPath);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // اگه پردازش عکس شکست خورد (مثلاً فرمت پشتیبانی‌نشده)، همون فایل اصلی رو بدون تغییر کپی کن
-                    File.Copy(originalPath, thumbPath, overwrite: true);
+                    // اگه پردازش عکس شکست خورد، thumbPath رو نمی‌سازیم (وگرنه این شکست برای همیشه کش می‌شد
+                    // و دیگه هیچ‌وقت دوباره امتحان نمی‌شد)؛ فقط همین یک درخواست از رو فایل اصلی سرو می‌شه
+                    // و خطا لاگ می‌شه تا قابل بررسی باشه
+                    var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("ThumbnailMiddleware");
+                    logger.LogWarning(ex, "Thumbnail generation failed for {FileName} at width {Width}; serving original file for this request", fileName, width);
+                    context.Request.Path = $"/uploads/products/{fileName}";
                 }
             }
         }

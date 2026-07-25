@@ -175,8 +175,13 @@ public class SeoPageRenderer
 
     private static string SerializeJsonLd(Dictionary<string, object?> data)
     {
+        // UnsafeRelaxedJsonEscaping فارسی رو escape نمی‌کنه (خوانا می‌مونه) ولی </>/& رو هم escape
+        // نمی‌کنه؛ چون name/headline از دیتابیس میان (مثلاً اسم محصول)، اگه یکی از این مقادیر
+        // به‌طور اتفاقی یا عمدی شامل "</script>" باشه، بدون این جایگزینی می‌تونه از تگ script
+        // خارج بشه و HTML/اسکریپت دلخواه اجرا کنه
         var options = new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-        return JsonSerializer.Serialize(data, options);
+        var json = JsonSerializer.Serialize(data, options);
+        return json.Replace("<", "\\u003c").Replace(">", "\\u003e").Replace("&", "\\u0026");
     }
 
     private static string ReplaceById(string html, string tag, string id, string content)
