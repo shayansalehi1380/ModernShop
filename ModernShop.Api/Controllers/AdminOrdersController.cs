@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «سفارشات» تو پنل مدیریت (admin.html)
+// مربوط به بخش «سفارشات» تو پنل مدیریت
 [ApiController]
 [Route("api/admin/orders")]
 [Authorize(Policy = "AdminOnly")]

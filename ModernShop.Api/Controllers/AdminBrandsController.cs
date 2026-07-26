@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «برندها» تو پنل مدیریت (admin.html)
+// مربوط به بخش «برندها» تو پنل مدیریت
 [ApiController]
 [Route("api/admin/brands")]
 [Authorize(Policy = "AdminOnly")]

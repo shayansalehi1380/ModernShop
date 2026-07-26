@@ -68,12 +68,16 @@ public class CartController : ControllerBase
             variant = await _db.ProductVariants.FindAsync(request.ProductVariantId.Value);
             if (variant is null) return NotFound(new { message = "تنوع انتخاب‌شده یافت نشد" });
         }
-        var availableStock = variant?.StockQuantity ?? product.StockQuantity;
+        var totalStock = variant?.StockQuantity ?? product.StockQuantity;
 
         var cart = await GetOrCreateCartAsync();
 
         var existing = cart.Items.FirstOrDefault(i =>
             i.ProductId == request.ProductId && i.ProductVariantId == request.ProductVariantId);
+
+        // موجودی واقعاً در دسترس = کل موجودی منهای چیزی که همین الان تو سبد بقیه‌ی کاربرها رزرو شده
+        // (سبد خود همین کاربر از این حساب مستثناست، چون داره همون رزرو خودش رو زیاد می‌کنه)
+        var availableStock = await GetAvailableStockAsync(request.ProductId, request.ProductVariantId, totalStock, cart.Id);
 
         var requestedTotal = (existing?.Quantity ?? 0) + request.Quantity;
         if (requestedTotal > availableStock)
@@ -86,9 +90,12 @@ public class CartController : ControllerBase
             });
         }
 
+        var reservedUntil = DateTime.UtcNow.AddHours(2);
+
         if (existing is not null)
         {
             existing.Quantity = requestedTotal;
+            existing.ReservedUntil = reservedUntil;
         }
         else
         {
@@ -98,7 +105,8 @@ public class CartController : ControllerBase
                 ProductId = request.ProductId,
                 ProductVariantId = request.ProductVariantId,
                 Quantity = request.Quantity,
-                UnitPrice = (variant?.PriceAdjustment ?? 0) + (product.DiscountPrice ?? product.Price)
+                UnitPrice = (variant?.PriceAdjustment ?? 0) + (product.DiscountPrice ?? product.Price),
+                ReservedUntil = reservedUntil
             });
         }
 
@@ -122,9 +130,12 @@ public class CartController : ControllerBase
         }
         else
         {
-            var availableStock = item.ProductVariantId.HasValue
+            var totalStock = item.ProductVariantId.HasValue
                 ? (item.ProductVariant?.StockQuantity ?? 0)
                 : item.Product.StockQuantity;
+
+            // خود همین ردیف (رزرو فعلی همین کاربر برای همین محصول/تنوع) از حساب «رزروشده توسط بقیه» مستثناست
+            var availableStock = await GetAvailableStockAsync(item.ProductId, item.ProductVariantId, totalStock, cart.Id);
 
             if (request.Quantity > availableStock)
             {
@@ -136,6 +147,7 @@ public class CartController : ControllerBase
                 });
             }
             item.Quantity = request.Quantity;
+            item.ReservedUntil = DateTime.UtcNow.AddHours(2);
         }
 
         await _db.SaveChangesAsync();
@@ -186,6 +198,23 @@ public class CartController : ControllerBase
             : discount.Amount;
 
         return Ok(ToDto(cart, shippingCost, threshold, discountAmount, discount.Code));
+    }
+
+    // موجودی واقعاً در دسترس یک محصول/تنوع = کل موجودی منهای مجموع تعداد رزروشده تو سبد بقیه‌ی
+    // کاربرها (سبدهایی غیر از excludeCartId) که هنوز منقضی نشدن (ReservedUntil > الان). این
+    // همون مکانیزمی هست که جلوی فروش بیش از موجودی واقعی رو موقع افزودن/تغییر تعداد سبد می‌گیره؛
+    // رزروهای منقضی‌شده (کسی که ۲ ساعت پیش اضافه کرده و خرید نکرده) خودکار از این حساب کنار میرن.
+    private async Task<int> GetAvailableStockAsync(int productId, int? productVariantId, int totalStock, int excludeCartId)
+    {
+        var now = DateTime.UtcNow;
+        var reservedByOthers = await _db.CartItems.AsNoTracking()
+            .Where(ci => ci.ProductId == productId
+                      && ci.ProductVariantId == productVariantId
+                      && ci.CartId != excludeCartId
+                      && ci.ReservedUntil > now)
+            .SumAsync(ci => (int?)ci.Quantity) ?? 0;
+
+        return totalStock - reservedByOthers;
     }
 
     private async Task<Cart> GetOrCreateCartAsync()

@@ -1,8 +1,10 @@
 ﻿using System.Text;
+using System.Threading.RateLimiting;
 using ModernShop.Api.Services;
 using ModernShop.Core.Interfaces;
 using ModernShop.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SixLabors.ImageSharp;
@@ -20,6 +22,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("Admin"));
 builder.Services.AddScoped<SeoPageRenderer>();
+builder.Services.AddHostedService<CartReservationCleanupService>();
 
 // ===== احراز هویت با JWT =====
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -45,6 +48,43 @@ builder.Services.AddAuthorization(options =>
 {
     // فقط توکن‌هایی که JwtTokenService.GenerateAdminToken تولید کرده (پنل مدیریت) اجازه دارن
     options.AddPolicy("AdminOnly", policy => policy.RequireClaim("scope", "admin"));
+});
+
+// ===== محدودیت نرخ درخواست: جلوگیری از brute-force روی ورود ادمین و کد تایید پیامکی =====
+// هر پالیسی بر اساس IP کلاینت پارتیشن می‌شه؛ بعد از پر شدن سهمیه، درخواست فوراً با ۴۲۹ رد
+// می‌شه (QueueLimit=0)، نه اینکه تو صف بمونه.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("AdminLogin", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(5),
+            QueueLimit = 0
+        }));
+
+    // ارسال کد: جلوگیری از سوءاستفاده/هزینه‌تراشی روی پنل پیامکی (اسپم ارسال کد به یک یا چند شماره)
+    options.AddPolicy("OtpSend", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(10),
+            QueueLimit = 0
+        }));
+
+    // تایید کد: کد ۵ رقمیه (۱۰۰٬۰۰۰ حالت)؛ بدون این محدودیت با اسکریپت قابل حدس زدنه
+    options.AddPolicy("OtpVerify", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 8,
+            Window = TimeSpan.FromMinutes(5),
+            QueueLimit = 0
+        }));
 });
 
 // ===== CORS: چون فرانت (فایل‌های HTML) روی دامنه/پورت جدا اجرا می‌شه =====
@@ -115,7 +155,21 @@ else
             await context.Response.WriteAsJsonAsync(new { message = "خطای داخلی سرور رخ داد" });
         });
     });
+
+    // به مرورگر می‌گه برای یک سال همیشه از HTTPS استفاده کنه، حتی اگه کاربر آدرس رو با http:// باز کنه
+    app.UseHsts();
 }
+
+// هدرهای امنیتی پایه‌ای که به‌صورت پیش‌فرض تو ASP.NET Core فرستاده نمی‌شن؛ روی همه‌ی جواب‌ها
+// (فایل‌های استاتیک + API) اعمال می‌شن
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.Append("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    await next();
+});
 
 app.UseHttpsRedirection();
 
@@ -225,6 +279,7 @@ app.UseStaticFiles();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «نظرات» تو پنل مدیریت (admin.html) — تایید/رد و پاسخ به نظرات مشتریان
+// مربوط به بخش «نظرات» تو پنل مدیریت — تایید/رد و پاسخ به نظرات مشتریان
 [ApiController]
 [Route("api/admin/reviews")]
 [Authorize(Policy = "AdminOnly")]

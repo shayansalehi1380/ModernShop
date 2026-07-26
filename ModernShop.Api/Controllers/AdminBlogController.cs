@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «وبلاگ» تو پنل مدیریت (admin.html)
+// مربوط به بخش «وبلاگ» تو پنل مدیریت
 [ApiController]
 [Route("api/admin/blog")]
 [Authorize(Policy = "AdminOnly")]

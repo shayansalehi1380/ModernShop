@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link id="favicon-32" rel="icon" type="image/png" sizes="32x32" href="images/favicon-loading.gif" />
+<link id="favicon-16" rel="icon" type="image/png" sizes="16x16" href="images/favicon-loading.gif" />
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+<link id="favicon-shortcut" rel="shortcut icon" href="images/favicon-loading.gif" />
+<script>window.addEventListener('load',()=>{const a=document.getElementById('favicon-32'),b=document.getElementById('favicon-16'),c=document.getElementById('favicon-shortcut');if(a)a.href='images/favicon-32x32.png';if(b)b.href='images/favicon-16x16.png';if(c)c.href='images/favicon.ico';});</script>
+<title>دُرین مارکت | پنل مدیریت</title>
+<style>
+  :root{
+    --ink:#1E1922;
+    --ink-soft:#2B2433;
+    --ink-softer:#382F42;
+    --paper:#F6F3EE;
+    --card:#FFFFFF;
+    --line:#E6E0D6;
+    --text:#26202B;
+    --text-soft:#756E7B;
+    --text-faint:#A29AA8;
+    --wine:#7C2D42;
+    --wine-dark:#5E2032;
+    --wine-soft:#F3E4E8;
+    --brass:#A87F2E;
+    --brass-soft:#F1E6C8;
+    --teal:#2C6E68;
+    --teal-soft:#DFEEEB;
+    --amber:#B4762C;
+    --amber-soft:#F5E7CE;
+    --red:#A23B3B;
+    --red-soft:#F3DEDE;
+    --grey:#8A8390;
+    --grey-soft:#EDEAE6;
+    --radius-sm:8px;
+    --radius:12px;
+    --radius-lg:18px;
+    --shadow:0 8px 30px rgba(30,25,34,0.10);
+    --shadow-sm:0 2px 10px rgba(30,25,34,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--text);
+    font-family:"Vazirmatn","IRANSans","Segoe UI",Tahoma,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---------- Login ---------- */
+  .login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(124,45,66,0.10), transparent 45%),
+      radial-gradient(circle at 85% 85%, rgba(168,127,46,0.10), transparent 45%),
+      var(--paper);
+    padding:24px;
+  }
+  .login-card{
+    width:100%;
+    max-width:380px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:38px 32px 30px;
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .login-card::before{
+    content:"";
+    position:absolute;
+    top:0;right:0;left:0;
+    height:5px;
+    background:linear-gradient(90deg,var(--wine),var(--brass));
+  }
+  .login-mark{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .login-mark .dot{
+    width:34px;height:34px;border-radius:9px;
+    background:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--brass-soft);
+    font-weight:700;font-size:14px;
+    letter-spacing:0.5px;
+  }
+  .login-mark .name{font-weight:700;font-size:17px;}
+  .login-mark .sub{font-size:11px;color:var(--text-soft);margin-top:1px;}
+  .login-title{font-size:19px;font-weight:700;margin:0 0 4px;}
+  .login-desc{font-size:13px;color:var(--text-soft);margin:0 0 26px;line-height:1.9;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;font-size:12.5px;color:var(--text-soft);margin-bottom:7px;font-weight:600;
+  }
+  .input, .select, .textarea{
+    width:100%;
+    border:1px solid var(--line);
+    background:#FBFAF8;
+    border-radius:var(--radius-sm);
+    padding:11px 13px;
+    font-size:13.5px;
+    color:var(--text);
+    outline:none;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .input:focus, .select:focus, .textarea:focus{
+    border-color:var(--wine);
+    box-shadow:0 0 0 3px var(--wine-soft);
+    background:#fff;
+  }
+  .textarea{resize:vertical;min-height:80px;line-height:1.8;}
+  .ck-editor{direction:rtl;font-family:inherit;}
+  .ck-editor__editable{min-height:130px;line-height:1.8;font-size:13.5px;}
+  .ck.ck-editor__main>.ck-editor__editable{background:#FBFAF8;border-color:var(--line) !important;border-bottom-right-radius:var(--radius-sm) !important;border-bottom-left-radius:var(--radius-sm) !important;}
+  .ck.ck-toolbar{background:var(--grey-soft) !important;border-color:var(--line) !important;border-top-right-radius:var(--radius-sm) !important;border-top-left-radius:var(--radius-sm) !important;}
+  .ck.ck-editor__editable.ck-focused{border-color:var(--wine) !important;box-shadow:0 0 0 3px var(--wine-soft) !important;}
+  .login-error{
+    background:var(--red-soft);color:var(--red);
+    font-size:12.5px;padding:9px 12px;border-radius:var(--radius-sm);
+    margin-bottom:14px;display:none;
+  }
+  .login-error.show{display:block;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border:1px solid transparent;
+    border-radius:var(--radius-sm);
+    padding:10px 18px;
+    font-size:13.5px;
+    font-weight:600;
+    transition:transform .06s ease, opacity .15s, background .15s;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-block{width:100%;}
+  .btn-primary{background:var(--wine);color:#fff;}
+  .btn-primary:hover{background:var(--wine-dark);}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--line);}
+  .btn-ghost:hover{background:var(--grey-soft);}
+  .btn-soft{background:var(--brass-soft);color:var(--brass);}
+  .btn-soft:hover{opacity:0.85;}
+  .btn-danger{background:transparent;color:var(--red);border-color:var(--red-soft);}
+  .btn-danger:hover{background:var(--red-soft);}
+  .btn-sm{padding:6px 11px;font-size:12px;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .login-hint{
+    margin-top:18px;font-size:11.5px;color:var(--text-faint);text-align:center;line-height:1.8;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{
+    width:230px;flex-shrink:0;
+    background:var(--ink);
+    color:#EFE9E2;
+    display:flex;flex-direction:column;
+    padding:22px 16px;
+  }
+  .sidebar-mark{display:flex;align-items:center;gap:10px;padding:0 6px 22px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:18px;}
+  .sidebar-mark .dot{
+    width:32px;height:32px;border-radius:8px;
+    background:linear-gradient(135deg,var(--wine),var(--brass));
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+  }
+  .sidebar-mark .name{font-weight:700;font-size:15px;}
+  .sidebar-mark .sub{font-size:10.5px;color:#B4ACC0;}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;
+    padding:11px 12px;border-radius:9px;
+    font-size:13.5px;color:#D8D2E0;
+    margin-bottom:3px;
+    border:1px solid transparent;
+  }
+  .nav-item .ic{width:18px;height:18px;flex-shrink:0;opacity:0.85;}
+  .nav-item:hover{background:rgba(255,255,255,0.05);}
+  .nav-item.active{
+    background:var(--ink-softer);
+    color:#fff;
+    border-color:rgba(255,255,255,0.06);
+  }
+  .nav-item.active .ic{opacity:1;color:var(--brass-soft);}
+  .sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);}
+  .admin-chip{
+    display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;background:rgba(255,255,255,0.04);margin-bottom:10px;
+  }
+  .admin-chip .av{
+    width:28px;height:28px;border-radius:50%;background:var(--brass);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink);
+  }
+  .admin-chip .who{font-size:12.5px;}
+  .admin-chip .who small{display:block;color:#A79FB4;font-size:10.5px;}
+  .logout-btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:7px;
+    background:rgba(162,59,59,0.16);color:#E7A9A9;border:1px solid rgba(162,59,59,0.25);
+    padding:9px 10px;border-radius:9px;font-size:12.5px;font-weight:600;
+  }
+  .logout-btn:hover{background:rgba(162,59,59,0.26);}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 30px;border-bottom:1px solid var(--line);background:var(--card);
+  }
+  .topbar h1{font-size:18px;margin:0;}
+  .topbar p{margin:2px 0 0;font-size:12.5px;color:var(--text-soft);}
+  .content{padding:26px 30px 60px;flex:1;}
+
+  /* ---------- Common view bits ---------- */
+  .view-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .view-head .stat-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .stat-pill{
+    background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:7px 14px;font-size:12px;color:var(--text-soft);display:flex;align-items:center;gap:7px;
+  }
+  .stat-pill b{color:var(--text);font-size:13px;}
+  .stat-pill .sw{width:7px;height:7px;border-radius:50%;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:640px;}
+  thead th{
+    text-align:right;font-size:11.5px;color:var(--text-soft);font-weight:600;
+    padding:13px 16px;border-bottom:1px solid var(--line);background:#FBFAF7;white-space:nowrap;
+  }
+  tbody td{padding:13px 16px;font-size:13px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FCFBF9;}
+  .cell-main{display:flex;align-items:center;gap:11px;}
+  .thumb{
+    width:40px;height:40px;border-radius:9px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;
+    background:linear-gradient(135deg,var(--wine),var(--brass));
+  }
+  .thumb.sm{width:34px;height:34px;font-size:12px;border-radius:8px;}
+  .cell-title{font-weight:600;font-size:13px;}
+  .cell-sub{font-size:11.5px;color:var(--text-soft);margin-top:2px;}
+  .muted{color:var(--text-soft);}
+  .num{font-variant-numeric:tabular-nums;}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;
+  }
+  .badge .sw{width:6px;height:6px;border-radius:50%;}
+  .badge-active{background:var(--teal-soft);color:var(--teal);}
+  .badge-inactive{background:var(--grey-soft);color:var(--grey);}
+  .badge-processing{background:var(--amber-soft);color:var(--amber);}
+  .badge-shipped{background:var(--teal-soft);color:var(--teal);}
+  .badge-delivered{background:#E4EEDD;color:#4C7A34;}
+  .badge-cancelled{background:var(--red-soft);color:var(--red);}
+  .badge-failed{background:var(--grey-soft);color:#5C5563;}
+  .badge-published{background:var(--teal-soft);color:var(--teal);}
+  .badge-draft{background:var(--grey-soft);color:var(--grey);}
+
+  .row-actions{display:flex;gap:6px;justify-content:flex-end;}
+  .icon-btn{
+    width:31px;height:31px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:inline-flex;align-items:center;justify-content:center;color:var(--text-soft);
+  }
+  .icon-btn:hover{background:var(--grey-soft);color:var(--text);}
+  .icon-btn.danger:hover{background:var(--red-soft);color:var(--red);border-color:var(--red-soft);}
+  .icon-btn svg{width:15px;height:15px;}
+
+  .empty-state{padding:60px 20px;text-align:center;color:var(--text-soft);}
+  .empty-state .eic{
+    width:48px;height:48px;border-radius:12px;background:var(--grey-soft);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--text-faint);
+  }
+  .empty-state h3{font-size:14.5px;color:var(--text);margin:0 0 6px;}
+  .empty-state p{font-size:12.5px;margin:0 0 16px;}
+
+  .tabs{display:flex;gap:6px;background:var(--grey-soft);padding:4px;border-radius:10px;width:fit-content;margin-bottom:16px;}
+  .tab{padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--text-soft);}
+  .tab.active{background:#fff;color:var(--text);box-shadow:var(--shadow-sm);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(30,25,34,0.45);
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:34px 18px;overflow-y:auto;z-index:100;
+  }
+  .modal{
+    background:var(--card);border-radius:var(--radius-lg);
+    width:100%;max-width:640px;box-shadow:var(--shadow);
+    animation:pop .15s ease;
+  }
+  .modal.wide{max-width:760px;}
+  @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 24px;border-bottom:1px solid var(--line);
+  }
+  .modal-head h2{font-size:16px;margin:0;}
+  .modal-head p{margin:3px 0 0;font-size:12px;color:var(--text-soft);}
+  .modal-close{
+    width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;color:var(--text-soft);flex-shrink:0;
+  }
+  .modal-close:hover{background:var(--grey-soft);}
+  .modal-body{padding:22px 24px;max-height:64vh;overflow-y:auto;}
+  .modal-foot{
+    display:flex;justify-content:flex-start;gap:10px;padding:16px 24px;border-top:1px solid var(--line);
+  }
+  .modal-foot .spacer{flex:1;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:560px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  .switch-row{display:flex;align-items:center;justify-content:space-between;background:#FBFAF7;border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;}
+  .switch-row .lbl{font-size:13px;font-weight:600;}
+  .switch-row .lbl small{display:block;font-weight:400;color:var(--text-soft);font-size:11px;margin-top:2px;}
+  .switch{position:relative;width:40px;height:23px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch .track{position:absolute;inset:0;background:var(--grey-soft);border-radius:999px;transition:.15s;border:1px solid var(--line);}
+  .switch .knob{position:absolute;top:2px;right:2px;width:17px;height:17px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,0.25);}
+  .switch input:checked + .track{background:var(--wine);border-color:var(--wine);}
+  .switch input:checked + .track .knob{transform:translateX(-17px);}
+
+  .subsection{margin-top:22px;padding-top:18px;border-top:1px dashed var(--line);}
+  .subsection-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .subsection-head h4{margin:0;font-size:13.5px;}
+  .subsection-head span{font-size:11.5px;color:var(--text-soft);}
+  .dyn-row{display:flex;gap:9px;align-items:center;margin-bottom:9px;}
+  .dyn-row .input{flex:1;}
+  .dyn-row .rm{
+    width:34px;height:34px;flex-shrink:0;border-radius:8px;border:1px solid var(--red-soft);
+    background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;
+  }
+  .dyn-row .rm:hover{opacity:0.8;}
+  .image-upload-row{display:flex;gap:9px;align-items:center;}
+  .image-upload-row .input{flex:1;}
+  .image-upload-btn{
+    display:inline-flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap;cursor:pointer;
+    border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 14px;height:44px;font-size:12.5px;font-weight:600;color:var(--text-soft);background:#FBFAF7;
+  }
+  .image-upload-btn:hover{border-color:var(--wine);color:var(--wine);}
+  .image-preview-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .image-preview-row img{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line);}
+  .type-toggle{display:flex;gap:8px;margin-bottom:4px;}
+  .type-opt{
+    flex:1;border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px;text-align:center;
+    font-size:12.5px;font-weight:600;color:var(--text-soft);cursor:pointer;background:#FBFAF7;
+  }
+  .type-opt.active{border-color:var(--wine);background:var(--wine-soft);color:var(--wine);}
+  .variant-card{border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;background:#FBFAF7;}
+  .variant-card-top{display:flex;gap:8px;align-items:flex-end;}
+  .variant-field{flex:1;min-width:0;}
+  .variant-field.sm{flex:0 0 90px;}
+  .variant-field label{display:block;font-size:10.5px;color:var(--text-soft);margin-bottom:4px;}
+  .variant-color-row{display:flex;align-items:center;gap:8px;}
+  .variant-swatch{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);flex-shrink:0;background:#9ca3af;}
+  .variant-card .rm{
+    width:34px;height:34px;flex-shrink:0;border-radius:8px;border:1px solid var(--red-soft);
+    background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;
+  }
+  .variant-card .rm:hover{opacity:0.8;}
+  .variant-final-price{margin-top:8px;font-size:11.5px;color:var(--text-soft);}
+  .variant-final-price b{color:var(--wine);font-weight:700;}
+  .variant-discount-toggle{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11.5px;color:var(--text-soft);cursor:pointer;}
+  .variant-discount-toggle input{accent-color:var(--wine);}
+  .variants-summary{font-size:11.5px;color:var(--text-soft);margin-top:2px;margin-bottom:10px;}
+
+  /* ---------- Order detail ---------- */
+  .order-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+  @media(max-width:560px){.order-summary-grid{grid-template-columns:1fr;}}
+  .mini-card{background:#FBFAF7;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;}
+  .mini-card h5{margin:0 0 9px;font-size:12px;color:var(--text-soft);font-weight:700;}
+  .mini-card .ln{font-size:12.5px;margin-bottom:5px;line-height:1.8;}
+  .mini-card .ln b{color:var(--text);}
+  .items-table{width:100%;border-collapse:collapse;margin-top:6px;}
+  .items-table th{text-align:right;font-size:11px;color:var(--text-soft);padding:8px 4px;border-bottom:1px solid var(--line);}
+  .items-table td{padding:9px 4px;font-size:12.5px;border-bottom:1px solid var(--line);}
+  .totals-box{margin-top:10px;background:#FBFAF7;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;}
+  .totals-box .tln{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;color:var(--text-soft);}
+  .totals-box .tln.grand{color:var(--text);font-weight:700;font-size:14px;border-top:1px dashed var(--line);margin-top:6px;padding-top:11px;}
+  .timeline{margin-top:8px;}
+  .tl-item{display:flex;gap:11px;padding-bottom:16px;position:relative;}
+  .tl-item:last-child{padding-bottom:0;}
+  .tl-item::before{
+    content:"";position:absolute;right:5px;top:16px;bottom:0;width:1px;background:var(--line);
+  }
+  .tl-item:last-child::before{display:none;}
+  .tl-dot{width:11px;height:11px;border-radius:50%;background:var(--wine);flex-shrink:0;margin-top:3px;}
+  .tl-body b{font-size:12.5px;}
+  .tl-body div{font-size:11.5px;color:var(--text-soft);margin-top:2px;}
+  .status-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+  .status-note{
+    background:var(--brass-soft);color:#8A6A24;font-size:11.5px;padding:10px 12px;border-radius:var(--radius-sm);
+    margin-top:14px;line-height:1.9;
+  }
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .filter-chip{
+    padding:7px 14px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line);color:var(--text-soft);background:#fff;
+  }
+  .filter-chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  /* ---------- سرچ لیست‌ها ---------- */
+  .search-row{margin-bottom:14px;}
+  .search-box{position:relative;max-width:360px;}
+  .search-box svg{position:absolute;top:50%;right:13px;transform:translateY(-50%);color:var(--text-faint);pointer-events:none;}
+  .search-box input{width:100%;padding:9px 38px 9px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;outline:none;transition:.15s;}
+  .search-box input:focus{border-color:var(--wine);box-shadow:0 0 0 3px var(--wine-soft);}
+
+  /* ---------- صفحه‌بندی ---------- */
+  .pager{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;flex-wrap:wrap;}
+  .page-btn{
+    min-width:34px;height:34px;padding:0 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);
+    font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .page-btn:hover:not(:disabled):not(.active){border-color:var(--wine);color:var(--wine);}
+  .page-btn.active{background:var(--wine);border-color:var(--wine);color:#fff;}
+  .page-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .page-ellipsis{min-width:20px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px;}
+
+  /* ---------- نظرات ---------- */
+  .review-card{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
+  .review-card:last-child{margin-bottom:0;}
+  .review-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .review-who b{font-size:13px;}
+  .review-who .cell-sub{font-size:11.5px;color:var(--text-soft);margin-top:2px;}
+  .review-stars{color:var(--brass-soft, #C9A24B);letter-spacing:2px;font-size:14px;}
+  .review-comment{font-size:13px;line-height:1.9;color:var(--text);background:#FBFAF7;border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:10px;}
+  .review-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .review-reply-box{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+  .review-reply-existing{font-size:12.5px;line-height:1.9;background:var(--wine-soft);color:var(--wine-dark);border-radius:var(--radius-sm);padding:10px 12px;margin-top:8px;}
+  .review-reply-existing b{display:block;font-size:11px;color:var(--wine);margin-bottom:3px;}
+
+  /* ---------- Toast ---------- */
+  .toast-wrap{position:fixed;bottom:24px;left:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+  .toast{
+    background:var(--ink);color:#fff;padding:12px 16px;border-radius:10px;font-size:12.5px;
+    box-shadow:var(--shadow);display:flex;align-items:center;gap:9px;min-width:220px;
+    animation:toastin .18s ease;
+  }
+  .toast .sw{width:8px;height:8px;border-radius:50%;background:var(--brass);flex-shrink:0;}
+  .toast.error .sw{background:var(--red);}
+  @keyframes toastin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .loading-row{padding:40px 20px;text-align:center;color:var(--text-soft);font-size:12.5px;}
+
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#D8D2C6;border-radius:99px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/translations/fa.js"></script>
+<script src="js/color-map.js"></script>
+<script>
+/* =========================================================
+   کلاینت API پنل مدیریت — این پنل به بک‌اند واقعی وصله، نه مثل قبل mock.
+   توکن ادمین از توکن مشتری (atelier_token) کاملا جداست تا با هم تداخل نکنن.
+========================================================= */
+const API_BASE = '/api';
+const ADMIN_TOKEN_KEY = 'atelier_admin_token';
+
+function getAdminToken(){ return localStorage.getItem(ADMIN_TOKEN_KEY); }
+function setAdminToken(t){ localStorage.setItem(ADMIN_TOKEN_KEY, t); }
+function clearAdminToken(){ localStorage.removeItem(ADMIN_TOKEN_KEY); }
+
+async function adminFetch(path, options = {}){
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  const token = getAdminToken();
+  if(token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if(res.status === 401){
+    clearAdminToken();
+    state.authed = false;
+    renderApp();
+    toast('نشست شما منقضی شده، دوباره وارد شوید', 'error');
+    throw new Error('unauthorized');
+  }
+
+  if(!res.ok){
+    let message = 'خطایی رخ داد، لطفاً دوباره تلاش کنید';
+    try{ const data = await res.json(); if(data?.message) message = data.message; }catch(e){}
+    throw new Error(message);
+  }
+
+  if(res.status === 204) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+const Api = {
+  login: (username, password) => adminFetch('/admin/auth/login', { method:'POST', body: JSON.stringify({ username, password }) }),
+
+  getCategories: () => adminFetch('/categories'),
+  getBrands: () => adminFetch('/brands'),
+  getBlogCategories: () => adminFetch('/blog/categories'),
+
+  getProducts: () => adminFetch('/admin/products'),
+  getProduct: (id) => adminFetch(`/admin/products/${id}`),
+  createProduct: (data) => adminFetch('/admin/products', { method:'POST', body: JSON.stringify(data) }),
+  updateProduct: (id, data) => adminFetch(`/admin/products/${id}`, { method:'PUT', body: JSON.stringify(data) }),
+  deleteProduct: (id) => adminFetch(`/admin/products/${id}`, { method:'DELETE' }),
+  reactivateProduct: (id) => adminFetch(`/admin/products/${id}/reactivate`, { method:'PUT' }),
+
+  getAdminBrands: () => adminFetch('/admin/brands'),
+  getAdminBrand: (id) => adminFetch(`/admin/brands/${id}`),
+  createBrand: (data) => adminFetch('/admin/brands', { method:'POST', body: JSON.stringify(data) }),
+  updateBrand: (id, data) => adminFetch(`/admin/brands/${id}`, { method:'PUT', body: JSON.stringify(data) }),
+  deleteBrand: (id) => adminFetch(`/admin/brands/${id}`, { method:'DELETE' }),
+
+  getAdminBanners: () => adminFetch('/admin/banners'),
+  getAdminBanner: (id) => adminFetch(`/admin/banners/${id}`),
+  createBanner: (data) => adminFetch('/admin/banners', { method:'POST', body: JSON.stringify(data) }),
+  updateBanner: (id, data) => adminFetch(`/admin/banners/${id}`, { method:'PUT', body: JSON.stringify(data) }),
+  deleteBanner: (id) => adminFetch(`/admin/banners/${id}`, { method:'DELETE' }),
+
+  getBlogPosts: () => adminFetch('/admin/blog'),
+  getBlogPost: (id) => adminFetch(`/admin/blog/${id}`),
+  createBlogPost: (data) => adminFetch('/admin/blog', { method:'POST', body: JSON.stringify(data) }),
+  updateBlogPost: (id, data) => adminFetch(`/admin/blog/${id}`, { method:'PUT', body: JSON.stringify(data) }),
+  deleteBlogPost: (id) => adminFetch(`/admin/blog/${id}`, { method:'DELETE' }),
+
+  getOrders: (status) => adminFetch(`/admin/orders${status !== undefined && status !== null ? `?status=${status}` : ''}`),
+  getOrder: (id) => adminFetch(`/admin/orders/${id}`),
+  updateOrderStatus: (id, status) => adminFetch(`/admin/orders/${id}/status`, { method:'PUT', body: JSON.stringify({ status }) }),
+
+  getReviews: (approved) => adminFetch(`/admin/reviews${approved !== undefined && approved !== null ? `?approved=${approved}` : ''}`),
+  approveReview: (id) => adminFetch(`/admin/reviews/${id}/approve`, { method:'PUT' }),
+  rejectReview: (id) => adminFetch(`/admin/reviews/${id}/reject`, { method:'PUT' }),
+  replyReview: (id, reply) => adminFetch(`/admin/reviews/${id}/reply`, { method:'PUT', body: JSON.stringify({ reply }) }),
+
+  getBlogComments: (approved) => adminFetch(`/admin/blog-comments${approved !== undefined && approved !== null ? `?approved=${approved}` : ''}`),
+  approveBlogComment: (id) => adminFetch(`/admin/blog-comments/${id}/approve`, { method:'PUT' }),
+  rejectBlogComment: (id) => adminFetch(`/admin/blog-comments/${id}/reject`, { method:'PUT' }),
+
+  getStaticPages: () => adminFetch('/admin/static-pages'),
+  getStaticPage: (slug) => adminFetch(`/admin/static-pages/${slug}`),
+  updateStaticPage: (slug, data) => adminFetch(`/admin/static-pages/${slug}`, { method:'PUT', body: JSON.stringify(data) }),
+};
+
+/* ============ state ============ */
+const state = {
+  authed: !!getAdminToken(),
+  view: "products", // products | blog | orders
+  orderFilter: null, // null یعنی «همه»
+
+  categories: [],
+  brands: [],
+  blogCategories: [],
+
+  products: [],
+  productsLoaded: false,
+  showInactiveProducts: false,
+  productsSearch: "",
+  productsPage: 1,
+  brandsAdmin: [],
+  brandsAdminLoaded: false,
+  brandsAdminPage: 1,
+  bannersAdmin: [],
+  bannersAdminLoaded: false,
+  bannersAdminPage: 1,
+  blogPosts: [],
+  blogPostsLoaded: false,
+  blogSearch: "",
+  blogPage: 1,
+  orders: [],
+  ordersSearch: "",
+  ordersPage: 1,
+  reviews: [],
+  reviewsLoaded: false,
+  reviewFilter: null, // null=همه، true=تایید شده، false=در انتظار تایید
+  reviewType: "product", // product | blog
+  reviewsPage: 1,
+  blogComments: [],
+  blogCommentsLoaded: false,
+  blogCommentsPage: 1,
+  staticPages: [],
+  staticPagesLoaded: false,
+  staticPagesPage: 1,
+};
+
+/* ============ سرچ + صفحه‌بندی مشترک لیست‌ها ============ */
+const PAGE_SIZE = 10;
+
+function paginateArray(arr, page){
+  const start = (page - 1) * PAGE_SIZE;
+  return arr.slice(start, start + PAGE_SIZE);
+}
+
+// دراپ‌داون/سرچ‌باکس‌های لیست، بعد از هر تایپ باید صفحه رو به ۱ برگردونن
+function searchBoxHtml(id, placeholder, value, onInputFn){
+  return `
+    <div class="search-row">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="${id}" value="${escapeHtml(value)}" placeholder="${placeholder}" oninput="${onInputFn}(this.value)" />
+      </div>
+    </div>`;
+}
+
+function renderPager(totalItems, currentPage, gotoFnName){
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  if(totalPages <= 1) return "";
+  const pages = [];
+  for(let p = 1; p <= totalPages; p++){
+    if(p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) pages.push(p);
+    else if(pages[pages.length - 1] !== "...") pages.push("...");
+  }
+  let html = `<div class="pager">`;
+  html += `<button class="page-btn" ${currentPage <= 1 ? "disabled" : ""} onclick="${gotoFnName}(${currentPage - 1})" aria-label="صفحه قبل">‹</button>`;
+  html += pages.map(p => p === "..."
+    ? `<span class="page-ellipsis">…</span>`
+    : `<button class="page-btn ${p === currentPage ? "active" : ""}" onclick="${gotoFnName}(${p})">${p.toLocaleString("fa-IR")}</button>`
+  ).join("");
+  html += `<button class="page-btn" ${currentPage >= totalPages ? "disabled" : ""} onclick="${gotoFnName}(${currentPage + 1})" aria-label="صفحه بعد">›</button>`;
+  html += `</div>`;
+  return html;
+}
+
+/* ============ helpers ============ */
+function toman(n){
+  return (n || 0).toLocaleString("fa-IR") + " تومان";
+}
+function faDate(d){
+  if(!d) return "—";
+  try{ return new Date(d).toLocaleDateString("fa-IR"); }catch(e){ return d; }
+}
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, s => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[s]));
+}
+function initials(str){
+  return String(str || "؟").trim().charAt(0);
+}
+function slugify(str){
+  return String(str||"").trim().toLowerCase()
+    .replace(/[\s_]+/g,"-")
+    .replace(/[^a-z0-9؀-ۿ-]/g,"")
+    .replace(/-+/g,"-");
+}
+function categoryName(id){ const c = state.categories.find(c=>c.id==id); return c ? c.name : "—"; }
+function brandName(id){ const b = state.brands.find(b=>b.id==id); return b ? b.name : "—"; }
+
+function toast(msg, kind){
+  const wrap = document.getElementById("toast-wrap");
+  const el = document.createElement("div");
+  el.className = "toast" + (kind === "error" ? " error" : "");
+  el.innerHTML = '<span class="sw"></span><span>'+escapeHtml(msg)+'</span>';
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .25s"; setTimeout(()=>el.remove(),250); }, 2800);
+}
+
+/* ---------- CKEditor 5 (توضیحات محصول و متن مطلب وبلاگ) ---------- */
+let pfDescEditor = null;
+let bfContentEditor = null;
+let spContentEditor = null;
+const CK_CONFIG = { language: { ui: 'fa', content: 'fa' }, toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'insertTable', 'undo', 'redo'] };
+
+async function destroyRichEditors(){
+  if(pfDescEditor){ try{ await pfDescEditor.destroy(); }catch(e){} pfDescEditor = null; }
+  if(bfContentEditor){ try{ await bfContentEditor.destroy(); }catch(e){} bfContentEditor = null; }
+  if(spContentEditor){ try{ await spContentEditor.destroy(); }catch(e){} spContentEditor = null; }
+}
+
+function mountProductDescEditor(){
+  const el = document.getElementById("pf-desc");
+  if(!el || typeof ClassicEditor === "undefined") return;
+  ClassicEditor.create(el, CK_CONFIG).then(editor => { pfDescEditor = editor; }).catch(err => console.error(err));
+}
+
+function mountBlogContentEditor(){
+  const el = document.getElementById("bf-content");
+  if(!el || typeof ClassicEditor === "undefined") return;
+  ClassicEditor.create(el, CK_CONFIG).then(editor => { bfContentEditor = editor; }).catch(err => console.error(err));
+}
+
+function mountStaticPageEditor(){
+  const el = document.getElementById("sp-content");
+  if(!el || typeof ClassicEditor === "undefined") return;
+  ClassicEditor.create(el, CK_CONFIG).then(editor => { spContentEditor = editor; }).catch(err => console.error(err));
+}
+
+function closeModal(){ destroyRichEditors(); document.getElementById("modal-root").innerHTML = ""; }
+function openModalHtml(html){ destroyRichEditors(); document.getElementById("modal-root").innerHTML = html; }
+
+/* icons (inline svg, no external deps) */
+const ICONS = {
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
+  blog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h7"/></svg>',
+  order: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M14 2v5h5"/><path d="M8 13h8M8 17h5"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+  empty: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.8 1.5 6.9L12 17.8l-6.1 3.5 1.5-6.9-5.2-4.8 6.9-.7L12 2.5z"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg>',
+  reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 17l-5-5 5-5"/><path d="M4 12h10a5 5 0 0 1 5 5v2"/></svg>',
+  file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6.5A2.5 2.5 0 0 0 4 4.5v15A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5V8.5L14.5 2z"/><path d="M14 2v6.5h6.5"/><path d="M8 13h8M8 17h5"/></svg>',
+  tag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.6 12.6 12 21.2 2.8 12 11.4 3.4H20.6v9.2Z"/><circle cx="16.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
+};
+
+/* ============ ROOT RENDER ============ */
+function renderApp(){
+  const app = document.getElementById("app");
+  if(!state.authed){
+    app.innerHTML = renderLogin();
+  } else {
+    app.innerHTML = renderShell();
+    loadLookups();
+  }
+}
+
+/* ============ LOGIN ============ */
+function renderLogin(){
+  return `
+  <div class="login-screen">
+    <div class="login-card">
+      <div class="login-mark">
+        <div class="dot" style="background:transparent;">
+          <img src="images/logo_header.png" alt="Dorin Market"
+               draggable="false" oncontextmenu="return false"
+               style="width:34px; height:34px; object-fit:contain; -webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />
+        </div>
+        <div>
+          <div class="name">دُرین مارکت</div>
+          <div class="sub">پنل مدیریت</div>
+        </div>
+      </div>
+      <h1 class="login-title">ورود به پنل مدیریت</h1>
+      <p class="login-desc">این بخش صرفاً برای مدیر فروشگاه است. امکان ثبت‌نام از این صفحه وجود ندارد.</p>
+      <div class="login-error" id="login-error"></div>
+      <div class="field">
+        <label>نام کاربری</label>
+        <input class="input" id="login-username" placeholder="نام کاربری" autocomplete="username" onkeydown="loginKeydown(event)" />
+      </div>
+      <div class="field">
+        <label>رمز عبور</label>
+        <input class="input" id="login-password" type="password" placeholder="رمز عبور" autocomplete="current-password" onkeydown="loginKeydown(event)" />
+      </div>
+      <button class="btn btn-primary btn-block" id="login-btn" onclick="handleLogin()">ورود</button>
+    </div>
+  </div>`;
+}
+
+async function handleLogin(){
+  const u = document.getElementById("login-username").value.trim();
+  const p = document.getElementById("login-password").value;
+  const err = document.getElementById("login-error");
+  const btn = document.getElementById("login-btn");
+  err.classList.remove("show");
+
+  if(!u || !p){
+    err.textContent = "نام کاربری و رمز عبور را وارد کنید";
+    err.classList.add("show");
+    return;
+  }
+
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = "در حال ورود...";
+
+  try{
+    const result = await Api.login(u, p);
+    setAdminToken(result.token);
+    state.authed = true;
+    state.view = "products";
+    renderApp();
+  }catch(e){
+    err.textContent = e.message || "ورود ناموفق بود";
+    err.classList.add("show");
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+function loginKeydown(e){ if(e.key === "Enter") handleLogin(); }
+
+function handleLogout(){
+  clearAdminToken();
+  state.authed = false;
+  state.productsLoaded = false;
+  state.brandsAdminLoaded = false;
+  state.bannersAdminLoaded = false;
+  state.blogPostsLoaded = false;
+  state.reviewsLoaded = false;
+  state.blogCommentsLoaded = false;
+  state.staticPagesLoaded = false;
+  state.products = [];
+  state.brandsAdmin = [];
+  state.bannersAdmin = [];
+  state.blogPosts = [];
+  state.orders = [];
+  state.reviews = [];
+  state.blogComments = [];
+  state.staticPages = [];
+  renderApp();
+}
+
+/* ============ SHELL ============ */
+function renderShell(){
+  return `
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sidebar-mark">
+        <div class="dot" style="background:transparent;">
+          <img src="images/logo_header.png" alt="Dorin Market"
+               draggable="false" oncontextmenu="return false"
+               style="width:32px; height:32px; object-fit:contain; -webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />
+        </div>
+        <div>
+          <div class="name">دُرین مارکت</div>
+          <div class="sub">پنل مدیریت</div>
+        </div>
+      </div>
+      <nav>
+        ${navItem("products","box","محصولات")}
+        ${navItem("brands","tag","برندها")}
+        ${navItem("banners","image","بنرها")}
+        ${navItem("blog","blog","وبلاگ")}
+        ${navItem("orders","order","سفارشات")}
+        ${navItem("reviews","star","نظرات")}
+        ${navItem("pages","file","صفحات ثابت")}
+      </nav>
+      <div class="sidebar-foot">
+        <div class="admin-chip">
+          <div class="av">AD</div>
+          <div class="who">مدیر فروشگاه<small>پنل مدیریت</small></div>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()">${ICONS.logout} خروج</button>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <h1>${viewTitle()}</h1>
+          <p>${viewDesc()}</p>
+        </div>
+      </div>
+      <div class="content" id="view-content">${loadingRow()}</div>
+    </div>
+  </div>`;
+}
+
+function loadingRow(){
+  return `<div class="card"><div class="loading-row">در حال بارگذاری...</div></div>`;
+}
+
+function navItem(key, icon, label){
+  const active = state.view === key ? "active" : "";
+  return `<div class="nav-item ${active}" onclick="switchView('${key}')"><span class="ic">${ICONS[icon]}</span>${label}</div>`;
+}
+function switchView(key){
+  state.view = key;
+  document.getElementById("app").innerHTML = renderShell();
+  loadCurrentView();
+}
+function viewTitle(){
+  return { products:"مدیریت محصولات", brands:"مدیریت برندها", banners:"مدیریت بنرها", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات", pages:"صفحات ثابت" }[state.view];
+}
+function viewDesc(){
+  return {
+    products:"تعریف، ویرایش و حذف محصولات فروشگاه",
+    brands:"تعریف برندها و آپلود لوگو؛ برندهای ویژه در نوار صفحه اصلی نمایش داده می‌شوند",
+    banners:"آپلود بنر اسلایدر بالای صفحه اصلی و دو بنر ثابت تبلیغاتی، جدا برای موبایل و دسکتاپ",
+    blog:"تعریف، ویرایش و حذف مطالب وبلاگ",
+    orders:"مشاهده سفارشات و بروزرسانی وضعیت ارسال",
+    reviews:"تایید یا رد نظرات مشتریان و پاسخ‌گویی به آن‌ها",
+    pages:"ویرایش متن صفحات ثابت فوتر (داستان ما، تماس با ما، سوالات متداول، شرایط بازگشت کالا)",
+  }[state.view];
+}
+function refreshView(){
+  // اگه موقع رفرش، فوکوس رو یه اینپوت سرچ بوده (تایپ در حال انجام)، بعد از جایگزینی
+  // innerHTML باید فوکوس و موقعیت مکان‌نما برگرده، وگرنه با هر حرف فوکوس از دست می‌ره
+  const active = document.activeElement;
+  const activeId = (active && active.tagName === "INPUT" && active.id) ? active.id : null;
+  const selStart = activeId ? active.selectionStart : null;
+  const selEnd = activeId ? active.selectionEnd : null;
+
+  document.getElementById("view-content").innerHTML = renderView();
+
+  if(activeId){
+    const el = document.getElementById(activeId);
+    if(el){
+      el.focus();
+      try { el.setSelectionRange(selStart, selEnd); } catch(e){}
+    }
+  }
+}
+function renderView(){
+  if(state.view === "products") return renderProductsView();
+  if(state.view === "brands") return renderBrandsView();
+  if(state.view === "banners") return renderBannersView();
+  if(state.view === "blog") return renderBlogView();
+  if(state.view === "orders") return renderOrdersView();
+  if(state.view === "reviews") return renderReviewsView();
+  if(state.view === "pages") return renderStaticPagesView();
+  return "";
+}
+
+async function loadLookups(){
+  try{
+    const [categories, brands, blogCategories] = await Promise.all([
+      Api.getCategories(), Api.getBrands(), Api.getBlogCategories()
+    ]);
+    state.categories = categories;
+    state.brands = brands;
+    state.blogCategories = blogCategories;
+  }catch(e){
+    // اگه توکن منقضی بود adminFetch خودش به صفحه لاگین برمی‌گردونه
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری اطلاعات پایه', 'error');
+  }
+  loadCurrentView();
+}
+
+async function loadCurrentView(){
+  if(state.view === "products") return loadProducts();
+  if(state.view === "brands") return loadBrandsAdmin();
+  if(state.view === "banners") return loadBannersAdmin();
+  if(state.view === "blog") return loadBlogPosts();
+  if(state.view === "orders") return loadOrders();
+  if(state.view === "reviews") return loadReviews();
+  if(state.view === "pages") return loadStaticPages();
+}
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+async function loadProducts(){
+  try{
+    state.products = await Api.getProducts();
+    state.productsLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری محصولات', 'error');
+  }
+}
+
+function renderProductsView(){
+  if(!state.productsLoaded) return loadingRow();
+
+  const activeCount = state.products.filter(p=>p.isActive).length;
+  const outOfStock = state.products.filter(p=>p.stockQuantity === 0).length;
+  const inactiveCount = state.products.length - activeCount;
+
+  // پیش‌فرض فقط محصولات فعال نشون داده می‌شن؛ وگرنه بعد از «حذف» محصول همچنان تو لیست می‌موند
+  // (چون حذف در واقع IsActive=false هست، نه پاک شدن واقعی) و به نظر می‌رسید دکمه حذف کار نمی‌کنه.
+  let visibleProducts = state.showInactiveProducts ? state.products : state.products.filter(p=>p.isActive);
+  if(state.productsSearch.trim()){
+    const q = state.productsSearch.trim().toLowerCase();
+    visibleProducts = visibleProducts.filter(p => (p.name || "").toLowerCase().includes(q));
+  }
+  const pageItems = paginateArray(visibleProducts, state.productsPage);
+
+  const rows = pageItems.map(p => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          <div class="thumb">${initials(p.name)}</div>
+          <div>
+            <div class="cell-title">${escapeHtml(p.name)}</div>
+            <div class="cell-sub">${escapeHtml(p.sku || "بدون کد")} · ${p.isVariable ? "متغیر" : "ساده"}</div>
+          </div>
+        </div>
+      </td>
+      <td class="muted">${escapeHtml(p.categoryName)}</td>
+      <td class="num">
+        ${p.discountPrice ? `<div>${toman(p.discountPrice)}</div><div class="cell-sub" style="text-decoration:line-through">${toman(p.price)}</div>` : toman(p.price)}
+      </td>
+      <td class="num">${p.stockQuantity === 0 ? '<span style="color:var(--red)">ناموجود</span>' : p.stockQuantity.toLocaleString('fa-IR')}</td>
+      <td>${p.isActive ? '<span class="badge badge-active"><span class="sw"></span>فعال</span>' : '<span class="badge badge-inactive"><span class="sw"></span>غیرفعال</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openProductForm(${p.id})">${ICONS.edit}</button>
+          ${p.isActive
+            ? `<button class="icon-btn danger" title="حذف" onclick="deleteProduct(${p.id})">${ICONS.trash}</button>`
+            : `<button class="icon-btn" title="فعال‌سازی مجدد" onclick="reactivateProduct(${p.id})">${ICONS.plus}</button>`}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.products.length.toLocaleString('fa-IR')} محصول</div>
+        <div class="stat-pill"><span class="sw" style="background:var(--teal)"></span>${activeCount.toLocaleString('fa-IR')} فعال</div>
+        <div class="stat-pill"><span class="sw" style="background:var(--red)"></span>${outOfStock.toLocaleString('fa-IR')} ناموجود</div>
+      </div>
+      <button class="btn btn-primary" onclick="openProductForm()">${ICONS.plus} محصول جدید</button>
+    </div>
+    <div class="filter-row">
+      <div class="filter-chip ${!state.showInactiveProducts?"active":""}" onclick="setShowInactiveProducts(false)">فقط فعال</div>
+      <div class="filter-chip ${state.showInactiveProducts?"active":""}" onclick="setShowInactiveProducts(true)">همه (شامل ${inactiveCount.toLocaleString('fa-IR')} حذف‌شده)</div>
+    </div>
+    ${searchBoxHtml("products-search", "جستجوی نام محصول...", state.productsSearch, "setProductsSearch")}
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>محصول</th><th>دسته‌بندی</th><th>قیمت</th><th>موجودی</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : (state.products.length === 0
+            ? emptyState("box","هنوز محصولی ثبت نشده","با دکمه «محصول جدید» اولین محصول را اضافه کنید.")
+            : emptyState("box","محصولی یافت نشد","عبارت جستجوشده با هیچ محصولی مطابقت ندارد."))}
+      </div>
+      ${renderPager(visibleProducts.length, state.productsPage, "gotoProductsPage")}
+    </div>
+  `;
+}
+
+function emptyState(icon, title, desc){
+  return `<div class="empty-state"><div class="eic">${ICONS[icon]}</div><h3>${title}</h3><p>${desc}</p></div>`;
+}
+
+function setShowInactiveProducts(value){
+  state.showInactiveProducts = value;
+  state.productsPage = 1;
+  refreshView();
+}
+function setProductsSearch(value){
+  state.productsSearch = value;
+  state.productsPage = 1;
+  refreshView();
+}
+function gotoProductsPage(p){
+  state.productsPage = p;
+  refreshView();
+}
+
+async function deleteProduct(id){
+  const p = state.products.find(x=>x.id===id);
+  if(!p) return;
+  if(!confirm('آیا از حذف محصول «'+p.name+'» مطمئن هستید؟ محصول از فروشگاه حذف می‌شود ولی سابقه سفارش‌های قبلی آن حفظ می‌ماند.')) return;
+
+  try{
+    await Api.deleteProduct(id);
+    toast("محصول حذف شد.");
+    await loadProducts();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'حذف محصول ناموفق بود', 'error');
+  }
+}
+
+async function reactivateProduct(id){
+  try{
+    await Api.reactivateProduct(id);
+    toast("محصول دوباره فعال شد.");
+    await loadProducts();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'فعال‌سازی محصول ناموفق بود', 'error');
+  }
+}
+
+async function openProductForm(id){
+  let p = { name:"", slug:"", sku:"", categoryId: state.categories[0]?.id || "", brandId:"", description:"",
+    price:"", discountPrice:"", stockQuantity:0, isActive:true, imageUrl:"", galleryImageUrls:[], specifications:[], variants:[] };
+  let editing = false;
+
+  if(id){
+    try{
+      p = await Api.getProduct(id);
+      editing = true;
+    }catch(e){
+      if(e.message === 'unauthorized') return;
+      toast(e.message || 'خطا در بارگذاری محصول', 'error');
+      return;
+    }
+  }
+
+  const isVariable = (p.variants || []).length > 0;
+  const categoryOptions = state.categories.map(c=>`<option value="${c.id}" ${p.categoryId==c.id?"selected":""}>${escapeHtml(c.name)}</option>`).join("");
+  const brandOptions = `<option value="">بدون برند</option>` + state.brands.map(b=>`<option value="${b.id}" ${p.brandId==b.id?"selected":""}>${escapeHtml(b.name)}</option>`).join("");
+
+  const specsRows = (p.specifications||[]).map(s => specRowHtml(s.key, s.value)).join("");
+  const variantRows = (p.variants||[]).map(v => variantRowHtml(v.color, v.size, v.stockQuantity, v.priceAdjustment, v.includedInDiscount !== false)).join("");
+  const galleryRows = (p.galleryImageUrls||[]).map(url => galleryRowHtml(url)).join("");
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>${editing ? "ویرایش محصول" : "محصول جدید"}</h2>
+          <p>${editing ? "اطلاعات محصول را ویرایش کنید." : "اطلاعات محصول جدید را وارد کنید."}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form" onsubmit="return false;">
+          <div class="grid2">
+            <div class="field">
+              <label>نام محصول</label>
+              <input class="input" id="pf-name" value="${escapeHtml(p.name)}" oninput="pfAutoSlug()" placeholder="مثلاً هدفون بی‌سیم دُرین مارکت" />
+            </div>
+            <div class="field">
+              <label>نامک (Slug) — اختیاری</label>
+              <input class="input" id="pf-slug" value="${escapeHtml(p.slug||"")}" placeholder="خالی = خودکار از روی نام" />
+            </div>
+          </div>
+          <div class="grid3">
+            <div class="field">
+              <label>کد محصول (SKU)</label>
+              <input class="input" id="pf-sku" value="${escapeHtml(p.sku||"")}" placeholder="ATL-HP-001" />
+            </div>
+            <div class="field">
+              <label>دسته‌بندی</label>
+              <select class="select" id="pf-category">${categoryOptions}</select>
+            </div>
+            <div class="field">
+              <label>برند</label>
+              <select class="select" id="pf-brand">${brandOptions}</select>
+            </div>
+          </div>
+          <div class="field">
+            <label>تصویر اصلی محصول</label>
+            <div class="image-upload-row">
+              <input class="input" id="pf-image" oninput="refreshImagePreview('pf-image','pf-image-preview')" value="${escapeHtml(p.imageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadProductImage(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="pf-image-preview">${p.imageUrl ? `<img src="${escapeHtml(p.imageUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+
+          <div class="subsection">
+            <div class="subsection-head">
+              <h4>گالری تصاویر محصول</h4>
+              <span onclick="pfAddGalleryRow()" style="cursor:pointer;color:var(--wine);font-weight:600;">${ICONS.plus} افزودن ردیف</span>
+            </div>
+            <div id="pf-gallery-list">${galleryRows}</div>
+            <label class="btn btn-ghost image-upload-btn" style="margin-top:6px;">
+              ${ICONS.plus} آپلود تصویر جدید از سیستم به گالری
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadGalleryImage(this)" />
+            </label>
+          </div>
+
+          <div class="field">
+            <label>توضیحات</label>
+            <textarea class="textarea" id="pf-desc" placeholder="توضیح کوتاه محصول...">${escapeHtml(p.description||"")}</textarea>
+          </div>
+          <div class="grid3">
+            <div class="field">
+              <label>قیمت (تومان)</label>
+              <input class="input" id="pf-price" type="number" value="${p.price}" oninput="refreshAllVariantFinalPrices()" placeholder="۰" />
+            </div>
+            <div class="field">
+              <label>قیمت با تخفیف (اختیاری)</label>
+              <input class="input" id="pf-discount" type="number" value="${p.discountPrice ?? ""}" oninput="refreshAllVariantFinalPrices()" placeholder="خالی = بدون تخفیف" />
+            </div>
+            <div class="field">
+              <label>موجودی کل</label>
+              <input class="input" id="pf-stock" type="number" value="${p.stockQuantity}" ${isVariable ? "disabled" : ""} placeholder="۰" />
+            </div>
+          </div>
+          <div class="switch-row">
+            <div class="lbl">فعال در فروشگاه<small>محصولات غیرفعال برای مشتری نمایش داده نمی‌شوند</small></div>
+            <label class="switch"><input type="checkbox" id="pf-active" ${p.isActive?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
+
+          <div class="subsection">
+            <div class="subsection-head"><h4>نوع محصول</h4></div>
+            <div class="type-toggle">
+              <div class="type-opt ${!isVariable?"active":""}" data-type="simple" onclick="pfSetType('simple')">ساده (بدون تنوع)</div>
+              <div class="type-opt ${isVariable?"active":""}" data-type="variable" onclick="pfSetType('variable')">متغیر (رنگ/سایز)</div>
+            </div>
+            <input type="hidden" id="pf-type" value="${isVariable ? "variable" : "simple"}">
+          </div>
+
+          <div class="subsection" id="pf-variants-section" style="${isVariable?"":"display:none;"}">
+            <div class="subsection-head">
+              <h4>تنوع‌های محصول</h4>
+              <span onclick="pfAddVariant()" style="cursor:pointer;color:var(--wine);font-weight:600;">${ICONS.plus} افزودن تنوع</span>
+            </div>
+            <p class="variants-summary" id="pf-variants-summary"></p>
+            <div id="pf-variants-list">${variantRows}</div>
+          </div>
+
+          <div class="subsection">
+            <div class="subsection-head">
+              <h4>مشخصات فنی</h4>
+              <span onclick="pfAddSpec()" style="cursor:pointer;color:var(--wine);font-weight:600;">${ICONS.plus} افزودن مشخصه</span>
+            </div>
+            <div id="pf-specs-list">${specsRows}</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="product-save-btn" onclick="saveProduct(${editing ? p.id : "null"})">${editing ? "ذخیره تغییرات" : "افزودن محصول"}</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+  mountProductDescEditor();
+  refreshAllVariantFinalPrices();
+  refreshVariantsSummary();
+}
+
+function pfAutoSlug(){
+  const slugInput = document.getElementById("pf-slug");
+  if(slugInput.dataset.touched) return;
+  slugInput.value = slugify(document.getElementById("pf-name").value);
+}
+document.addEventListener("input", (e)=>{
+  if(e.target && e.target.id === "pf-slug") e.target.dataset.touched = "1";
+});
+
+function pfSetType(type){
+  document.getElementById("pf-type").value = type;
+  document.querySelectorAll(".type-opt").forEach(el=>{
+    el.classList.toggle("active", el.dataset.type === type);
+  });
+  document.getElementById("pf-variants-section").style.display = type === "variable" ? "" : "none";
+  document.getElementById("pf-stock").disabled = type === "variable";
+  if(type === "variable") refreshVariantsSummary();
+}
+
+/* نگاشت نام رنگ فارسی به HEX برای پیش‌نمایش دایره‌ی رنگ، از js/color-map.js (مشترک با
+   product تا رنگی که این‌جا انتخاب می‌شه دقیقاً همون‌جا هم نشون داده بشه) */
+function variantColorHex(name){
+  return ColorMap.hexFor(name);
+}
+
+function variantRowHtml(color, size, stock, adj, includedInDiscount){
+  const included = includedInDiscount !== false;
+  return `
+  <div class="variant-card">
+    <div class="variant-card-top">
+      <div class="variant-field">
+        <label>رنگ</label>
+        <div class="variant-color-row">
+          <span class="variant-swatch" data-vswatch style="background:${variantColorHex(color)}"></span>
+          <input class="input" placeholder="مثلاً مشکی" value="${escapeHtml(color||"")}" data-vfield="color" oninput="onVariantInput(this)">
+        </div>
+      </div>
+      <div class="variant-field">
+        <label>سایز</label>
+        <input class="input" placeholder="مثلاً ۴۲ یا L" value="${escapeHtml(size||"")}" data-vfield="size">
+      </div>
+      <div class="variant-field sm">
+        <label>موجودی</label>
+        <input class="input" type="number" min="0" placeholder="۰" value="${stock ?? 0}" data-vfield="stock" oninput="refreshVariantsSummary()">
+      </div>
+      <div class="variant-field sm">
+        <label>اختلاف قیمت</label>
+        <input class="input" type="number" placeholder="۰" value="${adj ?? 0}" data-vfield="adj" oninput="onVariantInput(this)">
+      </div>
+      <button type="button" class="rm" onclick="this.closest('.variant-card').remove(); refreshVariantsSummary();" title="حذف این تنوع">${ICONS.close}</button>
+    </div>
+    <label class="variant-discount-toggle">
+      <input type="checkbox" data-vfield="included" ${included ? "checked" : ""} onchange="onVariantInput(this)">
+      شامل تخفیف بالا می‌شود
+    </label>
+    <div class="variant-final-price" data-vfinal></div>
+  </div>`;
+}
+
+function onVariantInput(el){
+  const card = el.closest(".variant-card");
+  if(!card) return;
+  if(el.dataset.vfield === "color"){
+    const swatch = card.querySelector("[data-vswatch]");
+    if(swatch) swatch.style.background = variantColorHex(el.value);
+  }
+  updateVariantFinalPrice(card);
+}
+
+// دقیقاً همون فرمولی که تو صفحه محصول مشتری نشون داده می‌شه: (قیمت با تخفیف یا قیمت عادی) + اختلاف قیمت تنوع؛
+// اگه این تنوع از تخفیف مستثنی شده باشه، فقط قیمت عادی + اختلاف قیمت حساب می‌شه
+function updateVariantFinalPrice(card){
+  const price = parseFloat(document.getElementById("pf-price")?.value) || 0;
+  const discountVal = document.getElementById("pf-discount")?.value;
+  const discountPrice = discountVal ? parseFloat(discountVal) : null;
+  const included = card.querySelector('[data-vfield="included"]').checked;
+  const base = (included && discountPrice) ? discountPrice : price;
+  const adj = parseFloat(card.querySelector('[data-vfield="adj"]').value) || 0;
+  const el = card.querySelector("[data-vfinal]");
+  if(el) el.innerHTML = `قیمت نهایی این تنوع: <b>${Math.round(base + adj).toLocaleString('fa-IR')} تومان</b>`;
+}
+
+function refreshAllVariantFinalPrices(){
+  document.querySelectorAll("#pf-variants-list .variant-card").forEach(updateVariantFinalPrice);
+}
+
+function refreshVariantsSummary(){
+  const summaryEl = document.getElementById("pf-variants-summary");
+  const listEl = document.getElementById("pf-variants-list");
+  if(!summaryEl || !listEl) return;
+  const cards = listEl.querySelectorAll(".variant-card");
+  if(cards.length === 0){
+    summaryEl.textContent = "هنوز تنوعی اضافه نشده — با «افزودن تنوع» شروع کنید.";
+    return;
+  }
+  let totalStock = 0;
+  cards.forEach(c=>{ totalStock += parseInt(c.querySelector('[data-vfield="stock"]').value) || 0; });
+  summaryEl.textContent = `${cards.length.toLocaleString('fa-IR')} تنوع ثبت شده — موجودی مجموع: ${totalStock.toLocaleString('fa-IR')} عدد`;
+}
+
+function pfAddVariant(){
+  document.getElementById("pf-variants-list").insertAdjacentHTML("beforeend", variantRowHtml("","",0,0,true));
+  const lastCard = document.getElementById("pf-variants-list").lastElementChild;
+  if(lastCard) updateVariantFinalPrice(lastCard);
+  refreshVariantsSummary();
+}
+
+function specRowHtml(key, value){
+  return `
+  <div class="dyn-row">
+    <input class="input" placeholder="عنوان (مثلاً نوع اتصال)" value="${escapeHtml(key||"")}" data-sfield="key">
+    <input class="input" placeholder="مقدار (مثلاً بلوتوث ۵.۳)" value="${escapeHtml(value||"")}" data-sfield="value">
+    <button type="button" class="rm" onclick="this.closest('.dyn-row').remove()">${ICONS.close}</button>
+  </div>`;
+}
+function pfAddSpec(){
+  document.getElementById("pf-specs-list").insertAdjacentHTML("beforeend", specRowHtml("",""));
+}
+
+/* ---------- گالری تصاویر محصول (آپلود از سیستم یا وارد کردن لینک) ---------- */
+function galleryRowHtml(url){
+  return `
+  <div class="dyn-row">
+    <input class="input" placeholder="آدرس تصویر" value="${escapeHtml(url||"")}" data-gfield="url">
+    <button type="button" class="rm" onclick="this.closest('.dyn-row').remove()">${ICONS.close}</button>
+  </div>`;
+}
+function pfAddGalleryRow(url){
+  document.getElementById("pf-gallery-list").insertAdjacentHTML("beforeend", galleryRowHtml(url||""));
+}
+
+function refreshImagePreview(inputId, previewId){
+  const url = document.getElementById(inputId).value.trim();
+  const preview = document.getElementById(previewId);
+  preview.innerHTML = url ? `<img src="${escapeHtml(url)}" onerror="this.style.display='none'">` : "";
+}
+
+async function uploadImageFile(fileInput){
+  const file = fileInput.files[0];
+  if(!file) return null;
+  const formData = new FormData();
+  formData.append("file", file);
+  const token = getAdminToken();
+  const res = await fetch(`${API_BASE}/admin/products/upload-image`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData
+  });
+  if(!res.ok){
+    let message = "آپلود تصویر ناموفق بود";
+    try{ const data = await res.json(); if(data?.message) message = data.message; }catch(e){}
+    throw new Error(message);
+  }
+  const data = await res.json();
+  return data.url;
+}
+
+async function uploadProductImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("pf-image").value = url;
+    refreshImagePreview("pf-image", "pf-image-preview");
+    toast("تصویر آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function uploadGalleryImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    pfAddGalleryRow(url);
+    toast("تصویر به گالری اضافه شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function uploadBlogImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("bf-image").value = url;
+    refreshImagePreview("bf-image", "bf-image-preview");
+    toast("تصویر آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function saveProduct(existingId){
+  const name = document.getElementById("pf-name").value.trim();
+  if(!name){ toast("نام محصول را وارد کنید.", "error"); return; }
+  const categoryId = parseInt(document.getElementById("pf-category").value);
+  if(!categoryId){ toast("دسته‌بندی را انتخاب کنید.", "error"); return; }
+
+  const slug = document.getElementById("pf-slug").value.trim() || null;
+  const sku = document.getElementById("pf-sku").value.trim();
+  const brandVal = document.getElementById("pf-brand").value;
+  const brandId = brandVal ? parseInt(brandVal) : null;
+  const description = (pfDescEditor ? pfDescEditor.getData() : document.getElementById("pf-desc").value).trim();
+  const imageUrl = document.getElementById("pf-image").value.trim();
+  const galleryImageUrls = [];
+  document.querySelectorAll("#pf-gallery-list .dyn-row").forEach(row=>{
+    const url = row.querySelector('[data-gfield="url"]').value.trim();
+    if(url) galleryImageUrls.push(url);
+  });
+  const price = parseFloat(document.getElementById("pf-price").value) || 0;
+  const discountVal = document.getElementById("pf-discount").value;
+  const discountPrice = discountVal ? parseFloat(discountVal) : null;
+  const stockQuantity = parseInt(document.getElementById("pf-stock").value) || 0;
+  const isActive = document.getElementById("pf-active").checked;
+
+  const isVariableType = document.getElementById("pf-type").value === "variable";
+  const variants = [];
+  if(isVariableType){
+    document.querySelectorAll("#pf-variants-list .variant-card").forEach(row=>{
+      const color = row.querySelector('[data-vfield="color"]').value.trim();
+      const size = row.querySelector('[data-vfield="size"]').value.trim();
+      const vstock = parseInt(row.querySelector('[data-vfield="stock"]').value) || 0;
+      const adj = parseFloat(row.querySelector('[data-vfield="adj"]').value) || 0;
+      const includedInDiscount = row.querySelector('[data-vfield="included"]').checked;
+      if(color || size) variants.push({ color, size: size || "-", stockQuantity: vstock, priceAdjustment: adj, includedInDiscount });
+    });
+    if(variants.length === 0){ toast("برای محصول متغیر، حداقل یک تنوع رنگ/سایز وارد کنید.", "error"); return; }
+  }
+
+  const specifications = [];
+  document.querySelectorAll("#pf-specs-list .dyn-row").forEach(row=>{
+    const key = row.querySelector('[data-sfield="key"]').value.trim();
+    const value = row.querySelector('[data-sfield="value"]').value.trim();
+    if(key && value) specifications.push({ key, value });
+  });
+
+  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, isActive, imageUrl, galleryImageUrls, specifications, variants };
+
+  const btn = document.getElementById("product-save-btn");
+  btn.disabled = true;
+
+  try{
+    if(existingId) await Api.updateProduct(existingId, payload);
+    else await Api.createProduct(payload);
+
+    toast(existingId ? "تغییرات محصول ذخیره شد." : "محصول جدید اضافه شد.");
+    closeModal();
+    await loadProducts();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره محصول ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   BRANDS
+========================================================= */
+async function loadBrandsAdmin(){
+  try{
+    state.brandsAdmin = await Api.getAdminBrands();
+    state.brandsAdminLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری برندها', 'error');
+  }
+}
+
+function renderBrandsView(){
+  if(!state.brandsAdminLoaded) return loadingRow();
+
+  const pageItems = paginateArray(state.brandsAdmin, state.brandsAdminPage);
+
+  const rows = pageItems.map(b => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          ${b.logoUrl ? `<img src="${escapeHtml(b.logoUrl)}" class="thumb sm" style="object-fit:contain;background:#fff;" onerror="this.style.display='none'">` : `<div class="thumb sm">${initials(b.name)}</div>`}
+          <div class="cell-title">${escapeHtml(b.name)}</div>
+        </div>
+      </td>
+      <td class="num">${b.displayOrder.toLocaleString('fa-IR')}</td>
+      <td>${b.isFeatured ? '<span class="badge badge-published"><span class="sw"></span>ویژه</span>' : '<span class="badge badge-draft"><span class="sw"></span>عادی</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openBrandForm(${b.id})">${ICONS.edit}</button>
+          <button class="icon-btn danger" title="حذف" onclick="deleteBrand(${b.id})">${ICONS.trash}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.brandsAdmin.length.toLocaleString('fa-IR')} برند</div>
+      </div>
+      <button class="btn btn-primary" onclick="openBrandForm()">${ICONS.plus} برند جدید</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>برند</th><th>ترتیب نمایش</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("tag","هنوز برندی ثبت نشده","با دکمه «برند جدید» اولین برند را اضافه کنید.")}
+      </div>
+      ${renderPager(state.brandsAdmin.length, state.brandsAdminPage, "gotoBrandsAdminPage")}
+    </div>
+  `;
+}
+
+function gotoBrandsAdminPage(p){
+  state.brandsAdminPage = p;
+  refreshView();
+}
+
+async function deleteBrand(id){
+  const b = state.brandsAdmin.find(x=>x.id===id);
+  if(!b) return;
+  if(!confirm('آیا از حذف برند «'+b.name+'» مطمئن هستید؟')) return;
+
+  try{
+    await Api.deleteBrand(id);
+    toast("برند حذف شد.");
+    await loadBrandsAdmin();
+    state.brands = await Api.getBrands();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'حذف برند ناموفق بود', 'error');
+  }
+}
+
+async function openBrandForm(id){
+  let b = { name:"", logoUrl:"", isFeatured:false, displayOrder: state.brandsAdmin.length };
+  let editing = false;
+
+  if(id){
+    try{
+      b = await Api.getAdminBrand(id);
+      editing = true;
+    }catch(e){
+      if(e.message === 'unauthorized') return;
+      toast(e.message || 'خطا در بارگذاری برند', 'error');
+      return;
+    }
+  }
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2>${editing ? "ویرایش برند" : "برند جدید"}</h2>
+          <p>${editing ? "اطلاعات برند را ویرایش کنید." : "یک برند جدید اضافه کنید."}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="brand-form" onsubmit="return false;">
+          <div class="field">
+            <label>نام برند</label>
+            <input class="input" id="brf-name" value="${escapeHtml(b.name)}" placeholder="مثلاً سامسونگ" />
+          </div>
+          <div class="field">
+            <label>لوگو (اختیاری)</label>
+            <div class="image-upload-row">
+              <input class="input" id="brf-logo" oninput="refreshImagePreview('brf-logo','brf-logo-preview')" value="${escapeHtml(b.logoUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadBrandLogo(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="brf-logo-preview">${b.logoUrl ? `<img src="${escapeHtml(b.logoUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+          <div class="field">
+            <label>ترتیب نمایش</label>
+            <input class="input" id="brf-order" type="number" value="${b.displayOrder}" />
+          </div>
+          <div class="switch-row">
+            <div class="lbl">برند ویژه<small>در نوار برندهای صفحه اصلی نمایش داده می‌شود</small></div>
+            <label class="switch"><input type="checkbox" id="brf-featured" ${b.isFeatured?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="brand-save-btn" onclick="saveBrand(${editing ? b.id : "null"})">${editing ? "ذخیره تغییرات" : "افزودن برند"}</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+}
+
+async function uploadBrandLogo(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("brf-logo").value = url;
+    refreshImagePreview("brf-logo", "brf-logo-preview");
+    toast("لوگو آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود لوگو ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function saveBrand(existingId){
+  const name = document.getElementById("brf-name").value.trim();
+  if(!name){ toast("نام برند را وارد کنید.", "error"); return; }
+
+  const logoUrl = document.getElementById("brf-logo").value.trim() || null;
+  const displayOrder = parseInt(document.getElementById("brf-order").value) || 0;
+  const isFeatured = document.getElementById("brf-featured").checked;
+
+  const payload = { name, logoUrl, isFeatured, displayOrder };
+
+  const btn = document.getElementById("brand-save-btn");
+  btn.disabled = true;
+
+  try{
+    if(existingId) await Api.updateBrand(existingId, payload);
+    else await Api.createBrand(payload);
+
+    toast(existingId ? "تغییرات برند ذخیره شد." : "برند جدید اضافه شد.");
+    closeModal();
+    await loadBrandsAdmin();
+    state.brands = await Api.getBrands();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره برند ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   BANNERS
+========================================================= */
+const BANNER_TYPE_LABELS = { 0: "بنر اصلی (اسلایدر)", 1: "بنر ثابت" };
+
+async function loadBannersAdmin(){
+  try{
+    state.bannersAdmin = await Api.getAdminBanners();
+    state.bannersAdminLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری بنرها', 'error');
+  }
+}
+
+function renderBannersView(){
+  if(!state.bannersAdminLoaded) return loadingRow();
+
+  const pageItems = paginateArray(state.bannersAdmin, state.bannersAdminPage);
+
+  const rows = pageItems.map(b => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          <img src="${escapeHtml(b.imageUrl)}" class="thumb sm" style="object-fit:cover;" onerror="this.style.display='none'">
+          <div>
+            <div class="cell-title">${escapeHtml(b.title || "(بدون عنوان)")}</div>
+            <div class="cell-sub">${BANNER_TYPE_LABELS[b.type]}</div>
+          </div>
+        </div>
+      </td>
+      <td class="num">${b.displayOrder.toLocaleString('fa-IR')}</td>
+      <td>${b.isActive ? '<span class="badge badge-published"><span class="sw"></span>فعال</span>' : '<span class="badge badge-draft"><span class="sw"></span>غیرفعال</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openBannerForm(${b.id})">${ICONS.edit}</button>
+          <button class="icon-btn danger" title="حذف" onclick="deleteBanner(${b.id})">${ICONS.trash}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.bannersAdmin.length.toLocaleString('fa-IR')} بنر</div>
+      </div>
+      <button class="btn btn-primary" onclick="openBannerForm()">${ICONS.plus} بنر جدید</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>بنر</th><th>ترتیب نمایش</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("image","هنوز بنری ثبت نشده","با دکمه «بنر جدید» اسلایدر یا بنر ثابت صفحه اصلی را اضافه کنید.")}
+      </div>
+      ${renderPager(state.bannersAdmin.length, state.bannersAdminPage, "gotoBannersAdminPage")}
+    </div>
+  `;
+}
+
+function gotoBannersAdminPage(p){
+  state.bannersAdminPage = p;
+  refreshView();
+}
+
+async function deleteBanner(id){
+  const b = state.bannersAdmin.find(x=>x.id===id);
+  if(!b) return;
+  if(!confirm('آیا از حذف این بنر مطمئن هستید؟')) return;
+
+  try{
+    await Api.deleteBanner(id);
+    toast("بنر حذف شد.");
+    await loadBannersAdmin();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'حذف بنر ناموفق بود', 'error');
+  }
+}
+
+async function openBannerForm(id){
+  let b = { imageUrl:"", mobileImageUrl:"", type:0, title:"", linkUrl:"", displayOrder: state.bannersAdmin.length, isActive:true, startsAt:null, endsAt:null };
+  let editing = false;
+
+  if(id){
+    try{
+      b = await Api.getAdminBanner(id);
+      editing = true;
+    }catch(e){
+      if(e.message === 'unauthorized') return;
+      toast(e.message || 'خطا در بارگذاری بنر', 'error');
+      return;
+    }
+  }
+
+  const toDateInputValue = (d) => d ? String(d).slice(0,10) : "";
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>${editing ? "ویرایش بنر" : "بنر جدید"}</h2>
+          <p>${editing ? "اطلاعات بنر را ویرایش کنید." : "بنر اسلایدر صفحه اصلی یا بنر ثابت تبلیغاتی اضافه کنید."}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="banner-form" onsubmit="return false;">
+          <div class="field">
+            <label>نوع بنر</label>
+            <div class="type-toggle">
+              <div class="type-opt ${b.type==0?"active":""}" data-type="0" onclick="bnfSetType(0)">بنر اصلی (اسلایدر بالای صفحه)</div>
+              <div class="type-opt ${b.type==1?"active":""}" data-type="1" onclick="bnfSetType(1)">بنر ثابت (زیر نوار برندها - حداکثر ۲ عدد)</div>
+            </div>
+            <input type="hidden" id="bnf-type" value="${b.type}">
+          </div>
+
+          <div class="field">
+            <label>تصویر دسکتاپ</label>
+            <div class="image-upload-row">
+              <input class="input" id="bnf-image" oninput="refreshImagePreview('bnf-image','bnf-image-preview')" value="${escapeHtml(b.imageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadBannerImage(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="bnf-image-preview">${b.imageUrl ? `<img src="${escapeHtml(b.imageUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+
+          <div class="field">
+            <label>تصویر موبایل (اختیاری — خالی بماند یعنی همان تصویر دسکتاپ در موبایل هم نشان داده شود)</label>
+            <div class="image-upload-row">
+              <input class="input" id="bnf-mobile-image" oninput="refreshImagePreview('bnf-mobile-image','bnf-mobile-image-preview')" value="${escapeHtml(b.mobileImageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadBannerMobileImage(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="bnf-mobile-image-preview">${b.mobileImageUrl ? `<img src="${escapeHtml(b.mobileImageUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>عنوان (اختیاری)</label>
+              <input class="input" id="bnf-title" value="${escapeHtml(b.title||"")}" placeholder="مثلاً کالکشن جدید پوشاک" />
+            </div>
+            <div class="field">
+              <label>لینک مقصد (اختیاری)</label>
+              <input class="input" id="bnf-link" value="${escapeHtml(b.linkUrl||"")}" placeholder="مثلاً shop?category=fashion" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>تاریخ شروع نمایش (اختیاری)</label>
+              <input class="input" id="bnf-starts" type="date" value="${toDateInputValue(b.startsAt)}" />
+            </div>
+            <div class="field">
+              <label>تاریخ پایان نمایش (اختیاری)</label>
+              <input class="input" id="bnf-ends" type="date" value="${toDateInputValue(b.endsAt)}" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>ترتیب نمایش</label>
+            <input class="input" id="bnf-order" type="number" value="${b.displayOrder}" />
+          </div>
+
+          <div class="switch-row">
+            <div class="lbl">فعال<small>بنرهای غیرفعال در سایت نمایش داده نمی‌شوند</small></div>
+            <label class="switch"><input type="checkbox" id="bnf-active" ${b.isActive?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="banner-save-btn" onclick="saveBanner(${editing ? b.id : "null"})">${editing ? "ذخیره تغییرات" : "افزودن بنر"}</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+}
+
+function bnfSetType(type){
+  document.getElementById("bnf-type").value = type;
+  document.querySelectorAll("#banner-form .type-opt").forEach(el=>{
+    el.classList.toggle("active", Number(el.dataset.type) === type);
+  });
+}
+
+async function uploadBannerImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("bnf-image").value = url;
+    refreshImagePreview("bnf-image", "bnf-image-preview");
+    toast("تصویر آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function uploadBannerMobileImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("bnf-mobile-image").value = url;
+    refreshImagePreview("bnf-mobile-image", "bnf-mobile-image-preview");
+    toast("تصویر موبایل آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function saveBanner(existingId){
+  const imageUrl = document.getElementById("bnf-image").value.trim();
+  if(!imageUrl){ toast("تصویر دسکتاپ بنر را وارد یا آپلود کنید.", "error"); return; }
+
+  const mobileImageUrl = document.getElementById("bnf-mobile-image").value.trim() || null;
+  const type = parseInt(document.getElementById("bnf-type").value) || 0;
+  const title = document.getElementById("bnf-title").value.trim() || null;
+  const linkUrl = document.getElementById("bnf-link").value.trim() || null;
+  const startsAt = document.getElementById("bnf-starts").value || null;
+  const endsAt = document.getElementById("bnf-ends").value || null;
+  const displayOrder = parseInt(document.getElementById("bnf-order").value) || 0;
+  const isActive = document.getElementById("bnf-active").checked;
+
+  const payload = { imageUrl, mobileImageUrl, type, title, linkUrl, startsAt, endsAt, displayOrder, isActive };
+
+  const btn = document.getElementById("banner-save-btn");
+  btn.disabled = true;
+
+  try{
+    if(existingId) await Api.updateBanner(existingId, payload);
+    else await Api.createBanner(payload);
+
+    toast(existingId ? "تغییرات بنر ذخیره شد." : "بنر جدید اضافه شد.");
+    closeModal();
+    await loadBannersAdmin();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره بنر ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   BLOG
+========================================================= */
+async function loadBlogPosts(){
+  try{
+    state.blogPosts = await Api.getBlogPosts();
+    state.blogPostsLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری مطالب وبلاگ', 'error');
+  }
+}
+
+function renderBlogView(){
+  if(!state.blogPostsLoaded) return loadingRow();
+
+  const published = state.blogPosts.filter(b=>b.isPublished).length;
+
+  let visibleBlogPosts = state.blogPosts;
+  if(state.blogSearch.trim()){
+    const q = state.blogSearch.trim().toLowerCase();
+    visibleBlogPosts = visibleBlogPosts.filter(b =>
+      (b.title || "").toLowerCase().includes(q) || (b.authorName || "").toLowerCase().includes(q)
+    );
+  }
+  const pageItems = paginateArray(visibleBlogPosts, state.blogPage);
+
+  const rows = pageItems.map(b => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          <div class="thumb sm">${initials(b.title)}</div>
+          <div>
+            <div class="cell-title">${escapeHtml(b.title)}</div>
+            <div class="cell-sub">${escapeHtml(b.categoryName)} · ${b.readTimeMinutes.toLocaleString('fa-IR')} دقیقه مطالعه</div>
+          </div>
+        </div>
+      </td>
+      <td class="muted">${faDate(b.publishedAt)}</td>
+      <td class="num">${(b.viewCount||0).toLocaleString('fa-IR')}</td>
+      <td>${b.isPublished ? '<span class="badge badge-published"><span class="sw"></span>منتشرشده</span>' : '<span class="badge badge-draft"><span class="sw"></span>پیش‌نویس</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openBlogForm(${b.id})">${ICONS.edit}</button>
+          <button class="icon-btn danger" title="حذف" onclick="deleteBlogPost(${b.id})">${ICONS.trash}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.blogPosts.length.toLocaleString('fa-IR')} مطلب</div>
+        <div class="stat-pill"><span class="sw" style="background:var(--teal)"></span>${published.toLocaleString('fa-IR')} منتشرشده</div>
+      </div>
+      <button class="btn btn-primary" onclick="openBlogForm()">${ICONS.plus} مطلب جدید</button>
+    </div>
+    ${searchBoxHtml("blog-search", "جستجوی عنوان یا نویسنده...", state.blogSearch, "setBlogSearch")}
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>عنوان</th><th>تاریخ انتشار</th><th>بازدید</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : (state.blogPosts.length === 0
+            ? emptyState("blog","هنوز مطلبی ثبت نشده","با دکمه «مطلب جدید» اولین پست وبلاگ را بنویسید.")
+            : emptyState("blog","مطلبی یافت نشد","عبارت جستجوشده با هیچ مطلبی مطابقت ندارد."))}
+      </div>
+      ${renderPager(visibleBlogPosts.length, state.blogPage, "gotoBlogPage")}
+    </div>
+  `;
+}
+
+function setBlogSearch(value){
+  state.blogSearch = value;
+  state.blogPage = 1;
+  refreshView();
+}
+function gotoBlogPage(p){
+  state.blogPage = p;
+  refreshView();
+}
+
+async function deleteBlogPost(id){
+  const b = state.blogPosts.find(x=>x.id===id);
+  if(!b) return;
+  if(!confirm('آیا از حذف مطلب «'+b.title+'» مطمئن هستید؟')) return;
+
+  try{
+    await Api.deleteBlogPost(id);
+    toast("مطلب حذف شد.");
+    await loadBlogPosts();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'حذف مطلب ناموفق بود', 'error');
+  }
+}
+
+async function openBlogForm(id){
+  let b = { title:"", slug:"", excerpt:"", content:"", blogCategoryId: state.blogCategories[0]?.id || "", featuredImageUrl:"", authorName:"", readTimeMinutes:5, isPublished:false };
+  let editing = false;
+
+  if(id){
+    try{
+      b = await Api.getBlogPost(id);
+      editing = true;
+    }catch(e){
+      if(e.message === 'unauthorized') return;
+      toast(e.message || 'خطا در بارگذاری مطلب', 'error');
+      return;
+    }
+  }
+
+  const categoryOptions = state.blogCategories.map(c=>`<option value="${c.id}" ${b.blogCategoryId==c.id?"selected":""}>${escapeHtml(c.name)}</option>`).join("");
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>${editing ? "ویرایش مطلب" : "مطلب جدید"}</h2>
+          <p>${editing ? "اطلاعات مطلب را ویرایش کنید." : "یک مطلب جدید برای وبلاگ بنویسید."}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="blog-form" onsubmit="return false;">
+          <div class="grid2">
+            <div class="field">
+              <label>عنوان</label>
+              <input class="input" id="bf-title" value="${escapeHtml(b.title)}" oninput="bfAutoSlug()" placeholder="عنوان مطلب" />
+            </div>
+            <div class="field">
+              <label>نامک (Slug) — اختیاری</label>
+              <input class="input" id="bf-slug" value="${escapeHtml(b.slug||"")}" placeholder="خالی = خودکار از روی عنوان" />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label>دسته‌بندی</label>
+              <select class="select" id="bf-category">${categoryOptions}</select>
+            </div>
+            <div class="field">
+              <label>مدت مطالعه (دقیقه)</label>
+              <input class="input" id="bf-readtime" type="number" value="${b.readTimeMinutes}" />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label>نام نویسنده — اختیاری</label>
+              <input class="input" id="bf-author" value="${escapeHtml(b.authorName||"")}" placeholder="خالی = مدیر فروشگاه" />
+            </div>
+            <div class="field">
+              <label>تصویر شاخص (آدرس تصویر - اختیاری)</label>
+              <div class="image-upload-row">
+                <input class="input" id="bf-image" oninput="refreshImagePreview('bf-image','bf-image-preview')" value="${escapeHtml(b.featuredImageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+                <label class="btn btn-ghost image-upload-btn">
+                  ${ICONS.plus} آپلود از سیستم
+                  <input type="file" accept="image/*" style="display:none;" onchange="uploadBlogImage(this)" />
+                </label>
+              </div>
+              <div class="image-preview-row" id="bf-image-preview">${b.featuredImageUrl ? `<img src="${escapeHtml(b.featuredImageUrl)}" onerror="this.style.display='none'">` : ""}</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>خلاصه</label>
+            <textarea class="textarea" id="bf-excerpt" placeholder="یک یا دو جمله معرفی مطلب...">${escapeHtml(b.excerpt||"")}</textarea>
+          </div>
+          <div class="field">
+            <label>متن کامل</label>
+            <textarea class="textarea" id="bf-content" style="min-height:150px;" placeholder="متن کامل مطلب...">${escapeHtml(b.content||"")}</textarea>
+          </div>
+          <div class="switch-row">
+            <div class="lbl">انتشار مطلب<small>مطالب منتشرنشده فقط تو پنل مدیریت (پیش‌نویس) قابل مشاهده هستند</small></div>
+            <label class="switch"><input type="checkbox" id="bf-published" ${b.isPublished?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="blog-save-btn" onclick="saveBlogPost(${editing ? b.id : "null"})">${editing ? "ذخیره تغییرات" : "افزودن مطلب"}</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+  mountBlogContentEditor();
+}
+
+function bfAutoSlug(){
+  const slugInput = document.getElementById("bf-slug");
+  if(slugInput.dataset.touched) return;
+  slugInput.value = slugify(document.getElementById("bf-title").value);
+}
+document.addEventListener("input", (e)=>{
+  if(e.target && e.target.id === "bf-slug") e.target.dataset.touched = "1";
+});
+
+async function saveBlogPost(existingId){
+  const title = document.getElementById("bf-title").value.trim();
+  if(!title){ toast("عنوان مطلب را وارد کنید.", "error"); return; }
+  const blogCategoryId = parseInt(document.getElementById("bf-category").value);
+  if(!blogCategoryId){ toast("دسته‌بندی را انتخاب کنید.", "error"); return; }
+
+  const slug = document.getElementById("bf-slug").value.trim() || null;
+  const readTimeMinutes = parseInt(document.getElementById("bf-readtime").value) || 1;
+  const featuredImageUrl = document.getElementById("bf-image").value.trim();
+  const authorName = document.getElementById("bf-author").value.trim() || null;
+  const excerpt = document.getElementById("bf-excerpt").value.trim();
+  const content = (bfContentEditor ? bfContentEditor.getData() : document.getElementById("bf-content").value).trim();
+  if(!content){ toast("متن کامل مطلب را وارد کنید.", "error"); return; }
+  const isPublished = document.getElementById("bf-published").checked;
+
+  const payload = { title, slug, excerpt, content, featuredImageUrl, authorName, blogCategoryId, readTimeMinutes, isPublished };
+
+  const btn = document.getElementById("blog-save-btn");
+  btn.disabled = true;
+
+  try{
+    if(existingId) await Api.updateBlogPost(existingId, payload);
+    else await Api.createBlogPost(payload);
+
+    toast(existingId ? "تغییرات مطلب ذخیره شد." : "مطلب جدید اضافه شد.");
+    closeModal();
+    await loadBlogPosts();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره مطلب ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   STATIC PAGES — چهارتا صفحه‌ی ثابت فوتر با اسلاگ از پیش تعریف‌شده؛
+   از پنل فقط عنوان و متنشون قابل ویرایشه، نه افزودن/حذف صفحه.
+========================================================= */
+async function loadStaticPages(){
+  try{
+    state.staticPages = await Api.getStaticPages();
+    state.staticPagesLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری صفحات ثابت', 'error');
+  }
+}
+
+function renderStaticPagesView(){
+  if(!state.staticPagesLoaded) return loadingRow();
+
+  const pageItems = paginateArray(state.staticPages, state.staticPagesPage);
+
+  const rows = pageItems.map(p => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          <div class="thumb sm">${initials(p.title)}</div>
+          <div>
+            <div class="cell-title">${escapeHtml(p.title)}</div>
+            <div class="cell-sub">${escapeHtml(p.slug)}</div>
+          </div>
+        </div>
+      </td>
+      <td class="muted">${faDate(p.updatedAt)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openStaticPageForm('${p.slug}')">${ICONS.edit}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>صفحه</th><th>آخرین ویرایش</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("file","صفحه‌ای یافت نشد","صفحات ثابت فوتر هنوز تو دیتابیس ثبت نشده‌اند.")}
+      </div>
+      ${renderPager(state.staticPages.length, state.staticPagesPage, "gotoStaticPagesPage")}
+    </div>
+  `;
+}
+function gotoStaticPagesPage(p){
+  state.staticPagesPage = p;
+  refreshView();
+}
+
+async function openStaticPageForm(slug){
+  let p;
+  try{
+    p = await Api.getStaticPage(slug);
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری صفحه', 'error');
+    return;
+  }
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>ویرایش صفحه</h2>
+          <p>عنوان و متن این صفحه را ویرایش کنید.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="sp-form" onsubmit="return false;">
+          <div class="field">
+            <label>عنوان</label>
+            <input class="input" id="sp-title" value="${escapeHtml(p.title)}" placeholder="عنوان صفحه" />
+          </div>
+          <div class="field">
+            <label>متن صفحه</label>
+            <textarea class="textarea" id="sp-content" style="min-height:200px;" placeholder="متن صفحه...">${escapeHtml(p.content||"")}</textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="sp-save-btn" onclick="saveStaticPage('${p.slug}')">ذخیره تغییرات</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+  mountStaticPageEditor();
+}
+
+async function saveStaticPage(slug){
+  const title = document.getElementById("sp-title").value.trim();
+  if(!title){ toast("عنوان صفحه را وارد کنید.", "error"); return; }
+  const content = (spContentEditor ? spContentEditor.getData() : document.getElementById("sp-content").value).trim();
+
+  const btn = document.getElementById("sp-save-btn");
+  btn.disabled = true;
+
+  try{
+    await Api.updateStaticPage(slug, { title, content });
+    toast("تغییرات صفحه ذخیره شد.");
+    closeModal();
+    await loadStaticPages();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره صفحه ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   ORDERS — Status enum بک‌اند: 0 در انتظار پرداخت، 1 در حال پردازش،
+   2 ارسال‌شده، 3 تحویل‌شده، 4 لغوشده، 5 ناموفق (دقیقا مطابق account)
+========================================================= */
+const ORDER_STATUS_META = {
+  0: { label: "در انتظار پرداخت", badge: "badge-processing" },
+  1: { label: "موفق — در حال پردازش، به‌زودی ارسال می‌شود", badge: "badge-processing" },
+  2: { label: "در حال ارسال به مشتری", badge: "badge-shipped" },
+  3: { label: "سفارش تکمیل شده", badge: "badge-delivered" },
+  4: { label: "لغو شده", badge: "badge-cancelled" },
+  5: { label: "پرداخت ناموفق", badge: "badge-failed" },
+};
+const ORDER_FILTERS = [
+  { key: null, label: "همه" },
+  { key: 0, label: "در انتظار پرداخت" },
+  { key: 1, label: "در حال پردازش" },
+  { key: 2, label: "در حال ارسال" },
+  { key: 3, label: "تکمیل‌شده" },
+  { key: 4, label: "لغوشده" },
+  { key: 5, label: "ناموفق" },
+];
+
+async function loadOrders(){
+  try{
+    state.orders = await Api.getOrders(state.orderFilter);
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری سفارشات', 'error');
+  }
+}
+
+function orderTotal(o){
+  return o.totalAmount;
+}
+
+function renderOrdersView(){
+  const filterChips = ORDER_FILTERS.map(f => `
+    <div class="filter-chip ${state.orderFilter===f.key?"active":""}" onclick="setOrderFilter(${f.key===null?"null":f.key})">${f.label}</div>
+  `).join("");
+
+  // سرچ: شماره سفارش یا نام مشتری یا شماره موبایل مشتری، هرکدوم که مچ باشه کافیه
+  let visibleOrders = state.orders;
+  if(state.ordersSearch.trim()){
+    const q = state.ordersSearch.trim().toLowerCase();
+    visibleOrders = visibleOrders.filter(o =>
+      String(o.orderNumber || "").toLowerCase().includes(q) ||
+      String(o.customerName || "").toLowerCase().includes(q) ||
+      String(o.customerPhone || "").includes(q)
+    );
+  }
+  const pageItems = paginateArray(visibleOrders, state.ordersPage);
+
+  const rows = pageItems.map(o => `
+    <tr>
+      <td>
+        <div class="cell-title">${o.orderNumber}</div>
+        <div class="cell-sub">${faDate(o.createdAt)}</div>
+      </td>
+      <td>
+        <div class="cell-title">${escapeHtml(o.customerName)}</div>
+        <div class="cell-sub">${o.customerPhone}</div>
+      </td>
+      <td class="muted">${o.itemCount.toLocaleString('fa-IR')} قلم</td>
+      <td class="num">${toman(o.totalAmount)}</td>
+      <td>${orderBadge(o.status)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="مشاهده جزئیات" onclick="openOrderDetail(${o.id})">${ICONS.eye}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="filter-row">${filterChips}</div>
+    ${searchBoxHtml("orders-search", "جستجو با شماره سفارش، نام یا شماره موبایل مشتری...", state.ordersSearch, "setOrdersSearch")}
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>سفارش</th><th>مشتری</th><th>اقلام</th><th>مبلغ کل</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("order","سفارشی یافت نشد","برای فیلتر یا جستجوی انتخاب‌شده سفارشی ثبت نشده است.")}
+      </div>
+      ${renderPager(visibleOrders.length, state.ordersPage, "gotoOrdersPage")}
+    </div>
+  `;
+}
+
+function orderBadge(status){
+  const m = ORDER_STATUS_META[status];
+  return `<span class="badge ${m.badge}"><span class="sw"></span>${m.label}</span>`;
+}
+
+function setOrderFilter(key){
+  state.orderFilter = key;
+  state.ordersPage = 1;
+  loadOrders();
+}
+function setOrdersSearch(value){
+  state.ordersSearch = value;
+  state.ordersPage = 1;
+  refreshView();
+}
+function gotoOrdersPage(p){
+  state.ordersPage = p;
+  refreshView();
+}
+
+async function openOrderDetail(id){
+  let o;
+  try{
+    o = await Api.getOrder(id);
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری جزئیات سفارش', 'error');
+    return;
+  }
+
+  const itemsRows = o.items.map(it => `
+    <tr>
+      <td>${escapeHtml(it.productName)}</td>
+      <td class="num">${it.quantity.toLocaleString('fa-IR')}</td>
+      <td class="num">${toman(it.unitPrice)}</td>
+      <td class="num">${toman(it.totalPrice)}</td>
+    </tr>
+  `).join("");
+
+  const timeline = o.statusHistory.map(h => `
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-body">
+        <b>${ORDER_STATUS_META[h.status].label}</b>
+        <div>${escapeHtml(h.note || "")} · ${new Date(h.createdAt).toLocaleString('fa-IR')}</div>
+      </div>
+    </div>
+  `).join("");
+
+  const canShip = o.status === 1;
+  const canDeliver = o.status === 2;
+  const isLocked = o.status === 5 || o.status === 4 || o.status === 3;
+  const paymentMethodLabel = o.paymentMethod === 0 ? "آنلاین" : "پرداخت در محل";
+  const paymentStatusLabel = o.paymentStatus === 1 ? "موفق" : o.paymentStatus === 2 ? "ناموفق" : o.paymentMethod === 1 ? "در انتظار دریافت" : "در انتظار";
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>سفارش ${o.orderNumber}</h2>
+          <p>ثبت‌شده در ${faDate(o.createdAt)} — ${orderBadge(o.status)}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <div class="order-summary-grid">
+          <div class="mini-card">
+            <h5>اطلاعات مشتری</h5>
+            <div class="ln"><b>${escapeHtml(o.customerName)}</b></div>
+            <div class="ln">${o.customerPhone}</div>
+            <div class="ln">روش پرداخت: ${paymentMethodLabel} · وضعیت پرداخت: ${paymentStatusLabel}</div>
+            ${o.discountCode ? `<div class="ln">کد تخفیف: ${escapeHtml(o.discountCode)}</div>` : ""}
+          </div>
+          <div class="mini-card">
+            <h5>آدرس ارسال</h5>
+            <div class="ln"><b>${escapeHtml(o.shippingFullName)}</b> — ${o.shippingPhone}</div>
+            <div class="ln">${escapeHtml(o.shippingCity)}، ${escapeHtml(o.shippingFullAddress)}</div>
+            <div class="ln">کد پستی: ${o.shippingPostalCode}</div>
+          </div>
+        </div>
+
+        <h5 style="font-size:12.5px;color:var(--text-soft);margin-bottom:6px;">اقلام سفارش</h5>
+        <table class="items-table">
+          <thead><tr><th>محصول</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead>
+          <tbody>${itemsRows}</tbody>
+        </table>
+        <div class="totals-box">
+          <div class="tln"><span>جمع اقلام</span><span>${toman(o.subTotal)}</span></div>
+          <div class="tln"><span>هزینه ارسال</span><span>${o.shippingCost ? toman(o.shippingCost) : "رایگان"}</span></div>
+          ${o.discountAmount ? `<div class="tln"><span>تخفیف</span><span>−${toman(o.discountAmount)}</span></div>` : ""}
+          <div class="tln grand"><span>مبلغ نهایی</span><span>${toman(o.totalAmount)}</span></div>
+        </div>
+
+        <h5 style="font-size:12.5px;color:var(--text-soft);margin:18px 0 4px;">پیگیری وضعیت</h5>
+        <div class="timeline">${timeline}</div>
+
+        ${isLocked ? "" : `
+        <div class="status-actions">
+          <button class="btn btn-soft" ${canShip?"":"disabled"} onclick="changeOrderStatus(${o.id}, 2)">علامت‌گذاری «در حال ارسال»</button>
+          <button class="btn btn-primary" ${canDeliver?"":"disabled"} onclick="changeOrderStatus(${o.id}, 3)">علامت‌گذاری «سفارش تکمیل شد»</button>
+        </div>
+        <div class="status-note">${o.status === 0
+          ? "این سفارش هنوز از درگاه پرداخت تایید نشده و فعلا قابل ارسال نیست."
+          : "با تایید هر مرحله، وضعیت در پنل مشتری بروزرسانی و یک پیامک واقعی (کاوه‌نگار) برای مشتری ارسال می‌شود."}</div>
+        `}
+        ${o.status === 3 ? `<div class="status-note">این سفارش تکمیل شده و به مرحله نهایی رسیده است.</div>` : ""}
+        ${(o.status===4||o.status===5) ? `<div class="status-note">این سفارش توسط درگاه پرداخت یا مشتری در این وضعیت قرار گرفته و از پنل ادمین قابل تغییر نیست.</div>` : ""}
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal()">بستن</button>
+      </div>
+    </div>
+  </div>
+  `);
+}
+
+async function changeOrderStatus(id, newStatus){
+  try{
+    const result = await Api.updateOrderStatus(id, newStatus);
+    toast(result.smsSent === false
+      ? (newStatus === 2 ? "وضعیت به «در حال ارسال» تغییر کرد (ارسال پیامک ناموفق بود)" : "سفارش تکمیل شد (ارسال پیامک ناموفق بود)")
+      : (newStatus === 2 ? "وضعیت به «در حال ارسال» تغییر کرد و پیامک برای مشتری ارسال شد." : "سفارش تکمیل شد و پیامک برای مشتری ارسال شد."));
+    await openOrderDetail(id);
+    await loadOrders();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'تغییر وضعیت ناموفق بود', 'error');
+  }
+}
+
+/* =========================================================
+   نظرات
+========================================================= */
+const REVIEW_FILTERS = [
+  { key: "null", label: "همه" },
+  { key: "false", label: "در انتظار تایید" },
+  { key: "true", label: "تایید شده" },
+];
+
+function setReviewType(type){
+  state.reviewType = type;
+  state.reviewsPage = 1;
+  state.blogCommentsPage = 1;
+  loadReviews();
+}
+
+function setReviewFilter(key){
+  state.reviewFilter = key === "null" ? null : key === "true";
+  state.reviewsPage = 1;
+  state.blogCommentsPage = 1;
+  loadReviews();
+}
+function gotoReviewsPage(p){
+  state.reviewsPage = p;
+  refreshView();
+}
+function gotoBlogCommentsPage(p){
+  state.blogCommentsPage = p;
+  refreshView();
+}
+
+async function loadReviews(){
+  try{
+    if(state.reviewType === "blog"){
+      state.blogComments = await Api.getBlogComments(state.reviewFilter);
+      state.blogCommentsLoaded = true;
+    } else {
+      state.reviews = await Api.getReviews(state.reviewFilter);
+      state.reviewsLoaded = true;
+    }
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری نظرات', 'error');
+  }
+}
+
+function starsHtml(rating){
+  const r = Math.max(0, Math.min(5, Math.round(rating || 0)));
+  return `<span class="review-stars">${"★".repeat(r)}${"☆".repeat(5 - r)}</span>`;
+}
+
+function renderReviewsView(){
+  const loaded = state.reviewType === "blog" ? state.blogCommentsLoaded : state.reviewsLoaded;
+  if(!loaded) return loadingRow();
+
+  const typeToggle = `
+    <div class="type-toggle" style="max-width:320px;margin-bottom:14px;">
+      <div class="type-opt ${state.reviewType==="product"?"active":""}" onclick="setReviewType('product')">نظرات محصولات</div>
+      <div class="type-opt ${state.reviewType==="blog"?"active":""}" onclick="setReviewType('blog')">نظرات وبلاگ</div>
+    </div>
+  `;
+
+  const filterKeyOf = (v) => v === null ? "null" : String(v);
+  const filterChips = REVIEW_FILTERS.map(f => `
+    <div class="filter-chip ${filterKeyOf(state.reviewFilter)===f.key?"active":""}" onclick="setReviewFilter('${f.key}')">${f.label}</div>
+  `).join("");
+
+  if(state.reviewType === "blog"){
+    const pendingCount = state.blogComments.filter(c=>!c.isApproved).length;
+    const pageItems = paginateArray(state.blogComments, state.blogCommentsPage);
+    const cards = pageItems.map(c => `
+      <div class="review-card">
+        <div class="review-head">
+          <div class="review-who">
+            <b>${escapeHtml(c.userFullName)}</b>
+            <div class="cell-sub">
+              <a href="/blog-post?slug=${encodeURIComponent(c.blogPostSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(c.blogPostTitle)}</a>
+              · ${faDate(c.createdAt)}
+            </div>
+          </div>
+          ${c.isApproved ? '<span class="badge badge-active"><span class="sw"></span>تایید شده</span>' : '<span class="badge badge-processing"><span class="sw"></span>در انتظار تایید</span>'}
+        </div>
+        <div class="review-comment">${escapeHtml(c.content)}</div>
+        <div class="review-actions">
+          ${c.isApproved
+            ? `<button class="btn btn-ghost" onclick="rejectBlogComment(${c.id})">${ICONS.close} رد کردن</button>`
+            : `<button class="btn btn-primary" onclick="approveBlogComment(${c.id})">${ICONS.check} تایید</button>`}
+        </div>
+      </div>
+    `).join("");
+
+    return `
+      <div class="view-head">
+        <div class="stat-row">
+          <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.blogComments.length.toLocaleString('fa-IR')} نظر</div>
+          <div class="stat-pill"><span class="sw" style="background:var(--amber)"></span>${pendingCount.toLocaleString('fa-IR')} در انتظار تایید</div>
+        </div>
+      </div>
+      ${typeToggle}
+      <div class="filter-row">${filterChips}</div>
+      <div class="card" style="padding:16px;">
+        ${pageItems.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+        ${renderPager(state.blogComments.length, state.blogCommentsPage, "gotoBlogCommentsPage")}
+      </div>
+    `;
+  }
+
+  const pendingCount = state.reviews.filter(r=>!r.isApproved).length;
+  const pageItems = paginateArray(state.reviews, state.reviewsPage);
+
+  const cards = pageItems.map(r => `
+    <div class="review-card">
+      <div class="review-head">
+        <div class="review-who">
+          <b>${escapeHtml(r.userFullName)}</b>
+          <div class="cell-sub">
+            <a href="/product?slug=${encodeURIComponent(r.productSlug)}" target="_blank" style="color:var(--wine);text-decoration:underline;">${escapeHtml(r.productName)}</a>
+            · ${faDate(r.createdAt)}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${starsHtml(r.rating)}
+          ${r.isApproved ? '<span class="badge badge-active"><span class="sw"></span>تایید شده</span>' : '<span class="badge badge-processing"><span class="sw"></span>در انتظار تایید</span>'}
+        </div>
+      </div>
+      ${r.comment ? `<div class="review-comment">${escapeHtml(r.comment)}</div>` : ""}
+      <div class="review-actions">
+        ${r.isApproved
+          ? `<button class="btn btn-ghost" onclick="rejectReview(${r.id})">${ICONS.close} رد کردن</button>`
+          : `<button class="btn btn-primary" onclick="approveReview(${r.id})">${ICONS.check} تایید</button>`}
+        <button class="icon-btn" title="پاسخ به این نظر" onclick="toggleReplyBox(${r.id})">${ICONS.reply}</button>
+      </div>
+      ${r.adminReply ? `<div class="review-reply-existing"><b>پاسخ فروشگاه</b>${escapeHtml(r.adminReply)}</div>` : ""}
+      <div class="review-reply-box" id="reply-box-${r.id}" style="display:none;">
+        <textarea class="textarea" id="reply-input-${r.id}" placeholder="پاسخ خود را بنویسید...">${escapeHtml(r.adminReply || "")}</textarea>
+        <div class="review-actions" style="margin-top:8px;">
+          <button class="btn btn-primary" onclick="submitReviewReply(${r.id})">ثبت پاسخ</button>
+          <button class="btn btn-ghost" onclick="toggleReplyBox(${r.id})">انصراف</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.reviews.length.toLocaleString('fa-IR')} نظر</div>
+        <div class="stat-pill"><span class="sw" style="background:var(--amber)"></span>${pendingCount.toLocaleString('fa-IR')} در انتظار تایید</div>
+      </div>
+    </div>
+    ${typeToggle}
+    <div class="filter-row">${filterChips}</div>
+    <div class="card" style="padding:16px;">
+      ${pageItems.length ? cards : emptyState("star","نظری یافت نشد","برای فیلتر انتخاب‌شده نظری ثبت نشده است.")}
+      ${renderPager(state.reviews.length, state.reviewsPage, "gotoReviewsPage")}
+    </div>
+  `;
+}
+
+function toggleReplyBox(id){
+  const box = document.getElementById(`reply-box-${id}`);
+  if(box) box.style.display = box.style.display === "none" ? "" : "none";
+}
+
+async function approveReview(id){
+  try{
+    await Api.approveReview(id);
+    toast("نظر تایید شد و برای مشتریان نمایش داده می‌شود.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'تایید نظر ناموفق بود', 'error');
+  }
+}
+
+async function rejectReview(id){
+  try{
+    await Api.rejectReview(id);
+    toast("نظر رد شد و از فروشگاه پنهان می‌شود.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'رد نظر ناموفق بود', 'error');
+  }
+}
+
+async function submitReviewReply(id){
+  const input = document.getElementById(`reply-input-${id}`);
+  const reply = input ? input.value.trim() : "";
+  try{
+    await Api.replyReview(id, reply);
+    toast(reply ? "پاسخ شما ثبت شد." : "پاسخ حذف شد.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ثبت پاسخ ناموفق بود', 'error');
+  }
+}
+
+async function approveBlogComment(id){
+  try{
+    await Api.approveBlogComment(id);
+    toast("نظر تایید شد و زیر مطلب وبلاگ نمایش داده می‌شود.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'تایید نظر ناموفق بود', 'error');
+  }
+}
+
+async function rejectBlogComment(id){
+  try{
+    await Api.rejectBlogComment(id);
+    toast("نظر رد شد و از وبلاگ پنهان می‌شود.");
+    await loadReviews();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'رد نظر ناموفق بود', 'error');
+  }
+}
+
+/* ============ INIT ============ */
+renderApp();
+</script>
+</body>
+</html>

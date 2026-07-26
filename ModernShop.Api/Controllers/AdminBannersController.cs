@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «بنرها» تو پنل مدیریت (admin.html): هم اسلایدر بالای صفحه اصلی (Type=Hero)
+// مربوط به بخش «بنرها» تو پنل مدیریت: هم اسلایدر بالای صفحه اصلی (Type=Hero)
 // هم دو بنر ثابت تبلیغاتی زیر نوار برندها (Type=Fixed)
 [ApiController]
 [Route("api/admin/banners")]

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «نظرات» تو پنل مدیریت (admin.html) — تایید/رد نظرات وبلاگ
+// مربوط به بخش «نظرات» تو پنل مدیریت — تایید/رد نظرات وبلاگ
 [ApiController]
 [Route("api/admin/blog-comments")]
 [Authorize(Policy = "AdminOnly")]

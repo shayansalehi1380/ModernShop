@@ -10,7 +10,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace ModernShop.Api.Controllers;
 
-// مربوط به بخش «محصولات» تو پنل مدیریت (admin.html)
+// مربوط به بخش «محصولات» تو پنل مدیریت
 [ApiController]
 [Route("api/admin/products")]
 [Authorize(Policy = "AdminOnly")]

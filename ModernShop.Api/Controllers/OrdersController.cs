@@ -92,6 +92,7 @@ public class OrdersController : ControllerBase
             order.Items.Add(new OrderItem
             {
                 ProductId = item.ProductId,
+                ProductVariantId = item.ProductVariantId,
                 ProductNameSnapshot = item.Product.Name,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
@@ -101,9 +102,41 @@ public class OrdersController : ControllerBase
 
         order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.PendingPayment, Note = "سفارش ثبت شد" });
 
+        // تا این لحظه سبد فقط «رزرو» بوده (رد کردن کاربرهای دیگه از خرید همون تعداد)، نه کسر واقعی
+        // موجودی. همین‌جا موجودی واقعی محصول/تنوع رو با یک UPDATE شرطی (WHERE StockQuantity >= qty)
+        // به‌صورت اتمیک کم می‌کنیم؛ این کار زیر لود همزمان هم تضمین می‌کنه موجودی هیچ‌وقت منفی نشه -
+        // اگه بین لحظه‌ی آخرین رزرو و همین لحظه، موجودی توسط سفارش دیگه‌ای تموم شده باشه، این UPDATE
+        // صفر ردیف تغییر می‌ده و کل تراکنش (شامل ساخت سفارش) رول‌بک می‌شه.
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        foreach (var item in cart.Items)
+        {
+            var variantOk = true;
+            if (item.ProductVariantId.HasValue)
+            {
+                var variantRows = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE ProductVariants SET StockQuantity = StockQuantity - {item.Quantity}
+                    WHERE Id = {item.ProductVariantId.Value} AND StockQuantity >= {item.Quantity}");
+                variantOk = variantRows > 0;
+            }
+
+            var productRows = variantOk
+                ? await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE Products SET StockQuantity = StockQuantity - {item.Quantity}
+                    WHERE Id = {item.ProductId} AND StockQuantity >= {item.Quantity}")
+                : 0;
+
+            if (!variantOk || productRows == 0)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest(new { message = $"متاسفانه موجودی «{item.Product.Name}» کافی نیست؛ لطفاً سبد خرید را بروزرسانی کنید." });
+            }
+        }
+
         _db.Orders.Add(order);
         _db.CartItems.RemoveRange(cart.Items);
         await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         string? paymentUrl = null;
 
@@ -210,6 +243,7 @@ public class OrdersController : ControllerBase
         var order = await _db.Orders
             .Include(o => o.Payments)
             .Include(o => o.StatusHistory)
+            .Include(o => o.Items)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null) return NotFound();
@@ -220,8 +254,12 @@ public class OrdersController : ControllerBase
         if (Status != "OK")
         {
             payment.Status = PaymentStatus.Failed;
-            order.Status = OrderStatus.Failed;
-            order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Failed, Note = "پرداخت توسط کاربر لغو شد" });
+            if (order.Status != OrderStatus.Failed)
+            {
+                order.Status = OrderStatus.Failed;
+                order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Failed, Note = "پرداخت توسط کاربر لغو شد" });
+                await RestoreStockAsync(order.Items);
+            }
             await _db.SaveChangesAsync();
             return Redirect($"/order-complete?status=failed&orderNumber={order.OrderNumber}");
         }
@@ -238,14 +276,38 @@ public class OrdersController : ControllerBase
         else
         {
             payment.Status = PaymentStatus.Failed;
-            order.Status = OrderStatus.Failed;
-            order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Failed, Note = "تایید پرداخت ناموفق بود" });
+            if (order.Status != OrderStatus.Failed)
+            {
+                order.Status = OrderStatus.Failed;
+                order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Failed, Note = "تایید پرداخت ناموفق بود" });
+                await RestoreStockAsync(order.Items);
+            }
         }
 
         await _db.SaveChangesAsync();
 
         var redirectStatus = verified ? "success" : "failed";
         return Redirect($"/order-complete?status={redirectStatus}&orderNumber={order.OrderNumber}");
+    }
+
+    // وقتی پرداخت آنلاین ناموفق/لغو می‌شه، موجودی‌ای که موقع ثبت سفارش به‌صورت اتمیک کم شده بود
+    // (چون سفارش هنوز پرداخت نشده بود) باید برگرده تا کاربر دیگه‌ای بتونه همون تعداد رو بخره؛
+    // چون این‌جا برخلاف CreateOrder نگرانی رقابت روی «موجودی کافی» نیست (فقط داریم برمی‌گردونیم)،
+    // نیازی به شرط WHERE StockQuantity >= qty نیست.
+    private async Task RestoreStockAsync(IEnumerable<OrderItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (item.ProductVariantId.HasValue)
+            {
+                await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE ProductVariants SET StockQuantity = StockQuantity + {item.Quantity}
+                    WHERE Id = {item.ProductVariantId.Value}");
+            }
+            await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                UPDATE Products SET StockQuantity = StockQuantity + {item.Quantity}
+                WHERE Id = {item.ProductId}");
+        }
     }
 
     private static OrderDto MapToDto(Order order) => new()

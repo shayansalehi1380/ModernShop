@@ -91,6 +91,10 @@ public class AppDbContext : DbContext
         // درخواست سبد خرید کاربر مهمان (که اکثر بازدیدکننده‌ها هستن) جستجو می‌شه
         modelBuilder.Entity<Cart>().Property(c => c.GuestSessionId).HasMaxLength(64);
         modelBuilder.Entity<Cart>().HasIndex(c => c.GuestSessionId);
+
+        // موجودی «واقعاً در دسترس» هر محصول/تنوع با یه subquery روی همین سه ستون محاسبه می‌شه
+        // (رزروهای فعال = ReservedUntil > الان)، هم موقع لیست/جزئیات محصول هم موقع افزودن به سبد
+        modelBuilder.Entity<CartItem>().HasIndex(ci => new { ci.ProductId, ci.ProductVariantId, ci.ReservedUntil });
     }
 
     /// <summary>

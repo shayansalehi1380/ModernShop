@@ -24,6 +24,7 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PagedResultDto<ProductListItemDto>>> GetProducts([FromQuery] ProductFilterRequestDto filter)
     {
+        var now = DateTime.UtcNow;
         var query = _db.Products.AsNoTracking().Where(p => p.IsActive).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
@@ -41,8 +42,10 @@ public class ProductsController : ControllerBase
         if (filter.MaxPrice.HasValue)
             query = query.Where(p => (p.DiscountPrice ?? p.Price) <= filter.MaxPrice);
 
+        // «موجود» یعنی موجودی واقعی منهای چیزی که همین الان تو سبد سایر کاربرها رزرو شده (فعال، هنوز منقضی نشده)
         if (filter.InStockOnly)
-            query = query.Where(p => p.StockQuantity > 0);
+            query = query.Where(p => p.StockQuantity - (_db.CartItems
+                .Where(ci => ci.ProductId == p.Id && ci.ReservedUntil > now).Sum(ci => (int?)ci.Quantity) ?? 0) > 0);
 
         if (filter.OnSaleOnly)
             query = query.Where(p => p.DiscountPrice != null);
@@ -79,7 +82,8 @@ public class ProductsController : ControllerBase
                 DiscountPrice = p.DiscountPrice,
                 AverageRating = p.Reviews.Any() ? Math.Round(p.Reviews.Average(r => r.Rating), 1) : 0,
                 ReviewCount = p.Reviews.Count,
-                InStock = p.StockQuantity > 0,
+                InStock = p.StockQuantity - (_db.CartItems
+                    .Where(ci => ci.ProductId == p.Id && ci.ReservedUntil > now).Sum(ci => (int?)ci.Quantity) ?? 0) > 0,
                 IsVariable = p.Variants.Any(),
                 Badge = p.DiscountPrice != null ? "پیشنهاد ویژه"
                         : p.CreatedAt >= DateTime.UtcNow.AddDays(-14) ? "جدید"
@@ -136,6 +140,20 @@ public class ProductsController : ControllerBase
 
         if (product is null) return NotFound();
 
+        // موجودی واقعاً در دسترس = موجودی کل منهای چیزی که همین الان تو سبد کاربرها (فعال، هنوز
+        // منقضی‌نشده) رزرو شده؛ هم برای کل محصول (محصول ساده) هم به تفکیک هر تنوع لازمه
+        var now = DateTime.UtcNow;
+        var reservedGroups = await _db.CartItems.AsNoTracking()
+            .Where(ci => ci.ProductId == product.Id && ci.ReservedUntil > now)
+            .GroupBy(ci => ci.ProductVariantId)
+            .Select(g => new { VariantId = g.Key, Qty = g.Sum(x => x.Quantity) })
+            .ToListAsync();
+
+        var reservedForProduct = reservedGroups.Sum(g => g.Qty);
+        var reservedByVariantId = reservedGroups
+            .Where(g => g.VariantId.HasValue)
+            .ToDictionary(g => g.VariantId!.Value, g => g.Qty);
+
         var dto = new ProductDetailDto
         {
             Id = product.Id,
@@ -147,7 +165,7 @@ public class ProductsController : ControllerBase
             BrandName = product.Brand?.Name,
             Price = product.Price,
             DiscountPrice = product.DiscountPrice,
-            StockQuantity = product.StockQuantity,
+            StockQuantity = Math.Max(0, product.StockQuantity - reservedForProduct),
             AverageRating = product.Reviews.Any() ? Math.Round(product.Reviews.Average(r => r.Rating), 1) : 0,
             ReviewCount = product.Reviews.Count,
             Images = product.Images
@@ -155,7 +173,15 @@ public class ProductsController : ControllerBase
                 .Select(i => new ProductImageDto { ImageUrl = i.ImageUrl, IsMain = i.IsMain })
                 .ToList(),
             Variants = product.Variants
-                .Select(v => new ProductVariantDto { Id = v.Id, Color = v.Color, Size = v.Size, StockQuantity = v.StockQuantity, PriceAdjustment = v.PriceAdjustment, IncludedInDiscount = v.IncludedInDiscount })
+                .Select(v => new ProductVariantDto
+                {
+                    Id = v.Id,
+                    Color = v.Color,
+                    Size = v.Size,
+                    StockQuantity = Math.Max(0, v.StockQuantity - (reservedByVariantId.TryGetValue(v.Id, out var r) ? r : 0)),
+                    PriceAdjustment = v.PriceAdjustment,
+                    IncludedInDiscount = v.IncludedInDiscount
+                })
                 .ToList(),
             Specifications = product.Specifications
                 .OrderBy(s => s.DisplayOrder)

@@ -5,6 +5,7 @@ using ModernShop.Core.Entities;
 using ModernShop.Core.Interfaces;
 using ModernShop.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atelier.Api.Controllers;
@@ -26,6 +27,7 @@ public class AuthController : ControllerBase
 
     // مرحله ۱ از auth.html: فقط شماره موبایل
     [HttpPost("send-otp")]
+    [EnableRateLimiting("OtpSend")]
     public async Task<IActionResult> SendOtp([FromBody] SendOtpRequestDto request)
     {
         if (string.IsNullOrWhiteSpace(request.PhoneNumber) || !Regex.IsMatch(request.PhoneNumber, @"^09\d{9}$"))
@@ -52,6 +54,7 @@ public class AuthController : ControllerBase
 
     // مرحله ۲ از auth.html: کد ۵ رقمی
     [HttpPost("verify-otp")]
+    [EnableRateLimiting("OtpVerify")]
     public async Task<ActionResult<AuthResponseDto>> VerifyOtp([FromBody] VerifyOtpRequestDto request)
     {
         var otp = await _db.OtpCodes

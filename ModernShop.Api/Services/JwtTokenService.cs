@@ -36,7 +36,7 @@ public class JwtTokenService
     }
 
     /// <summary>
-    /// توکن مخصوص پنل مدیریت (admin.html). چون ادمین یک کاربر واقعی تو جدول Users نیست،
+    /// توکن مخصوص پنل مدیریت. چون ادمین یک کاربر واقعی تو جدول Users نیست،
     /// این توکن هیچ NameIdentifier ای نداره؛ فقط با claim اختصاصی "scope"="admin" مشخص می‌شه
     /// و AdminOnly policy تو Program.cs دقیقاً همین رو چک می‌کنه.
     /// </summary>
