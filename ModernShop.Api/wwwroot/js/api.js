@@ -75,6 +75,7 @@ window.addEventListener('storage', (e) => {
 const Api = {
   // کاتالوگ
   getBanners: () => apiFetch('/banners'),
+  getFixedBanners: () => apiFetch('/banners/fixed'),
   getCategories: () => apiFetch('/categories'),
   getBrands: () => apiFetch('/brands'),
   getFeaturedBrands: () => apiFetch('/brands?featuredOnly=true'),

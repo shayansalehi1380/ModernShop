@@ -514,6 +514,18 @@ const Api = {
   deleteProduct: (id) => adminFetch(`/admin/products/${id}`, { method:'DELETE' }),
   reactivateProduct: (id) => adminFetch(`/admin/products/${id}/reactivate`, { method:'PUT' }),
 
+  getAdminBrands: () => adminFetch('/admin/brands'),
+  getAdminBrand: (id) => adminFetch(`/admin/brands/${id}`),
+  createBrand: (data) => adminFetch('/admin/brands', { method:'POST', body: JSON.stringify(data) }),
+  updateBrand: (id, data) => adminFetch(`/admin/brands/${id}`, { method:'PUT', body: JSON.stringify(data) }),
+  deleteBrand: (id) => adminFetch(`/admin/brands/${id}`, { method:'DELETE' }),
+
+  getAdminBanners: () => adminFetch('/admin/banners'),
+  getAdminBanner: (id) => adminFetch(`/admin/banners/${id}`),
+  createBanner: (data) => adminFetch('/admin/banners', { method:'POST', body: JSON.stringify(data) }),
+  updateBanner: (id, data) => adminFetch(`/admin/banners/${id}`, { method:'PUT', body: JSON.stringify(data) }),
+  deleteBanner: (id) => adminFetch(`/admin/banners/${id}`, { method:'DELETE' }),
+
   getBlogPosts: () => adminFetch('/admin/blog'),
   getBlogPost: (id) => adminFetch(`/admin/blog/${id}`),
   createBlogPost: (data) => adminFetch('/admin/blog', { method:'POST', body: JSON.stringify(data) }),
@@ -553,6 +565,12 @@ const state = {
   showInactiveProducts: false,
   productsSearch: "",
   productsPage: 1,
+  brandsAdmin: [],
+  brandsAdminLoaded: false,
+  brandsAdminPage: 1,
+  bannersAdmin: [],
+  bannersAdminLoaded: false,
+  bannersAdminPage: 1,
   blogPosts: [],
   blogPostsLoaded: false,
   blogSearch: "",
@@ -692,6 +710,8 @@ const ICONS = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg>',
   reply: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 17l-5-5 5-5"/><path d="M4 12h10a5 5 0 0 1 5 5v2"/></svg>',
   file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6.5A2.5 2.5 0 0 0 4 4.5v15A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5V8.5L14.5 2z"/><path d="M14 2v6.5h6.5"/><path d="M8 13h8M8 17h5"/></svg>',
+  tag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.6 12.6 12 21.2 2.8 12 11.4 3.4H20.6v9.2Z"/><circle cx="16.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
 };
 
 /* ============ ROOT RENDER ============ */
@@ -773,11 +793,15 @@ function handleLogout(){
   clearAdminToken();
   state.authed = false;
   state.productsLoaded = false;
+  state.brandsAdminLoaded = false;
+  state.bannersAdminLoaded = false;
   state.blogPostsLoaded = false;
   state.reviewsLoaded = false;
   state.blogCommentsLoaded = false;
   state.staticPagesLoaded = false;
   state.products = [];
+  state.brandsAdmin = [];
+  state.bannersAdmin = [];
   state.blogPosts = [];
   state.orders = [];
   state.reviews = [];
@@ -804,6 +828,8 @@ function renderShell(){
       </div>
       <nav>
         ${navItem("products","box","محصولات")}
+        ${navItem("brands","tag","برندها")}
+        ${navItem("banners","image","بنرها")}
         ${navItem("blog","blog","وبلاگ")}
         ${navItem("orders","order","سفارشات")}
         ${navItem("reviews","star","نظرات")}
@@ -843,11 +869,13 @@ function switchView(key){
   loadCurrentView();
 }
 function viewTitle(){
-  return { products:"مدیریت محصولات", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات", pages:"صفحات ثابت" }[state.view];
+  return { products:"مدیریت محصولات", brands:"مدیریت برندها", banners:"مدیریت بنرها", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات", pages:"صفحات ثابت" }[state.view];
 }
 function viewDesc(){
   return {
     products:"تعریف، ویرایش و حذف محصولات فروشگاه",
+    brands:"تعریف برندها و آپلود لوگو؛ برندهای ویژه در نوار صفحه اصلی نمایش داده می‌شوند",
+    banners:"آپلود بنر اسلایدر بالای صفحه اصلی و دو بنر ثابت تبلیغاتی، جدا برای موبایل و دسکتاپ",
     blog:"تعریف، ویرایش و حذف مطالب وبلاگ",
     orders:"مشاهده سفارشات و بروزرسانی وضعیت ارسال",
     reviews:"تایید یا رد نظرات مشتریان و پاسخ‌گویی به آن‌ها",
@@ -874,6 +902,8 @@ function refreshView(){
 }
 function renderView(){
   if(state.view === "products") return renderProductsView();
+  if(state.view === "brands") return renderBrandsView();
+  if(state.view === "banners") return renderBannersView();
   if(state.view === "blog") return renderBlogView();
   if(state.view === "orders") return renderOrdersView();
   if(state.view === "reviews") return renderReviewsView();
@@ -899,6 +929,8 @@ async function loadLookups(){
 
 async function loadCurrentView(){
   if(state.view === "products") return loadProducts();
+  if(state.view === "brands") return loadBrandsAdmin();
+  if(state.view === "banners") return loadBannersAdmin();
   if(state.view === "blog") return loadBlogPosts();
   if(state.view === "orders") return loadOrders();
   if(state.view === "reviews") return loadReviews();
@@ -1440,6 +1472,442 @@ async function saveProduct(existingId){
   }catch(e){
     if(e.message === 'unauthorized') return;
     toast(e.message || 'ذخیره محصول ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   BRANDS
+========================================================= */
+async function loadBrandsAdmin(){
+  try{
+    state.brandsAdmin = await Api.getAdminBrands();
+    state.brandsAdminLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری برندها', 'error');
+  }
+}
+
+function renderBrandsView(){
+  if(!state.brandsAdminLoaded) return loadingRow();
+
+  const pageItems = paginateArray(state.brandsAdmin, state.brandsAdminPage);
+
+  const rows = pageItems.map(b => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          ${b.logoUrl ? `<img src="${escapeHtml(b.logoUrl)}" class="thumb sm" style="object-fit:contain;background:#fff;" onerror="this.style.display='none'">` : `<div class="thumb sm">${initials(b.name)}</div>`}
+          <div class="cell-title">${escapeHtml(b.name)}</div>
+        </div>
+      </td>
+      <td class="num">${b.displayOrder.toLocaleString('fa-IR')}</td>
+      <td>${b.isFeatured ? '<span class="badge badge-published"><span class="sw"></span>ویژه</span>' : '<span class="badge badge-draft"><span class="sw"></span>عادی</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openBrandForm(${b.id})">${ICONS.edit}</button>
+          <button class="icon-btn danger" title="حذف" onclick="deleteBrand(${b.id})">${ICONS.trash}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.brandsAdmin.length.toLocaleString('fa-IR')} برند</div>
+      </div>
+      <button class="btn btn-primary" onclick="openBrandForm()">${ICONS.plus} برند جدید</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>برند</th><th>ترتیب نمایش</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("tag","هنوز برندی ثبت نشده","با دکمه «برند جدید» اولین برند را اضافه کنید.")}
+      </div>
+      ${renderPager(state.brandsAdmin.length, state.brandsAdminPage, "gotoBrandsAdminPage")}
+    </div>
+  `;
+}
+
+function gotoBrandsAdminPage(p){
+  state.brandsAdminPage = p;
+  refreshView();
+}
+
+async function deleteBrand(id){
+  const b = state.brandsAdmin.find(x=>x.id===id);
+  if(!b) return;
+  if(!confirm('آیا از حذف برند «'+b.name+'» مطمئن هستید؟')) return;
+
+  try{
+    await Api.deleteBrand(id);
+    toast("برند حذف شد.");
+    await loadBrandsAdmin();
+    state.brands = await Api.getBrands();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'حذف برند ناموفق بود', 'error');
+  }
+}
+
+async function openBrandForm(id){
+  let b = { name:"", logoUrl:"", isFeatured:false, displayOrder: state.brandsAdmin.length };
+  let editing = false;
+
+  if(id){
+    try{
+      b = await Api.getAdminBrand(id);
+      editing = true;
+    }catch(e){
+      if(e.message === 'unauthorized') return;
+      toast(e.message || 'خطا در بارگذاری برند', 'error');
+      return;
+    }
+  }
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2>${editing ? "ویرایش برند" : "برند جدید"}</h2>
+          <p>${editing ? "اطلاعات برند را ویرایش کنید." : "یک برند جدید اضافه کنید."}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="brand-form" onsubmit="return false;">
+          <div class="field">
+            <label>نام برند</label>
+            <input class="input" id="brf-name" value="${escapeHtml(b.name)}" placeholder="مثلاً سامسونگ" />
+          </div>
+          <div class="field">
+            <label>لوگو (اختیاری)</label>
+            <div class="image-upload-row">
+              <input class="input" id="brf-logo" oninput="refreshImagePreview('brf-logo','brf-logo-preview')" value="${escapeHtml(b.logoUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadBrandLogo(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="brf-logo-preview">${b.logoUrl ? `<img src="${escapeHtml(b.logoUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+          <div class="field">
+            <label>ترتیب نمایش</label>
+            <input class="input" id="brf-order" type="number" value="${b.displayOrder}" />
+          </div>
+          <div class="switch-row">
+            <div class="lbl">برند ویژه<small>در نوار برندهای صفحه اصلی نمایش داده می‌شود</small></div>
+            <label class="switch"><input type="checkbox" id="brf-featured" ${b.isFeatured?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="brand-save-btn" onclick="saveBrand(${editing ? b.id : "null"})">${editing ? "ذخیره تغییرات" : "افزودن برند"}</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+}
+
+async function uploadBrandLogo(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("brf-logo").value = url;
+    refreshImagePreview("brf-logo", "brf-logo-preview");
+    toast("لوگو آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود لوگو ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function saveBrand(existingId){
+  const name = document.getElementById("brf-name").value.trim();
+  if(!name){ toast("نام برند را وارد کنید.", "error"); return; }
+
+  const logoUrl = document.getElementById("brf-logo").value.trim() || null;
+  const displayOrder = parseInt(document.getElementById("brf-order").value) || 0;
+  const isFeatured = document.getElementById("brf-featured").checked;
+
+  const payload = { name, logoUrl, isFeatured, displayOrder };
+
+  const btn = document.getElementById("brand-save-btn");
+  btn.disabled = true;
+
+  try{
+    if(existingId) await Api.updateBrand(existingId, payload);
+    else await Api.createBrand(payload);
+
+    toast(existingId ? "تغییرات برند ذخیره شد." : "برند جدید اضافه شد.");
+    closeModal();
+    await loadBrandsAdmin();
+    state.brands = await Api.getBrands();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره برند ناموفق بود', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   BANNERS
+========================================================= */
+const BANNER_TYPE_LABELS = { 0: "بنر اصلی (اسلایدر)", 1: "بنر ثابت" };
+
+async function loadBannersAdmin(){
+  try{
+    state.bannersAdmin = await Api.getAdminBanners();
+    state.bannersAdminLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری بنرها', 'error');
+  }
+}
+
+function renderBannersView(){
+  if(!state.bannersAdminLoaded) return loadingRow();
+
+  const pageItems = paginateArray(state.bannersAdmin, state.bannersAdminPage);
+
+  const rows = pageItems.map(b => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          <img src="${escapeHtml(b.imageUrl)}" class="thumb sm" style="object-fit:cover;" onerror="this.style.display='none'">
+          <div>
+            <div class="cell-title">${escapeHtml(b.title || "(بدون عنوان)")}</div>
+            <div class="cell-sub">${BANNER_TYPE_LABELS[b.type]}</div>
+          </div>
+        </div>
+      </td>
+      <td class="num">${b.displayOrder.toLocaleString('fa-IR')}</td>
+      <td>${b.isActive ? '<span class="badge badge-published"><span class="sw"></span>فعال</span>' : '<span class="badge badge-draft"><span class="sw"></span>غیرفعال</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn" title="ویرایش" onclick="openBannerForm(${b.id})">${ICONS.edit}</button>
+          <button class="icon-btn danger" title="حذف" onclick="deleteBanner(${b.id})">${ICONS.trash}</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="view-head">
+      <div class="stat-row">
+        <div class="stat-pill"><span class="sw" style="background:var(--wine)"></span>${state.bannersAdmin.length.toLocaleString('fa-IR')} بنر</div>
+      </div>
+      <button class="btn btn-primary" onclick="openBannerForm()">${ICONS.plus} بنر جدید</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        ${pageItems.length ? `
+        <table>
+          <thead><tr><th>بنر</th><th>ترتیب نمایش</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("image","هنوز بنری ثبت نشده","با دکمه «بنر جدید» اسلایدر یا بنر ثابت صفحه اصلی را اضافه کنید.")}
+      </div>
+      ${renderPager(state.bannersAdmin.length, state.bannersAdminPage, "gotoBannersAdminPage")}
+    </div>
+  `;
+}
+
+function gotoBannersAdminPage(p){
+  state.bannersAdminPage = p;
+  refreshView();
+}
+
+async function deleteBanner(id){
+  const b = state.bannersAdmin.find(x=>x.id===id);
+  if(!b) return;
+  if(!confirm('آیا از حذف این بنر مطمئن هستید؟')) return;
+
+  try{
+    await Api.deleteBanner(id);
+    toast("بنر حذف شد.");
+    await loadBannersAdmin();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'حذف بنر ناموفق بود', 'error');
+  }
+}
+
+async function openBannerForm(id){
+  let b = { imageUrl:"", mobileImageUrl:"", type:0, title:"", linkUrl:"", displayOrder: state.bannersAdmin.length, isActive:true, startsAt:null, endsAt:null };
+  let editing = false;
+
+  if(id){
+    try{
+      b = await Api.getAdminBanner(id);
+      editing = true;
+    }catch(e){
+      if(e.message === 'unauthorized') return;
+      toast(e.message || 'خطا در بارگذاری بنر', 'error');
+      return;
+    }
+  }
+
+  const toDateInputValue = (d) => d ? String(d).slice(0,10) : "";
+
+  openModalHtml(`
+  <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal wide">
+      <div class="modal-head">
+        <div>
+          <h2>${editing ? "ویرایش بنر" : "بنر جدید"}</h2>
+          <p>${editing ? "اطلاعات بنر را ویرایش کنید." : "بنر اسلایدر صفحه اصلی یا بنر ثابت تبلیغاتی اضافه کنید."}</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">${ICONS.close}</button>
+      </div>
+      <div class="modal-body">
+        <form id="banner-form" onsubmit="return false;">
+          <div class="field">
+            <label>نوع بنر</label>
+            <div class="type-toggle">
+              <div class="type-opt ${b.type==0?"active":""}" data-type="0" onclick="bnfSetType(0)">بنر اصلی (اسلایدر بالای صفحه)</div>
+              <div class="type-opt ${b.type==1?"active":""}" data-type="1" onclick="bnfSetType(1)">بنر ثابت (زیر نوار برندها - حداکثر ۲ عدد)</div>
+            </div>
+            <input type="hidden" id="bnf-type" value="${b.type}">
+          </div>
+
+          <div class="field">
+            <label>تصویر دسکتاپ</label>
+            <div class="image-upload-row">
+              <input class="input" id="bnf-image" oninput="refreshImagePreview('bnf-image','bnf-image-preview')" value="${escapeHtml(b.imageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadBannerImage(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="bnf-image-preview">${b.imageUrl ? `<img src="${escapeHtml(b.imageUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+
+          <div class="field">
+            <label>تصویر موبایل (اختیاری — خالی بماند یعنی همان تصویر دسکتاپ در موبایل هم نشان داده شود)</label>
+            <div class="image-upload-row">
+              <input class="input" id="bnf-mobile-image" oninput="refreshImagePreview('bnf-mobile-image','bnf-mobile-image-preview')" value="${escapeHtml(b.mobileImageUrl||"")}" placeholder="آدرس تصویر (https://...) یا با دکمه کنار آپلود کنید" />
+              <label class="btn btn-ghost image-upload-btn">
+                ${ICONS.plus} آپلود از سیستم
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadBannerMobileImage(this)" />
+              </label>
+            </div>
+            <div class="image-preview-row" id="bnf-mobile-image-preview">${b.mobileImageUrl ? `<img src="${escapeHtml(b.mobileImageUrl)}" onerror="this.style.display='none'">` : ""}</div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>عنوان (اختیاری)</label>
+              <input class="input" id="bnf-title" value="${escapeHtml(b.title||"")}" placeholder="مثلاً کالکشن جدید پوشاک" />
+            </div>
+            <div class="field">
+              <label>لینک مقصد (اختیاری)</label>
+              <input class="input" id="bnf-link" value="${escapeHtml(b.linkUrl||"")}" placeholder="مثلاً shop?category=fashion" />
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>تاریخ شروع نمایش (اختیاری)</label>
+              <input class="input" id="bnf-starts" type="date" value="${toDateInputValue(b.startsAt)}" />
+            </div>
+            <div class="field">
+              <label>تاریخ پایان نمایش (اختیاری)</label>
+              <input class="input" id="bnf-ends" type="date" value="${toDateInputValue(b.endsAt)}" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>ترتیب نمایش</label>
+            <input class="input" id="bnf-order" type="number" value="${b.displayOrder}" />
+          </div>
+
+          <div class="switch-row">
+            <div class="lbl">فعال<small>بنرهای غیرفعال در سایت نمایش داده نمی‌شوند</small></div>
+            <label class="switch"><input type="checkbox" id="bnf-active" ${b.isActive?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" id="banner-save-btn" onclick="saveBanner(${editing ? b.id : "null"})">${editing ? "ذخیره تغییرات" : "افزودن بنر"}</button>
+        <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
+  `);
+}
+
+function bnfSetType(type){
+  document.getElementById("bnf-type").value = type;
+  document.querySelectorAll("#banner-form .type-opt").forEach(el=>{
+    el.classList.toggle("active", Number(el.dataset.type) === type);
+  });
+}
+
+async function uploadBannerImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("bnf-image").value = url;
+    refreshImagePreview("bnf-image", "bnf-image-preview");
+    toast("تصویر آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function uploadBannerMobileImage(fileInput){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    document.getElementById("bnf-mobile-image").value = url;
+    refreshImagePreview("bnf-mobile-image", "bnf-mobile-image-preview");
+    toast("تصویر موبایل آپلود شد.");
+  }catch(e){
+    toast(e.message || "آپلود تصویر ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function saveBanner(existingId){
+  const imageUrl = document.getElementById("bnf-image").value.trim();
+  if(!imageUrl){ toast("تصویر دسکتاپ بنر را وارد یا آپلود کنید.", "error"); return; }
+
+  const mobileImageUrl = document.getElementById("bnf-mobile-image").value.trim() || null;
+  const type = parseInt(document.getElementById("bnf-type").value) || 0;
+  const title = document.getElementById("bnf-title").value.trim() || null;
+  const linkUrl = document.getElementById("bnf-link").value.trim() || null;
+  const startsAt = document.getElementById("bnf-starts").value || null;
+  const endsAt = document.getElementById("bnf-ends").value || null;
+  const displayOrder = parseInt(document.getElementById("bnf-order").value) || 0;
+  const isActive = document.getElementById("bnf-active").checked;
+
+  const payload = { imageUrl, mobileImageUrl, type, title, linkUrl, startsAt, endsAt, displayOrder, isActive };
+
+  const btn = document.getElementById("banner-save-btn");
+  btn.disabled = true;
+
+  try{
+    if(existingId) await Api.updateBanner(existingId, payload);
+    else await Api.createBanner(payload);
+
+    toast(existingId ? "تغییرات بنر ذخیره شد." : "بنر جدید اضافه شد.");
+    closeModal();
+    await loadBannersAdmin();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'ذخیره بنر ناموفق بود', 'error');
     btn.disabled = false;
   }
 }

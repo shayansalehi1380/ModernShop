@@ -1,10 +1,11 @@
+using ModernShop.Core.Enums;
 using ModernShop.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atelier.Api.Controllers;
 
-// مربوط به اسلایدر بالای صفحه اصلی
+// مربوط به اسلایدر بالای صفحه اصلی (Type=Hero) و دو بنر ثابت تبلیغاتی زیر نوار برندها (Type=Fixed)
 [ApiController]
 [Route("api/banners")]
 public class BannersController : ControllerBase
@@ -13,17 +14,21 @@ public class BannersController : ControllerBase
     public BannersController(AppDbContext db) => _db = db;
 
     [HttpGet]
-    public async Task<IActionResult> GetActive()
+    public async Task<IActionResult> GetActive() => Ok(await GetActiveByTypeAsync(BannerType.Hero));
+
+    [HttpGet("fixed")]
+    public async Task<IActionResult> GetFixed() => Ok(await GetActiveByTypeAsync(BannerType.Fixed));
+
+    private async Task<object> GetActiveByTypeAsync(BannerType type)
     {
         var now = DateTime.UtcNow;
 
-        var banners = await _db.Banners.AsNoTracking()
+        return await _db.Banners.AsNoTracking()
+            .Where(b => b.Type == type)
             .Where(b => b.IsActive)
             .Where(b => (b.StartsAt == null || b.StartsAt <= now) && (b.EndsAt == null || b.EndsAt >= now))
             .OrderBy(b => b.DisplayOrder)
-            .Select(b => new { b.Id, b.ImageUrl, b.Title, b.LinkUrl })
+            .Select(b => new { b.Id, b.ImageUrl, b.MobileImageUrl, b.Title, b.LinkUrl })
             .ToListAsync();
-
-        return Ok(banners);
     }
 }

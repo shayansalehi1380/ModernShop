@@ -210,4 +210,52 @@ namespace ModernShop.Core.DTOs
         public bool IsApproved { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
+    // ---------------- برندها ----------------
+
+    public class AdminBrandDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public string? LogoUrl { get; set; }
+        public bool IsFeatured { get; set; }
+        public int DisplayOrder { get; set; }
+    }
+
+    public class SaveBrandRequestDto
+    {
+        public string Name { get; set; } = null!;
+        public string? LogoUrl { get; set; }
+        public bool IsFeatured { get; set; }
+        public int DisplayOrder { get; set; }
+    }
+
+    // ---------------- بنرها ----------------
+
+    public class AdminBannerDto
+    {
+        public int Id { get; set; }
+        public string ImageUrl { get; set; } = null!;
+        public string? MobileImageUrl { get; set; }
+        public BannerType Type { get; set; }
+        public string? Title { get; set; }
+        public string? LinkUrl { get; set; }
+        public int DisplayOrder { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime? StartsAt { get; set; }
+        public DateTime? EndsAt { get; set; }
+    }
+
+    public class SaveBannerRequestDto
+    {
+        public string ImageUrl { get; set; } = null!;
+        public string? MobileImageUrl { get; set; }
+        public BannerType Type { get; set; }
+        public string? Title { get; set; }
+        public string? LinkUrl { get; set; }
+        public int DisplayOrder { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime? StartsAt { get; set; }
+        public DateTime? EndsAt { get; set; }
+    }
 }

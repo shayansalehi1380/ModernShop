@@ -50,4 +50,10 @@ namespace ModernShop.Core.Enums
         Platinum
     }
 
+    public enum BannerType
+    {
+        Hero,   // اسلایدر بالای صفحه اصلی
+        Fixed   // دو بنر ثابت تبلیغاتی زیر نوار برندها
+    }
+
 }
