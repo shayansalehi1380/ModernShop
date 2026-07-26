@@ -617,6 +617,13 @@ async function init(){
     if(match) filterState.categoryIds = [match.id];
   }
 
+  // اگه از نوار برندهای صفحه اصلی روی یه برند کلیک شده (shop?brandId=3)، همون برند تیک بخوره
+  const brandIdParam = params.get('brandId');
+  if(brandIdParam){
+    const brandId = parseInt(brandIdParam);
+    if(BRANDS.some(b => b.id === brandId)) filterState.brandIds = [brandId];
+  }
+
   // اگه از جستجوی هدر با اینتر اومده (shop?search=...)
   const searchTerm = params.get('search');
   if(searchTerm){

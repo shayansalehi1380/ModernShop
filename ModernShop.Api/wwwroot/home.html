@@ -130,7 +130,7 @@
 
 <section class="border-y border-line bg-surface-muted py-8">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div id="brand-strip" class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4"></div>
+    <div id="brand-strip" class="grid grid-cols-3 items-center gap-x-4 gap-y-6 sm:flex sm:flex-nowrap sm:justify-center sm:gap-x-12 sm:gap-y-0 lg:gap-x-16"></div>
   </div>
 </section>
 
@@ -304,20 +304,24 @@ function resumeBanner(){
 }
 
 /* ---------- نوار برندها (حالا از API) ----------
-   اگه برند عکس لوگو داشته باشه (logoUrl)، همون عکس با اندازه‌ی ثابت و
-   object-contain نشون داده می‌شه (بدون بریدگی، هر نسبت تصویری که باشه)؛
-   وگرنه (برای برندهایی که هنوز لوگو آپلود نشده) اسم برند به‌شکل یه برچسب
-   ساده نشون داده می‌شه. لوگوها مثل بقیه‌ی عکس‌های غیرمحصولی سایت غیرقابل
-   کشیدن/ذخیره‌ی مستقیم هستن. */
+   هر برند تو یه باکس هم‌ارتفاع (نه هم‌عرض، چون نسبت تصویری لوگوها فرق داره) با
+   object-contain نشون داده می‌شه تا همه‌ی لوگوها از نظر بصری هم‌اندازه به‌نظر برسن، بدون
+   بریدگی یا رنگ‌مرده (grayscale) - رنگ واقعی لوگو همیشه دیده می‌شه. رو موبایل #brand-strip
+   (بالاتر) یه گرید ۳ ستونیه (سه‌تا سه‌تا زیر هم)، از sm به بالا flex-nowrap (همه تو یک ردیف).
+   با کلیک به shop.html با فیلتر همون برند می‌ره. لوگوها مثل بقیه‌ی عکس‌های غیرمحصولی سایت
+   غیرقابل کشیدن/ذخیره‌ی مستقیم هستن. */
 async function loadBrandStrip(){
   const wrap = document.getElementById('brand-strip');
   try {
     const brands = await Api.getFeaturedBrands();
-    wrap.innerHTML = brands.map(b => b.logoUrl
-      ? `<img src="${b.logoUrl}" alt="${dorinTimeEscapeHtml(b.name)}" class="h-10 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 sm:h-12"
-           draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />`
-      : `<span class="rounded-full border border-line bg-surface px-5 py-2 text-sm font-semibold text-muted shadow-sm transition hover:border-emerald hover:text-emerald">${dorinTimeEscapeHtml(b.name)}</span>`
-    ).join('');
+    wrap.innerHTML = brands.map(b => `
+      <a href="shop?brandId=${b.id}" class="flex h-14 items-center justify-center px-1 transition hover:opacity-70 sm:h-16 sm:px-0">
+        ${b.logoUrl
+          ? `<img src="${b.logoUrl}" alt="${dorinTimeEscapeHtml(b.name)}" class="h-full max-w-[100px] object-contain sm:max-w-[120px]"
+               draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; pointer-events:none;" />`
+          : `<span class="rounded-full border border-line bg-surface px-5 py-2 text-sm font-semibold text-muted shadow-sm transition hover:border-emerald hover:text-emerald">${dorinTimeEscapeHtml(b.name)}</span>`}
+      </a>
+    `).join('');
   } catch(e) {
     wrap.innerHTML = '';
   }
