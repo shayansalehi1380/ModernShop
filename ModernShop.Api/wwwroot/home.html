@@ -41,7 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="css/tailwind.css" />
 <style>
   :root{
     --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
@@ -85,6 +85,8 @@
 <div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
 
 <div id="header-placeholder"></div>
+
+<main>
 
 <!-- hero banner slider -->
 <section class="border-b border-line bg-surface">
@@ -207,6 +209,8 @@
   </div>
 </section>
 
+</main>
+
 <div id="footer-placeholder"></div>
 <div id="mobile-nav-placeholder"></div>
 
@@ -269,6 +273,7 @@ function renderBanners(){
         ? `<picture>
              ${b.mobileImageUrl ? `<source media="(max-width: 767px)" srcset="${b.mobileImageUrl}">` : ''}
              <img src="${b.imageUrl}" alt="${b.title || ''}" class="h-full w-full object-cover"
+               ${i===0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'}
                draggable="false" oncontextmenu="return false" style="-webkit-user-drag:none; -webkit-touch-callout:none; user-select:none;" />
            </picture>`
         : `<div class="flex h-full w-full items-center justify-center bg-emerald-deep px-6 text-center"><span class="text-lg font-extrabold text-white sm:text-2xl lg:text-4xl">${b.title || ''}</span></div>`}

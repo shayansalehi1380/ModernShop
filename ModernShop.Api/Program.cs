@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +86,17 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(5),
             QueueLimit = 0
         }));
+});
+
+// ===== HSTS قوی‌تر از پیش‌فرض (۳۰ روز → ۱ سال + زیردامنه‌ها) =====
+// نکته: Preload=true فقط مقدار هدر رو درست می‌کنه، به‌تنهایی دامنه رو تو لیست پیش‌بارگذاری
+// مرورگرها ثبت نمی‌کنه؛ برای ثبت واقعی باید دستی از طریق hstspreload.org اقدام بشه (اختیاریه
+// و بعد از اطمینان کامل از درست کار کردن HTTPS رو کل دامنه/زیردامنه‌ها توصیه می‌شه)
+builder.Services.AddHsts(options =>
+{
+    options.Preload = true;
+    options.IncludeSubDomains = true;
+    options.MaxAge = TimeSpan.FromDays(365);
 });
 
 // ===== CORS: چون فرانت (فایل‌های HTML) روی دامنه/پورت جدا اجرا می‌شه =====
@@ -168,6 +180,25 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
     context.Response.Headers.Append("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    // از اینکه یه تب دیگه (که از همین صفحه با window.open باز شده) بتونه به window.opener همین
+    // صفحه دسترسی پیدا کنه جلوگیری می‌کنه
+    context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
+    // نکته‌ی مهم: چون کل سایت (نه فقط این پروژه، بلکه معماری فعلیش) از اسکریپت/استایل inline
+    // تو خود صفحات HTML استفاده می‌کنه (نه فایل‌های جدا)، این CSP باید 'unsafe-inline' رو برای
+    // script-src/style-src مجاز کنه وگرنه کل سایت از کار می‌افته. یعنی این نسخه بیشتر جلوی
+    // تزریق منابع از دامنه‌های ناشناس (script/style/iframe از یه سایت دیگه) رو می‌گیره، نه
+    // جلوی XSS مبتنی بر اسکریپت inline - برای اون سطح از محافظت، باید در آینده همه‌ی
+    // <script> های تو خود صفحات به فایل‌های خارجی منتقل بشن (یه پروژه‌ی جداگانه و بزرگ‌تر)
+    context.Response.Headers.Append("Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' https://cdn.ckeditor.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data: https:; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self'");
     await next();
 });
 
@@ -242,10 +273,16 @@ app.Use(async (context, next) =>
         if (segments.Length == 5 && int.TryParse(segments[3], out var width) && allowedThumbWidths.Contains(width))
         {
             var fileName = segments[4];
+            var ext = Path.GetExtension(fileName);
+            // gif رو دست‌نخورده نگه می‌داریم که انیمیشنش خراب نشه؛ بقیه‌ی فرمت‌ها (PNG/JPEG و...)
+            // به WebP تبدیل می‌شن - همون فرمتی که گزارش Lighthouse به‌جای PNG/JPEG بزرگ خواسته بود
+            var isGif = string.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase);
+            var thumbFileName = isGif ? fileName : Path.GetFileNameWithoutExtension(fileName) + ".webp";
+
             var webRoot = app.Environment.WebRootPath;
             var originalPath = Path.Combine(webRoot, "uploads", "products", fileName);
             var thumbDir = Path.Combine(webRoot, "uploads", "products", "thumb", width.ToString());
-            var thumbPath = Path.Combine(thumbDir, fileName);
+            var thumbPath = Path.Combine(thumbDir, thumbFileName);
 
             if (!File.Exists(thumbPath) && File.Exists(originalPath))
             {
@@ -254,7 +291,10 @@ app.Use(async (context, next) =>
                 {
                     using var image = await Image.LoadAsync(originalPath);
                     image.Mutate(x => x.Resize(new ResizeOptions { Mode = ResizeMode.Max, Size = new Size(width, width) }));
-                    await image.SaveAsync(thumbPath);
+                    if (isGif)
+                        await image.SaveAsync(thumbPath);
+                    else
+                        await image.SaveAsWebpAsync(thumbPath);
                 }
                 catch (Exception ex)
                 {
@@ -266,6 +306,14 @@ app.Use(async (context, next) =>
                     context.Request.Path = $"/uploads/products/{fileName}";
                 }
             }
+
+            // چه همین الان ساخته شده باشه چه از قبل تو کش بوده، چون اسم فایل تولیدشده ممکنه پسوندش
+            // با اسم اصلی درخواست فرق کنه (webp به‌جای png/jpg)، مسیر درخواست رو به اسم واقعی فایل
+            // کش‌شده اصلاح می‌کنیم تا UseStaticFiles با Content-Type درست (image/webp) سروش کنه
+            if (File.Exists(thumbPath))
+            {
+                context.Request.Path = $"/uploads/products/thumb/{width}/{thumbFileName}";
+            }
         }
     }
     await next();
@@ -275,7 +323,22 @@ app.UseDefaultFiles(new DefaultFilesOptions
 {
     DefaultFileNames = new List<string> { "home.html" }
 });
-app.UseStaticFiles();
+
+// Cache-Control برای فایل‌های استاتیک: /uploads چون هر فایل با اسم GUID یکتاست (هیچ‌وقت با
+// همون اسم بازنویسی نمی‌شه)، کش طولانی و immutable کاملاً امنه. بقیه (js/css/html) چون این
+// پروژه هنوز نسخه‌بندی/hash تو اسم فایل نداره و مرتب در حال تغییره، کش کوتاه با اجبار به
+// revalidate می‌گیرن - هم از کش مرورگر (با ۳۰۴ سریع) سود می‌بریم، هم هیچ‌وقت محتوای قدیمی
+// برای چند روز/هفته گیر نمی‌کنه (دقیقاً همون مشکلی که موقع دیباگ کش شدن api.js دیدیم)
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var isUpload = ctx.Context.Request.Path.StartsWithSegments("/uploads");
+        ctx.Context.Response.Headers["Cache-Control"] = isUpload
+            ? "public, max-age=31536000, immutable"
+            : "public, max-age=3600, must-revalidate";
+    }
+});
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();

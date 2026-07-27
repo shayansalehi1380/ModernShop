@@ -19,38 +19,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Vazirmatn', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        bg: 'var(--color-bg)',
-                        surface: 'var(--color-surface)',
-                        'surface-muted': 'var(--color-surface-muted)',
-                        media: 'var(--color-media)',
-                        line: 'var(--color-line)',
-                        foreground: 'var(--color-foreground)',
-                        muted: 'var(--color-muted)',
-                        emerald: {
-                            DEFAULT: 'var(--color-emerald)',
-                            soft: 'var(--color-emerald-soft)',
-                            deep: 'var(--color-emerald-deep)',
-                        },
-                        gold: {
-                            DEFAULT: 'var(--color-gold)',
-                            soft: 'var(--color-gold-soft)',
-                        },
-                        danger: 'var(--color-danger)',
-                    },
-                },
-            },
-        };
-    </script>
+    <!-- Tailwind: از پیش کامپایل‌شده (نه CDN runtime) -->
+    <link rel="stylesheet" href="css/tailwind-product.css" />
 
     <style>
         :root {
@@ -186,6 +156,8 @@
 
     <div id="header-placeholder"></div>
 
+<main>
+
     <!-- breadcrumb -->
     <div class="border-b border-line bg-surface">
         <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
@@ -228,7 +200,7 @@
                     <button onclick="toggleGalleryWish()" id="gallery-wish" class="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
                         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>
                     </button>
-                    <img id="main-image" src="" onerror="onProductImgError(this)" class="zoom-img h-full w-full object-cover" />
+                    <img id="main-image" src="" onerror="onProductImgError(this)" fetchpriority="high" class="zoom-img h-full w-full object-cover" />
                     <button onclick="galleryStep(1)" id="gallery-next" class="absolute left-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر بعدی">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
                     </button>
@@ -347,7 +319,9 @@
         <div id="carousel-related" class="carousel-wrap relative"></div>
     </section>
 
-    <div id="footer-placeholder"></div>
+    </main>
+
+<div id="footer-placeholder"></div>
     <div id="mobile-nav-placeholder"></div>
 
     <!-- mobile sticky add-to-cart bar - بالای نوار پایین موبایل قرار می‌گیره، نه روش -->

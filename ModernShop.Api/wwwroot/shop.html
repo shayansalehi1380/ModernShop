@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="css/tailwind.css" />
 <style>
   :root{
     --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
@@ -83,6 +83,8 @@
 <div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
 <div id="header-placeholder"></div>
 
+<main>
+
 <div class="border-b border-line bg-surface">
   <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
     <a href="#" class="hover:text-emerald">صفحه اصلی</a>
@@ -148,6 +150,8 @@
     </div>
   </div>
 </div>
+
+</main>
 
 <div id="footer-placeholder"></div>
 <div id="mobile-nav-placeholder"></div>
@@ -512,7 +516,7 @@ function renderPagination(){
   if(totalPages <= 1){ wrap.innerHTML = ''; return; }
   
   let html = '';
-  html += `<button onclick="goToPage(${Math.max(1,currentPage-1)})" ${currentPage===1?'disabled':''} class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
+  html += `<button onclick="goToPage(${Math.max(1,currentPage-1)})" ${currentPage===1?'disabled':''} aria-label="صفحه قبل" class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
     </button>`;
   
@@ -520,7 +524,7 @@ function renderPagination(){
     html += `<button onclick="goToPage(${n})" class="page-btn ${n===currentPage?'active':''} ticker flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm font-semibold">${toFa(n)}</button>`;
   }
   
-  html += `<button onclick="goToPage(${Math.min(totalPages,currentPage+1)})" ${currentPage===totalPages?'disabled':''} class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
+  html += `<button onclick="goToPage(${Math.min(totalPages,currentPage+1)})" ${currentPage===totalPages?'disabled':''} aria-label="صفحه بعد" class="page-btn flex h-9 w-9 items-center justify-center rounded-full border border-line text-sm disabled:opacity-30">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
     </button>`;
   wrap.innerHTML = html;
