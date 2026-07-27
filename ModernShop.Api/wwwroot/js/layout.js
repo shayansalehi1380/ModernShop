@@ -65,7 +65,7 @@ function initBackToTop() {
 const ANNOUNCEMENT_TEXT = 'با خرید بالای دو میلیون در خرید بعدی 200 هزار تومان تخفیف بگیرید';
 const ANNOUNCEMENT_TYPE_MS = 55;
 const ANNOUNCEMENT_DELETE_MS = 30;
-const ANNOUNCEMENT_HOLD_FULL_MS = 1800;
+const ANNOUNCEMENT_HOLD_FULL_MS = 8000;
 const ANNOUNCEMENT_HOLD_EMPTY_MS = 500;
 
 function initAnnouncementTyping() {

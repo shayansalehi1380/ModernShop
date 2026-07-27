@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
 
     <!-- Tailwind: از پیش کامپایل‌شده (نه CDN runtime) -->
-    <link rel="stylesheet" href="css/tailwind-product.css?v=2" />
+    <link rel="stylesheet" href="css/tailwind-product.css?v=3" />
 
     <style>
         :root {
@@ -163,11 +163,11 @@
     <!-- کارت شناور «برو به سبد خرید» بعد از افزودن هر محصول -->
     <div id="cart-added-overlay" class="fixed inset-0 z-[220] hidden">
         <div id="cart-added-backdrop" class="absolute inset-0 bg-black/55"></div>
-        <div id="cart-added-anchor" class="pointer-events-none fixed inset-x-0 z-[221] flex justify-center bottom-36 px-4 lg:bottom-6">
+        <div id="cart-added-anchor" class="pointer-events-none fixed inset-x-0 z-[221] flex justify-center bottom-48 px-4 lg:bottom-6">
             <div id="cart-added-card" class="pointer-events-auto w-full max-w-[26rem] transition-transform duration-300 ease-out" style="transform:translateY(150%)">
-                <div class="overflow-hidden rounded-2xl bg-surface shadow-2xl">
+                <div class="overflow-hidden rounded-3xl bg-surface shadow-2xl ring-1 ring-black/5">
                     <div class="flex items-center justify-between gap-4 px-5 py-4">
-                        <button type="button" onclick="goToCartFromToast()" class="flex shrink-0 items-center gap-1.5 rounded-full border border-line px-4 py-2 text-xs font-bold text-foreground transition hover:border-emerald hover:text-emerald">
+                        <button type="button" onclick="goToCartFromToast()" class="flex shrink-0 items-center gap-1.5 rounded-full border border-line px-4 py-2.5 text-xs font-bold text-foreground transition hover:border-emerald hover:text-emerald">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
                             برو به سبد خرید
                         </button>
@@ -176,7 +176,7 @@
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="shrink-0 text-emerald"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" /><path d="m9 11 3 3L22 4" /></svg>
                                 کالا اضافه شد!
                             </span>
-                            <button type="button" onclick="closeCartAddedCard()" aria-label="بستن" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-surface-muted hover:text-foreground">
+                            <button type="button" onclick="closeCartAddedCard()" aria-label="بستن" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-surface-muted hover:text-foreground">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
                             </button>
                         </div>
