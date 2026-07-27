@@ -154,6 +154,33 @@
     </div>
     <div id="toast-root" class="pointer-events-none fixed inset-x-0 top-4 z-[200] flex flex-col items-center gap-2 px-4"></div>
 
+    <!-- کارت شناور «برو به سبد خرید» بعد از افزودن هر محصول -->
+    <div id="cart-added-overlay" class="fixed inset-0 z-[220] hidden">
+        <div id="cart-added-backdrop" class="absolute inset-0 bg-black/40 lg:bg-transparent"></div>
+        <div id="cart-added-anchor" class="fixed inset-x-3 bottom-3 lg:inset-x-auto lg:bottom-6 lg:left-1/2 lg:w-[26rem] lg:max-w-[calc(100vw-2rem)] lg:-translate-x-1/2">
+            <div id="cart-added-card" class="transition-transform duration-300 ease-out" style="transform:translateY(150%)">
+                <div class="overflow-hidden rounded-2xl bg-surface shadow-2xl">
+                    <div class="flex items-center justify-between gap-3 px-4 py-3.5">
+                        <button type="button" onclick="goToCartFromToast()" class="flex shrink-0 items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs font-bold text-foreground transition hover:border-emerald hover:text-emerald">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+                            برو به سبد خرید
+                        </button>
+                        <div class="flex items-center gap-2">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="shrink-0 text-emerald"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1" /><path d="m9 11 3 3L22 4" /></svg>
+                            <span class="text-sm font-bold text-emerald-deep">کالا اضافه شد!</span>
+                            <button type="button" onclick="closeCartAddedCard()" aria-label="بستن" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-surface-muted hover:text-foreground">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative h-1 w-full bg-emerald-soft">
+                        <div id="cart-added-progress" class="absolute inset-y-0 right-0 h-full bg-emerald" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="header-placeholder"></div>
 
 <main>
@@ -840,11 +867,54 @@
                 cartSnapshot = await Api.addToCart(product.id, 1, selectedVariantId);
                 refreshPdpCartArea();
                 updateCartBadge();
-                showToast('success', 'به سبد خرید اضافه شد');
+                showCartAddedCard();
             } catch (e) {
                 showToast('error', e.message || 'خطا در افزودن به سبد خرید');
             }
         }
+
+        /* ---------- کارت شناور «برو به سبد خرید» ---------- */
+        let cartAddedHideTimer, cartAddedCloseTimer;
+
+        function showCartAddedCard() {
+            const overlay = document.getElementById('cart-added-overlay');
+            const card = document.getElementById('cart-added-card');
+            const progress = document.getElementById('cart-added-progress');
+            clearTimeout(cartAddedHideTimer);
+            clearTimeout(cartAddedCloseTimer);
+
+            overlay.classList.remove('hidden');
+            // ریست بی‌انیمیشن نوار پیشرفت، حتی اگه کارت از قبل باز بوده (کلیک پشت‌سرهم)
+            progress.style.transition = 'none';
+            progress.style.width = '0%';
+
+            // دو فریم پشت‌سرهم لازمه تا مرورگر واقعاً حالت صفرشده رو رندر کنه، وگرنه ریست و پرشدن
+            // نوار تو یه فریم قاطی می‌شن و انیمیشن دیده نمی‌شه (مستقیم می‌پره به عرض کامل)
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    card.style.transform = 'translateY(0)';
+                    progress.style.transition = 'width 5000ms linear';
+                    progress.style.width = '100%';
+                });
+            });
+
+            cartAddedCloseTimer = setTimeout(closeCartAddedCard, 5000);
+        }
+
+        function closeCartAddedCard() {
+            const card = document.getElementById('cart-added-card');
+            const overlay = document.getElementById('cart-added-overlay');
+            clearTimeout(cartAddedCloseTimer);
+            card.style.transform = 'translateY(150%)';
+            clearTimeout(cartAddedHideTimer);
+            cartAddedHideTimer = setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+
+        function goToCartFromToast() {
+            window.location.href = 'cart';
+        }
+
+        document.getElementById('cart-added-backdrop').addEventListener('click', closeCartAddedCard);
 
         async function pdpChangeQty(delta) {
             const item = findCartItemForSelection();

@@ -1,3 +1,12 @@
+<style>
+@keyframes announcement-blink { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
+.typing-cursor { display: inline-block; margin-inline-start: 1px; animation: announcement-blink 1s step-end infinite; }
+</style>
+<div class="w-full overflow-hidden bg-emerald px-4 py-1.5 text-center">
+    <p class="mx-auto max-w-7xl truncate text-[11px] font-medium leading-tight text-white sm:text-xs">
+        <span id="announcement-typing"></span><span class="typing-cursor" aria-hidden="true">|</span>
+    </p>
+</div>
 <header class="sticky top-0 z-50 rounded-b-2xl bg-surface shadow-[0_1px_0_0_var(--line)] lg:shadow-[0_1px_0_0_var(--line),0_6px_16px_-4px_rgba(0,0,0,0.08)]">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <a href="home" class="flex items-center gap-2">

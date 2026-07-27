@@ -61,6 +61,45 @@ function initBackToTop() {
   }, { passive: true });
 }
 
+/* نوار اعلان بالای هدر - افکت تایپ‌ماشینی متن تخفیف، تکرارشونده، فقط سمت فرانت */
+const ANNOUNCEMENT_TEXT = 'با خرید بالای دو میلیون در خرید بعدی 200 هزار تومان تخفیف بگیرید';
+const ANNOUNCEMENT_TYPE_MS = 55;
+const ANNOUNCEMENT_DELETE_MS = 30;
+const ANNOUNCEMENT_HOLD_FULL_MS = 1800;
+const ANNOUNCEMENT_HOLD_EMPTY_MS = 500;
+
+function initAnnouncementTyping() {
+  const el = document.getElementById('announcement-typing');
+  if (!el) return;
+
+  let i = 0;
+  let typing = true;
+
+  function tick() {
+    if (typing) {
+      i++;
+      el.textContent = ANNOUNCEMENT_TEXT.slice(0, i);
+      if (i >= ANNOUNCEMENT_TEXT.length) {
+        typing = false;
+        setTimeout(tick, ANNOUNCEMENT_HOLD_FULL_MS);
+        return;
+      }
+      setTimeout(tick, ANNOUNCEMENT_TYPE_MS);
+    } else {
+      i--;
+      el.textContent = ANNOUNCEMENT_TEXT.slice(0, i);
+      if (i <= 0) {
+        typing = true;
+        setTimeout(tick, ANNOUNCEMENT_HOLD_EMPTY_MS);
+        return;
+      }
+      setTimeout(tick, ANNOUNCEMENT_DELETE_MS);
+    }
+  }
+
+  tick();
+}
+
 async function loadLayout() {
   await Promise.all([
     loadPartial('partials/header.html', '#header-placeholder'),
@@ -70,6 +109,7 @@ async function loadLayout() {
 
   initBackToTop();
   highlightActiveNav();
+  initAnnouncementTyping();
   // تب فعال + دیتای دسته‌بندی‌ها/شیت‌های منوی پایین موبایل از js/mobile-nav.js میاد
   if (typeof MobileNavSheet === 'object') MobileNavSheet.init();
 
