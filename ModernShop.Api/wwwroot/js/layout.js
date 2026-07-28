@@ -62,7 +62,7 @@ function initBackToTop() {
 }
 
 /* نوار اعلان بالای هدر - افکت تایپ‌ماشینی متن تخفیف، تکرارشونده، فقط سمت فرانت */
-const ANNOUNCEMENT_TEXT = 'با خرید بالای دو میلیون در خرید بعدی 200 هزار تومان تخفیف بگیرید';
+const ANNOUNCEMENT_TEXT = 'به دُرین مارکت خوش اومدی (: ';
 const ANNOUNCEMENT_TYPE_MS = 55;
 const ANNOUNCEMENT_DELETE_MS = 30;
 const ANNOUNCEMENT_HOLD_FULL_MS = 8000;

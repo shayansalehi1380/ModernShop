@@ -117,12 +117,12 @@ public class AdminOrdersController : ControllerBase
         if (request.Status == OrderStatus.Shipped && order.Status == OrderStatus.Processing)
         {
             note = "سفارش توسط مدیر به وضعیت «در حال ارسال» تغییر یافت";
-            smsMessage = $"سفارش {order.OrderNumber} شما ارسال شد و به‌زودی به دستتان می‌رسد. دُرین مارکت";
+            smsMessage = $"سفارش {order.OrderNumber} شما ارسال شد و به‌زودی توسط پست پیشتاز به دستتان می‌رسد. دُرین مارکت 💚\nپیگیری سفارش: dorinmarket.ir/account";
         }
         else if (request.Status == OrderStatus.Delivered && order.Status == OrderStatus.Shipped)
         {
             note = "سفارش توسط مدیر به وضعیت «تحویل شده» تغییر یافت";
-            smsMessage = $"سفارش {order.OrderNumber} با موفقیت تحویل داده شد. از خرید شما متشکریم - دُرین مارکت";
+            smsMessage = $"سفارش {order.OrderNumber} با موفقیت تحویل داده شد. منتظر سفارش بعدی شما هستیم - دُرین مارکت 💚\nپیگیری سفارش: dorinmarket.ir/account";
         }
         else
         {

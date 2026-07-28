@@ -37,7 +37,7 @@ public class OrdersController : ControllerBase
     // این دو پیامک، همین متد رو ویرایش کن.
     private async Task SendOrderConfirmedNotificationsAsync(Order order)
     {
-        var customerMessage = $"سفارش {order.OrderNumber} شما با موفقیت ثبت شد و به‌زودی پردازش می‌شود. از خرید شما متشکریم - دُرین مارکت";
+        var customerMessage = $"سفارش {order.OrderNumber} شما با موفقیت ثبت شد و به‌زودی پردازش سفارش شما آغاز می‌شود. از خرید و اعتماد شما متشکریم - دُرین مارکت 💚\nپیگیری سفارش: dorinmarket.ir/account";
         try { await _smsService.SendAsync(order.ShippingPhone, customerMessage); } catch { /* اطلاع‌رسانی صرفه، نباید جلوی ثبت سفارش رو بگیره */ }
 
         if (!string.IsNullOrWhiteSpace(_adminSettings.NotificationPhone))
