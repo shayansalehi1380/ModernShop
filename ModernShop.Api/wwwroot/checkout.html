@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/tailwind.css?v=2" />
+<link rel="stylesheet" href="css/tailwind.css?v=3" />
 <style>
   :root{
     --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
@@ -154,22 +154,12 @@
           <div class="mt-5 flex flex-col gap-3">
             <label class="pay-opt selected flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-pay="online">
               <input type="radio" name="pay" value="online" checked class="h-4 w-4 accent-emerald" />
-              <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-soft text-emerald">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+              <span class="flex h-9 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-muted">
+                <img src="images/gateway-zarinpal.png" alt="زرین‌پال" class="max-h-7 max-w-full object-contain" onerror="this.style.display='none'" />
               </span>
               <span class="flex-1">
-                <span class="block text-sm font-semibold">پرداخت آنلاین</span>
-                <span class="block text-xs text-muted">پرداخت امن از طریق درگاه بانکی</span>
-              </span>
-            </label>
-            <label class="pay-opt flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-pay="mellat">
-              <input type="radio" name="pay" value="mellat" class="h-4 w-4 accent-emerald" />
-              <span class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-soft text-emerald">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
-              </span>
-              <span class="flex-1">
-                <span class="block text-sm font-semibold">درگاه پرداخت ملت</span>
-                <span class="block text-xs text-muted">پرداخت امن از طریق درگاه بانک ملت</span>
+                <span class="block text-sm font-semibold">درگاه پرداخت زرین‌پال</span>
+                <span class="block text-xs text-muted">پرداخت امن از طریق درگاه زرین‌پال</span>
               </span>
             </label>
           </div>
@@ -469,9 +459,7 @@ document.getElementById('submit-order').addEventListener('click', async () => {
     };
     const savedAddress = await Api.upsertAddress(addressPayload);
 
-    // هر دو گزینه (پرداخت آنلاین / درگاه ملت) از یک مسیر واحد آنلاین رد می‌شن؛ فعلاً فقط یک
-    // درگاه پرداخت (Zarinpal، سندباکس) پیاده‌سازی شده و کارت «ملت» صرفاً یک برچسب/ظاهر جداست
-    const paymentMethod = 0; // Online
+    const paymentMethod = 0; // Online (درگاه زرین‌پال)
 
     const discountCode = localStorage.getItem(DISCOUNT_STORAGE_KEY) || null;
 

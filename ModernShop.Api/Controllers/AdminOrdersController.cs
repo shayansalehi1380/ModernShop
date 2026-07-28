@@ -117,12 +117,12 @@ public class AdminOrdersController : ControllerBase
         if (request.Status == OrderStatus.Shipped && order.Status == OrderStatus.Processing)
         {
             note = "سفارش توسط مدیر به وضعیت «در حال ارسال» تغییر یافت";
-            smsMessage = $"سفارش {order.OrderNumber} شما ارسال شد و به‌زودی به دستتان می‌رسد. فروشگاه آتلیه";
+            smsMessage = $"سفارش {order.OrderNumber} شما ارسال شد و به‌زودی به دستتان می‌رسد. دُرین مارکت";
         }
         else if (request.Status == OrderStatus.Delivered && order.Status == OrderStatus.Shipped)
         {
             note = "سفارش توسط مدیر به وضعیت «تحویل شده» تغییر یافت";
-            smsMessage = $"سفارش {order.OrderNumber} با موفقیت تحویل داده شد. از خرید شما متشکریم - فروشگاه آتلیه";
+            smsMessage = $"سفارش {order.OrderNumber} با موفقیت تحویل داده شد. از خرید شما متشکریم - دُرین مارکت";
         }
         else
         {

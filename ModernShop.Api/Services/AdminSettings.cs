@@ -8,4 +8,7 @@ public class AdminSettings
 {
     public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
+
+    // شماره‌ای که با ثبت موفق هر سفارش جدید (بعد از تایید درگاه)، پیامک اطلاع‌رسانی بهش می‌ره
+    public string? NotificationPhone { get; set; }
 }

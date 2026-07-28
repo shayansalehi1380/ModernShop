@@ -45,12 +45,10 @@ const ProductCard = (function () {
   function render(p) {
     const price = p.discountPrice || p.price;
     const oldPrice = p.discountPrice ? p.price : null;
+    const discountPct = p.discountPrice ? Math.round((1 - p.discountPrice / p.price) * 100) : null;
     const inWishlist = wishlistState.has(p.id);
     const productUrl = `product?slug=${encodeURIComponent(p.slug)}`;
 
-    const badge = p.badge
-      ? `<span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${p.badge === 'جدید' ? 'bg-emerald-soft text-emerald' : 'bg-danger/10 text-danger'}">${escapeHtmlPC(p.badge)}</span>`
-      : '';
     const outOfStock = !p.inStock
       ? `<div class="absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-[1px]"><span class="rounded-full bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger">ناموجود</span></div>`
       : '';
@@ -67,7 +65,7 @@ const ProductCard = (function () {
       <a href="${productUrl}" class="flex flex-1 flex-col">
         <div class="relative aspect-square overflow-hidden rounded-xl bg-media">
           <img src="${productThumb(p.mainImageUrl, 480) || PRODUCT_IMG_FALLBACK}" onerror="onProductImgError(this)" class="h-full w-full object-cover" loading="lazy" alt="${escapeHtmlPC(p.name)}" />
-          ${badge}${outOfStock}
+          ${outOfStock}
         </div>
         <div class="mt-3 flex flex-1 flex-col px-1">
           <div class="text-xs text-muted">${escapeHtmlPC(p.categoryName || '')}</div>
@@ -79,6 +77,7 @@ const ProductCard = (function () {
           <div class="price-row mt-auto pt-2.5">
             <span class="ticker text-[15px] font-bold">${fmtPC(price)}</span>
             <span class="text-[11px] text-muted">تومان</span>
+            ${discountPct ? `<span class="ticker rounded-full bg-danger/10 px-1.5 py-0.5 text-[11px] font-bold text-danger">${toFaPC(discountPct)}٪</span>` : ''}
             ${oldPrice ? `<span class="old-price ticker text-xs text-muted line-through">${fmtPC(oldPrice)}</span>` : ''}
           </div>
         </div>

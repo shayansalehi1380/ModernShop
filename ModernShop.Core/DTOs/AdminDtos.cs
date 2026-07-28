@@ -230,6 +230,20 @@ namespace ModernShop.Core.DTOs
         public int DisplayOrder { get; set; }
     }
 
+    // ---------------- دسته‌بندی‌ها (فقط مدیریت عکس، مربوط به شیت دسته‌بندی‌های منوی پایین موبایل) ----------------
+
+    public class AdminCategoryDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public string? ImageUrl { get; set; }
+    }
+
+    public class UpdateCategoryImageRequestDto
+    {
+        public string? ImageUrl { get; set; }
+    }
+
     // ---------------- بنرها ----------------
 
     public class AdminBannerDto

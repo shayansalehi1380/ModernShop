@@ -3,9 +3,11 @@ using ModernShop.Core.Entities;
 using ModernShop.Core.Enums;
 using ModernShop.Core.Interfaces;
 using ModernShop.Infrastructure.Data;
+using ModernShop.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ModernShop.Api.Controllers;
 
@@ -17,12 +19,32 @@ public class OrdersController : ControllerBase
     private readonly AppDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IPaymentGatewayService _paymentGateway;
+    private readonly ISmsService _smsService;
+    private readonly AdminSettings _adminSettings;
 
-    public OrdersController(AppDbContext db, ICurrentUserService currentUser, IPaymentGatewayService paymentGateway)
+    public OrdersController(AppDbContext db, ICurrentUserService currentUser, IPaymentGatewayService paymentGateway,
+        ISmsService smsService, IOptions<AdminSettings> adminSettings)
     {
         _db = db;
         _currentUser = currentUser;
         _paymentGateway = paymentGateway;
+        _smsService = smsService;
+        _adminSettings = adminSettings.Value;
+    }
+
+    // با ثبت موفق هر سفارش (بعد از تایید درگاه پرداخت، یا بلافاصله برای سفارش‌های پرداخت‌درمحل)،
+    // یک پیامک تشکر به مشتری و یک پیامک اطلاع‌رسانی به مدیر فروشگاه ارسال می‌شه. برای تغییر متن
+    // این دو پیامک، همین متد رو ویرایش کن.
+    private async Task SendOrderConfirmedNotificationsAsync(Order order)
+    {
+        var customerMessage = $"سفارش {order.OrderNumber} شما با موفقیت ثبت شد و به‌زودی پردازش می‌شود. از خرید شما متشکریم - دُرین مارکت";
+        try { await _smsService.SendAsync(order.ShippingPhone, customerMessage); } catch { /* اطلاع‌رسانی صرفه، نباید جلوی ثبت سفارش رو بگیره */ }
+
+        if (!string.IsNullOrWhiteSpace(_adminSettings.NotificationPhone))
+        {
+            var adminMessage = $"یک مشتری سفارش جدید ({order.OrderNumber}) را با موفقیت ثبت کرد. برای بررسی به پنل مدیریت مراجعه کنید.";
+            try { await _smsService.SendAsync(_adminSettings.NotificationPhone, adminMessage); } catch { /* اطلاع‌رسانی صرفه */ }
+        }
     }
 
     // مربوط به دکمه «ثبت نهایی سفارش» تو checkout.html
@@ -159,6 +181,7 @@ public class OrdersController : ControllerBase
             order.Status = OrderStatus.Processing;
             order.StatusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Processing, Note = "سفارش پرداخت‌درمحل ثبت شد" });
             await _db.SaveChangesAsync();
+            await SendOrderConfirmedNotificationsAsync(order);
         }
 
         return CreatedAtAction(nameof(GetByNumber), new { orderNumber = order.OrderNumber },
@@ -264,6 +287,9 @@ public class OrdersController : ControllerBase
             return Redirect($"/order-complete?status=failed&orderNumber={order.OrderNumber}");
         }
 
+        // کد ۱۰۱ زرین‌پال یعنی این تراکنش قبلاً هم verify شده (مثلاً کاربر صفحه‌ی callback رو رفرش کرده)؛
+        // تشخیص «برای اولین بار موفق شده» با وضعیت قبلی پرداخت، تا پیامک‌ها دوباره ارسال نشن
+        var wasAlreadySuccess = payment.Status == PaymentStatus.Success;
         var verified = await _paymentGateway.VerifyPaymentAsync(Authority, order.TotalAmount);
 
         if (verified)
@@ -285,6 +311,11 @@ public class OrdersController : ControllerBase
         }
 
         await _db.SaveChangesAsync();
+
+        if (verified && !wasAlreadySuccess)
+        {
+            await SendOrderConfirmedNotificationsAsync(order);
+        }
 
         var redirectStatus = verified ? "success" : "failed";
         return Redirect($"/order-complete?status={redirectStatus}&orderNumber={order.OrderNumber}");

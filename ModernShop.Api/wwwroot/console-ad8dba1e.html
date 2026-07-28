@@ -520,6 +520,9 @@ const Api = {
   updateBrand: (id, data) => adminFetch(`/admin/brands/${id}`, { method:'PUT', body: JSON.stringify(data) }),
   deleteBrand: (id) => adminFetch(`/admin/brands/${id}`, { method:'DELETE' }),
 
+  getAdminCategories: () => adminFetch('/admin/categories'),
+  updateCategoryImage: (id, imageUrl) => adminFetch(`/admin/categories/${id}/image`, { method:'PUT', body: JSON.stringify({ imageUrl }) }),
+
   getAdminBanners: () => adminFetch('/admin/banners'),
   getAdminBanner: (id) => adminFetch(`/admin/banners/${id}`),
   createBanner: (data) => adminFetch('/admin/banners', { method:'POST', body: JSON.stringify(data) }),
@@ -568,6 +571,8 @@ const state = {
   brandsAdmin: [],
   brandsAdminLoaded: false,
   brandsAdminPage: 1,
+  categoriesAdmin: [],
+  categoriesAdminLoaded: false,
   bannersAdmin: [],
   bannersAdminLoaded: false,
   bannersAdminPage: 1,
@@ -829,6 +834,7 @@ function renderShell(){
       <nav>
         ${navItem("products","box","محصولات")}
         ${navItem("brands","tag","برندها")}
+        ${navItem("categories","image","دسته‌بندی‌ها")}
         ${navItem("banners","image","بنرها")}
         ${navItem("blog","blog","وبلاگ")}
         ${navItem("orders","order","سفارشات")}
@@ -869,12 +875,13 @@ function switchView(key){
   loadCurrentView();
 }
 function viewTitle(){
-  return { products:"مدیریت محصولات", brands:"مدیریت برندها", banners:"مدیریت بنرها", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات", pages:"صفحات ثابت" }[state.view];
+  return { products:"مدیریت محصولات", brands:"مدیریت برندها", categories:"مدیریت دسته‌بندی‌ها", banners:"مدیریت بنرها", blog:"مدیریت وبلاگ", orders:"مدیریت سفارشات", reviews:"مدیریت نظرات", pages:"صفحات ثابت" }[state.view];
 }
 function viewDesc(){
   return {
     products:"تعریف، ویرایش و حذف محصولات فروشگاه",
     brands:"تعریف برندها و آپلود لوگو؛ برندهای ویژه در نوار صفحه اصلی نمایش داده می‌شوند",
+    categories:"آپلود عکس هر دسته‌بندی؛ همین عکس‌ها در شیت «دسته‌بندی‌ها»ی منوی پایین موبایل نمایش داده می‌شوند",
     banners:"آپلود بنر اسلایدر بالای صفحه اصلی و دو بنر ثابت تبلیغاتی، جدا برای موبایل و دسکتاپ",
     blog:"تعریف، ویرایش و حذف مطالب وبلاگ",
     orders:"مشاهده سفارشات و بروزرسانی وضعیت ارسال",
@@ -903,6 +910,7 @@ function refreshView(){
 function renderView(){
   if(state.view === "products") return renderProductsView();
   if(state.view === "brands") return renderBrandsView();
+  if(state.view === "categories") return renderCategoriesView();
   if(state.view === "banners") return renderBannersView();
   if(state.view === "blog") return renderBlogView();
   if(state.view === "orders") return renderOrdersView();
@@ -930,6 +938,7 @@ async function loadLookups(){
 async function loadCurrentView(){
   if(state.view === "products") return loadProducts();
   if(state.view === "brands") return loadBrandsAdmin();
+  if(state.view === "categories") return loadCategoriesAdmin();
   if(state.view === "banners") return loadBannersAdmin();
   if(state.view === "blog") return loadBlogPosts();
   if(state.view === "orders") return loadOrders();
@@ -1655,6 +1664,84 @@ async function saveBrand(existingId){
     if(e.message === 'unauthorized') return;
     toast(e.message || 'ذخیره برند ناموفق بود', 'error');
     btn.disabled = false;
+  }
+}
+
+/* =========================================================
+   CATEGORIES (فقط مدیریت عکس - خود دسته‌بندی‌ها از قبل تعریف شدن)
+========================================================= */
+async function loadCategoriesAdmin(){
+  try{
+    state.categoriesAdmin = await Api.getAdminCategories();
+    state.categoriesAdminLoaded = true;
+    refreshView();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || 'خطا در بارگذاری دسته‌بندی‌ها', 'error');
+  }
+}
+
+function renderCategoriesView(){
+  if(!state.categoriesAdminLoaded) return loadingRow();
+
+  const rows = state.categoriesAdmin.map(c => `
+    <tr>
+      <td>
+        <div class="cell-main">
+          ${c.imageUrl ? `<img src="${escapeHtml(c.imageUrl)}" class="thumb sm" onerror="this.style.display='none'">` : `<div class="thumb sm">${initials(c.name)}</div>`}
+          <div class="cell-title">${escapeHtml(c.name)}</div>
+        </div>
+      </td>
+      <td>
+        <div class="row-actions">
+          <label class="btn btn-ghost image-upload-btn" style="margin-inline-end:8px">
+            ${ICONS.plus} آپلود عکس
+            <input type="file" accept="image/*" style="display:none;" onchange="uploadCategoryImage(this, ${c.id})" />
+          </label>
+          ${c.imageUrl ? `<button class="icon-btn danger" title="حذف عکس" onclick="removeCategoryImage(${c.id})">${ICONS.trash}</button>` : ""}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+    <div class="card">
+      <p style="padding:14px 18px;margin:0;font-size:12.5px;color:var(--text-soft);">این عکس‌ها فقط تو شیت «دسته‌بندی‌ها»ی منوی پایین موبایل نمایش داده می‌شن. نسبت تصویری این کارت‌ها ۴:۳ هست؛ پیشنهاد می‌شه عکس افقی حدود ۸۰۰×۶۰۰ پیکسل (یا هر اندازه‌ای با همین نسبت) آپلود کنید تا بریده یا کش نشه.</p>
+      <div class="table-wrap">
+        ${state.categoriesAdmin.length ? `
+        <table>
+          <thead><tr><th>دسته‌بندی</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` : emptyState("image","هیچ دسته‌بندی‌ای یافت نشد","دسته‌بندی‌ها باید از قبل تعریف شده باشند.")}
+      </div>
+    </div>
+  `;
+}
+
+async function uploadCategoryImage(fileInput, id){
+  try{
+    const url = await uploadImageFile(fileInput);
+    if(!url) return;
+    await Api.updateCategoryImage(id, url);
+    toast("عکس دسته‌بندی بروزرسانی شد.");
+    await loadCategoriesAdmin();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || "آپلود عکس ناموفق بود", "error");
+  }finally{
+    fileInput.value = "";
+  }
+}
+
+async function removeCategoryImage(id){
+  if(!confirm('آیا از حذف عکس این دسته‌بندی مطمئن هستید؟')) return;
+  try{
+    await Api.updateCategoryImage(id, null);
+    toast("عکس دسته‌بندی حذف شد.");
+    await loadCategoriesAdmin();
+  }catch(e){
+    if(e.message === 'unauthorized') return;
+    toast(e.message || "حذف عکس ناموفق بود", "error");
   }
 }
 
@@ -2473,6 +2560,7 @@ async function openOrderDetail(id){
 }
 
 async function changeOrderStatus(id, newStatus){
+  if(!confirm('آیا مطمئنی که می‌خواهی وضعیت این سفارش را تغییر بدی؟ این کار برای مشتری پیامک ارسال می‌کند.')) return;
   try{
     const result = await Api.updateOrderStatus(id, newStatus);
     toast(result.smsSent === false
