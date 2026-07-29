@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/tailwind.css?v=3" />
+<link rel="stylesheet" href="css/tailwind.css?v=4" />
 <style>
   :root{
     --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
@@ -159,10 +159,17 @@ function showToast(kind, message){
 /* ---------- اگه از یه صفحه محافظت‌شده (مثل checkout) به اینجا هدایت شده، بعد از لاگین برگرده همونجا ---------- */
 const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || 'home';
 
-/* ---------- اگه از قبل لاگین بوده، لازم نیست دوباره این صفحه رو ببینه ---------- */
-if(isLoggedIn()){
-  window.location.href = redirectTarget;
-}
+/* ---------- اگه از قبل لاگین بوده، لازم نیست دوباره این صفحه رو ببینه ----------
+   از pageshow به‌جای اجرای مستقیم استفاده می‌کنیم چون وقتی کاربر بعد از لاگین موفق
+   با دکمه‌ی برگشت مرورگر/گوشی به همین صفحه برمی‌گرده، خیلی از مرورگرها صفحه رو از
+   bfcache (حافظه‌ی برگشت) با همون وضعیت قبلی (مثلاً دکمه‌ی تایید در حال چرخش) نشون
+   می‌دن بدون اینکه اسکریپت این صفحه از اول اجرا بشه؛ pageshow برخلاف اجرای مستقیم
+   کد، هم موقع لود عادی و هم موقع بازگشت از bfcache صدا زده می‌شه */
+window.addEventListener('pageshow', () => {
+  if(isLoggedIn()){
+    window.location.href = redirectTarget;
+  }
+});
 
 /* ---------- persian digit helpers ---------- */
 const faDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];

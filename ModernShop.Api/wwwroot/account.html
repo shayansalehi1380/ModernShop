@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/tailwind.css?v=3" />
+<link rel="stylesheet" href="css/tailwind.css?v=4" />
 <style>
   :root{
     --background:#F6F5F0; --foreground:#14171C; --surface:#FFFFFF; --surface-muted:#EFEEE7;
@@ -212,8 +212,8 @@
 </div>
 
 <!-- order detail modal -->
-<div id="order-detail-overlay" class="fixed inset-0 z-[150] hidden items-center justify-center overflow-y-auto bg-black/40 px-4 py-8" onclick="closeOrderDetailModal(event)">
-  <div class="w-full max-w-lg rounded-3xl border border-line bg-surface p-6" onclick="event.stopPropagation()">
+<div id="order-detail-overlay" class="fixed inset-0 z-[150] hidden items-start justify-center overflow-y-auto bg-black/40 px-4 py-8" onclick="closeOrderDetailModal(event)">
+  <div class="my-auto w-full max-w-lg rounded-3xl border border-line bg-surface p-6" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between border-b border-line pb-4">
       <div>
         <p class="text-xs text-muted">شماره سفارش</p>
