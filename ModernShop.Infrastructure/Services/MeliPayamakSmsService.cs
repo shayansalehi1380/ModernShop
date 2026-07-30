@@ -29,7 +29,9 @@ public class MeliPayamakSettings
 
     // آدرس وبسرویس SOAP - این متد (SendByBaseNumber2) با الگوهایی کار می‌کنه که از داخل پنل
     // ملی‌پیامک، بخش «ابزار ویژه > خط خدماتی اشتراکی» ثبت و تایید شده باشن (نه بخش «توسعه‌دهندگان»).
-    public string ApiUrl { get; set; } = "http://api.payamak-panel.com/post/Send.asmx";
+    // از HTTPS استفاده می‌کنیم (نه HTTP خام مستندات) چون خیلی از هاست‌ها/فایروال‌ها خروجی HTTP
+    // ساده (پورت ۸۰) رو مسدود می‌کنن ولی HTTPS (۴۴۳) باز می‌ذارن.
+    public string ApiUrl { get; set; } = "https://api.payamak-panel.com/post/Send.asmx";
 
     public MeliPayamakBodyIds BodyIds { get; set; } = new();
 }

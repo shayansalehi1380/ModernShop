@@ -140,15 +140,17 @@ public class AdminOrdersController : ControllerBase
 
         // ارسال پیامک صرفا اطلاع‌رسانیه؛ اگه سرویس پیامک قطع باشه نباید جلوی ثبت تغییر وضعیت (که کار اصلیه) رو بگیره
         var smsSent = true;
+        string? smsError = null;
         try
         {
             await _smsService.SendOrderStatusAsync(order.ShippingPhone, bodyId, order.OrderNumber);
         }
-        catch
+        catch (Exception ex)
         {
             smsSent = false;
+            smsError = ex.Message;
         }
 
-        return Ok(new { message = "وضعیت سفارش بروزرسانی شد", smsSent });
+        return Ok(new { message = "وضعیت سفارش بروزرسانی شد", smsSent, smsError });
     }
 }

@@ -2563,9 +2563,10 @@ async function changeOrderStatus(id, newStatus){
   if(!confirm('آیا مطمئنی که می‌خواهی وضعیت این سفارش را تغییر بدی؟ این کار برای مشتری پیامک ارسال می‌کند.')) return;
   try{
     const result = await Api.updateOrderStatus(id, newStatus);
+    const statusText = newStatus === 2 ? "وضعیت به «در حال ارسال» تغییر کرد" : "سفارش تکمیل شد";
     toast(result.smsSent === false
-      ? (newStatus === 2 ? "وضعیت به «در حال ارسال» تغییر کرد (ارسال پیامک ناموفق بود)" : "سفارش تکمیل شد (ارسال پیامک ناموفق بود)")
-      : (newStatus === 2 ? "وضعیت به «در حال ارسال» تغییر کرد و پیامک برای مشتری ارسال شد." : "سفارش تکمیل شد و پیامک برای مشتری ارسال شد."));
+      ? `${statusText} (ارسال پیامک ناموفق بود: ${result.smsError || 'نامشخص'})`
+      : `${statusText} و پیامک برای مشتری ارسال شد.`);
     await openOrderDetail(id);
     await loadOrders();
   }catch(e){
