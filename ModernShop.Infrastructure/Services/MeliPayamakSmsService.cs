@@ -8,16 +8,16 @@ namespace ModernShop.Infrastructure.Services;
 public class MeliPayamakBodyIds
 {
     // کد متن (bodyId) الگوی «سفارش {0} با موفقیت ثبت شد ...» - ارسال به مشتری بعد از ثبت موفق سفارش
-    public string OrderPlaced { get; set; } = "56056";
+    public string OrderPlaced { get; set; } = "506036";
 
     // کد متن الگوی «سفارش {0} ارسال شد ...» - ارسال به مشتری وقتی ادمین وضعیت رو «در حال ارسال» می‌کنه
-    public string Shipped { get; set; } = "56058";
+    public string Shipped { get; set; } = "506038";
 
     // کد متن الگوی «سفارش {0} با موفقیت تحویل داده شد ...» - ارسال به مشتری وقتی ادمین وضعیت رو «تحویل شده» می‌کنه
-    public string Delivered { get; set; } = "56060";
+    public string Delivered { get; set; } = "506040";
 
     // کد متن الگوی «مدیر عزیز یک سفارش شماره {0} با موفقیت ثبت شد ...» - ارسال به ادمین بعد از ثبت موفق هر سفارش
-    public string AdminNewOrder { get; set; } = "56365";
+    public string AdminNewOrder { get; set; } = "506365";
 }
 
 public class MeliPayamakSettings
