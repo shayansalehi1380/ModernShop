@@ -6,12 +6,16 @@ namespace ModernShop.Core.Interfaces;
 public interface ISmsService
 {
     Task SendOtpAsync(string phoneNumber, string code);
+}
 
-    /// <summary>
-    /// ارسال پیامک اطلاع‌رسانی ساده (مثلا تغییر وضعیت سفارش)، بر خلاف SendOtpAsync که مخصوص کد تایید
-    /// و از متد Verify Lookup کاوه‌نگار استفاده می‌کنه.
-    /// </summary>
-    Task SendAsync(string phoneNumber, string message);
+/// <summary>
+/// ارسال پیامک‌های اطلاع‌رسانی وضعیت سفارش (برای مشتری و ادمین) از طریق خط خدماتی اشتراکی ملی‌پیامک.
+/// این پیامک‌ها بر خلاف OTP، بر اساس یک الگوی از پیش تایید‌شده (bodyId) در پنل ملی‌پیامک ارسال می‌شن،
+/// نه متن آزاد؛ برای همین به‌جای متن پیامک، کد الگو + متغیرهای همون الگو (به ترتیب) پاس داده می‌شه.
+/// </summary>
+public interface IOrderNotificationSmsService
+{
+    Task SendOrderStatusAsync(string phoneNumber, string bodyId, params string[] variables);
 }
 
 /// <summary>

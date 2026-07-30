@@ -20,9 +20,11 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.Configure<SmsSettings>(configuration.GetSection("Sms"));
+        services.Configure<MeliPayamakSettings>(configuration.GetSection("MeliPayamak"));
         services.Configure<ZarinpalSettings>(configuration.GetSection("Zarinpal"));
 
         services.AddHttpClient<ISmsService, SmsService>();
+        services.AddHttpClient<IOrderNotificationSmsService, MeliPayamakSmsService>();
         services.AddHttpClient<IPaymentGatewayService, ZarinpalPaymentService>();
 
         return services;

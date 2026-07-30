@@ -3,9 +3,11 @@ using ModernShop.Core.Entities;
 using ModernShop.Core.Enums;
 using ModernShop.Core.Interfaces;
 using ModernShop.Infrastructure.Data;
+using ModernShop.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace ModernShop.Api.Controllers;
 
@@ -16,12 +18,14 @@ namespace ModernShop.Api.Controllers;
 public class AdminOrdersController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private readonly ISmsService _smsService;
+    private readonly IOrderNotificationSmsService _smsService;
+    private readonly MeliPayamakBodyIds _bodyIds;
 
-    public AdminOrdersController(AppDbContext db, ISmsService smsService)
+    public AdminOrdersController(AppDbContext db, IOrderNotificationSmsService smsService, IOptions<MeliPayamakSettings> meliPayamakSettings)
     {
         _db = db;
         _smsService = smsService;
+        _bodyIds = meliPayamakSettings.Value.BodyIds;
     }
 
     [HttpGet]
@@ -105,24 +109,25 @@ public class AdminOrdersController : ControllerBase
     }
 
     // مربوط به دکمه‌های «علامت‌گذاری در حال ارسال / تحویل شد» تو جزئیات سفارش پنل مدیریت.
-    // با موفقیت‌آمیز بودن تغییر، یک پیامک اطلاع‌رسانی واقعی (کاوه‌نگار) به مشتری ارسال می‌شه.
+    // با موفقیت‌آمیز بودن تغییر، یک پیامک اطلاع‌رسانی واقعی (از طریق خط خدماتی اشتراکی ملی‌پیامک،
+    // بر اساس الگوی از پیش تایید‌شده Shipped/Delivered) به مشتری ارسال می‌شه.
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateOrderStatusRequestDto request)
     {
         var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
         if (order is null) return NotFound();
 
-        string note, smsMessage;
+        string note, bodyId;
 
         if (request.Status == OrderStatus.Shipped && order.Status == OrderStatus.Processing)
         {
             note = "سفارش توسط مدیر به وضعیت «در حال ارسال» تغییر یافت";
-            smsMessage = $"سفارش {order.OrderNumber} شما ارسال شد و به‌زودی توسط پست پیشتاز به دستتان می‌رسد. دُرین مارکت 💚\nپیگیری سفارش: dorinmarket.ir/account";
+            bodyId = _bodyIds.Shipped;
         }
         else if (request.Status == OrderStatus.Delivered && order.Status == OrderStatus.Shipped)
         {
             note = "سفارش توسط مدیر به وضعیت «تحویل شده» تغییر یافت";
-            smsMessage = $"سفارش {order.OrderNumber} با موفقیت تحویل داده شد. منتظر سفارش بعدی شما هستیم - دُرین مارکت 💚\nپیگیری سفارش: dorinmarket.ir/account";
+            bodyId = _bodyIds.Delivered;
         }
         else
         {
@@ -137,7 +142,7 @@ public class AdminOrdersController : ControllerBase
         var smsSent = true;
         try
         {
-            await _smsService.SendAsync(order.ShippingPhone, smsMessage);
+            await _smsService.SendOrderStatusAsync(order.ShippingPhone, bodyId, order.OrderNumber);
         }
         catch
         {

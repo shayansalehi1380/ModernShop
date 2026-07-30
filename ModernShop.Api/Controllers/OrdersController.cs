@@ -3,6 +3,7 @@ using ModernShop.Core.Entities;
 using ModernShop.Core.Enums;
 using ModernShop.Core.Interfaces;
 using ModernShop.Infrastructure.Data;
+using ModernShop.Infrastructure.Services;
 using ModernShop.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,31 +20,32 @@ public class OrdersController : ControllerBase
     private readonly AppDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IPaymentGatewayService _paymentGateway;
-    private readonly ISmsService _smsService;
+    private readonly IOrderNotificationSmsService _smsService;
+    private readonly MeliPayamakBodyIds _bodyIds;
     private readonly AdminSettings _adminSettings;
 
     public OrdersController(AppDbContext db, ICurrentUserService currentUser, IPaymentGatewayService paymentGateway,
-        ISmsService smsService, IOptions<AdminSettings> adminSettings)
+        IOrderNotificationSmsService smsService, IOptions<MeliPayamakSettings> meliPayamakSettings, IOptions<AdminSettings> adminSettings)
     {
         _db = db;
         _currentUser = currentUser;
         _paymentGateway = paymentGateway;
         _smsService = smsService;
+        _bodyIds = meliPayamakSettings.Value.BodyIds;
         _adminSettings = adminSettings.Value;
     }
 
     // با ثبت موفق هر سفارش (بعد از تایید درگاه پرداخت، یا بلافاصله برای سفارش‌های پرداخت‌درمحل)،
-    // یک پیامک تشکر به مشتری و یک پیامک اطلاع‌رسانی به مدیر فروشگاه ارسال می‌شه. برای تغییر متن
-    // این دو پیامک، همین متد رو ویرایش کن.
+    // یک پیامک تشکر به مشتری (الگوی OrderPlaced) و یک پیامک اطلاع‌رسانی به مدیر فروشگاه (الگوی
+    // AdminNewOrder) از طریق خط خدماتی اشتراکی ملی‌پیامک ارسال می‌شه. متن هر دو پیامک از قبل تو پنل
+    // ملی‌پیامک تعریف و تایید شده؛ برای تغییرشون باید از پنل ملی‌پیامک اقدام کنی، نه از اینجا.
     private async Task SendOrderConfirmedNotificationsAsync(Order order)
     {
-        var customerMessage = $"سفارش {order.OrderNumber} شما با موفقیت ثبت شد و به‌زودی پردازش سفارش شما آغاز می‌شود. از خرید و اعتماد شما متشکریم - دُرین مارکت 💚\nپیگیری سفارش: dorinmarket.ir/account";
-        try { await _smsService.SendAsync(order.ShippingPhone, customerMessage); } catch { /* اطلاع‌رسانی صرفه، نباید جلوی ثبت سفارش رو بگیره */ }
+        try { await _smsService.SendOrderStatusAsync(order.ShippingPhone, _bodyIds.OrderPlaced, order.OrderNumber); } catch { /* اطلاع‌رسانی صرفه، نباید جلوی ثبت سفارش رو بگیره */ }
 
         if (!string.IsNullOrWhiteSpace(_adminSettings.NotificationPhone))
         {
-            var adminMessage = $"یک مشتری سفارش جدید ({order.OrderNumber}) را با موفقیت ثبت کرد. برای بررسی به پنل مدیریت مراجعه کنید.";
-            try { await _smsService.SendAsync(_adminSettings.NotificationPhone, adminMessage); } catch { /* اطلاع‌رسانی صرفه */ }
+            try { await _smsService.SendOrderStatusAsync(_adminSettings.NotificationPhone, _bodyIds.AdminNewOrder, order.OrderNumber); } catch { /* اطلاع‌رسانی صرفه */ }
         }
     }
 
