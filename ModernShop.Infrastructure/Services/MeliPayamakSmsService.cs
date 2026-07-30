@@ -60,18 +60,22 @@ public class MeliPayamakSmsService : IOrderNotificationSmsService
     {
         var text = string.Join(";", variables);
 
+        // نکته‌ی مهم: schema این وبسرویس elementFormDefault="qualified" هست، یعنی
+        // پارامترهای داخلی (username/password/text/to/bodyId) هم باید داخل namespace
+        // tempuri.org باشن، نه فقط خودِ عنصر SendByBaseNumber2 - وگرنه سریالایزر مجبور
+        // می‌شه رو هر کدوم xmlns="" بذاره و سرور اونا رو null/خالی می‌بینه (باعث خطای
+        // «نام کاربری یا رمز عبور اشتباه است» می‌شه چون اصلاً هیچ مقداری بهش نمی‌رسه).
         var envelope = new XDocument(
             new XDeclaration("1.0", "utf-8", null),
             new XElement(Soap + "Envelope",
                 new XAttribute(XNamespace.Xmlns + "soap", Soap.NamespaceName),
                 new XElement(Soap + "Body",
                     new XElement(Tns + "SendByBaseNumber2",
-                        new XAttribute("xmlns", Tns.NamespaceName),
-                        new XElement("username", _settings.Username),
-                        new XElement("password", _settings.Password),
-                        new XElement("text", text),
-                        new XElement("to", phoneNumber),
-                        new XElement("bodyId", bodyId)))));
+                        new XElement(Tns + "username", _settings.Username),
+                        new XElement(Tns + "password", _settings.Password),
+                        new XElement(Tns + "text", text),
+                        new XElement(Tns + "to", phoneNumber),
+                        new XElement(Tns + "bodyId", bodyId)))));
 
         using var request = new HttpRequestMessage(HttpMethod.Post, _settings.ApiUrl)
         {
