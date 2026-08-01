@@ -100,6 +100,27 @@ function initAnnouncementTyping() {
   tick();
 }
 
+function escapeHtmlLayout(str) {
+  return (str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// منوی دسته‌بندی‌های دسکتاپ (زیر «فروشگاه» تو هدر) - قبلاً یه لیست ثابت تو خودِ
+// partials/header.html بود که هر بار دسته‌بندی‌ها عوض می‌شدن از رده خارج می‌شد؛
+// الان دقیقاً مثل شیت دسته‌بندی‌های موبایل، از همون API واقعی می‌خونه
+async function loadDesktopCategoryMenu() {
+  const wrap = document.getElementById('desktop-category-menu');
+  if (!wrap) return;
+  try {
+    const categories = await Api.getCategories();
+    if (!categories || categories.length === 0) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = categories.map(c => `
+      <a href="shop?category=${encodeURIComponent(c.slug)}" class="block rounded-xl px-4 py-2.5 text-sm text-foreground/85 transition hover:bg-emerald-soft hover:text-emerald">${escapeHtmlLayout(c.name)}</a>
+    `).join('');
+  } catch (e) {
+    wrap.innerHTML = '';
+  }
+}
+
 async function loadLayout() {
   await Promise.all([
     loadPartial('partials/header.html', '#header-placeholder'),
@@ -110,6 +131,7 @@ async function loadLayout() {
   initBackToTop();
   highlightActiveNav();
   initAnnouncementTyping();
+  loadDesktopCategoryMenu();
   // تب فعال + دیتای دسته‌بندی‌ها/شیت‌های منوی پایین موبایل از js/mobile-nav.js میاد
   if (typeof MobileNavSheet === 'object') MobileNavSheet.init();
 

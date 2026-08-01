@@ -21,9 +21,13 @@ const MobileNavSheet = (function () {
   const sheetTitles = { categories: 'دسته‌بندی‌ها', search: 'جستجو', menu: 'منو' };
 
   function menuSheetHTML() {
+    // دسته‌بندی‌ها همون categoriesData (که تو init() از API واقعی خونده می‌شه) هستن، نه یه
+    // لیست ثابت - وگرنه هر بار دسته‌بندی‌ها عوض بشن، این منو از رده خارج می‌مونه
+    const items = [["صفحه اصلی", "home"]]
+      .concat(categoriesData.map(c => [c.title, `shop?category=${encodeURIComponent(c.id)}`]))
+      .concat([["وبلاگ", "blog"]]);
     return `<div class="flex flex-col gap-1">
-      ${[["صفحه اصلی", "home"], ["پوشاک", "shop?category=fashion"], ["دیجیتال", "shop?category=digital"], ["خانه و آشپزخانه", "shop?category=home-kitchen"], ["زیبایی", "shop?category=beauty-health"], ["وبلاگ", "blog"]]
-        .map(([l, href]) => `<a href="${href}" class="rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted">${l}</a>`).join('')}
+      ${items.map(([l, href]) => `<a href="${href}" class="rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted">${l}</a>`).join('')}
     </div>`;
   }
 
