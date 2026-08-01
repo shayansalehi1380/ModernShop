@@ -113,8 +113,8 @@ const Api = {
   applyDiscount: (code) => apiFetch('/cart/apply-discount', { method: 'POST', body: JSON.stringify({ code }) }),
 
   // سفارش (نیاز به لاگین)
-  createOrder: (addressId, paymentMethod, discountCode) =>
-    apiFetch('/orders', { method: 'POST', body: JSON.stringify({ addressId, paymentMethod, discountCode }) }),
+  createOrder: (addressId, paymentMethod, discountCode, shippingMethod) =>
+    apiFetch('/orders', { method: 'POST', body: JSON.stringify({ addressId, paymentMethod, discountCode, shippingMethod }) }),
   getMyOrders: () => apiFetch('/orders'),
   getOrder: (orderNumber) => apiFetch(`/orders/${encodeURIComponent(orderNumber)}`),
   retryPayment: (orderNumber) => apiFetch(`/orders/${encodeURIComponent(orderNumber)}/retry-payment`, { method: 'POST' }),

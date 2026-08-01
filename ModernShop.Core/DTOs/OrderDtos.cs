@@ -11,6 +11,7 @@ namespace ModernShop.Core.DTOs
     {
         public int AddressId { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
+        public ShippingMethod ShippingMethod { get; set; }
         public string? DiscountCode { get; set; }
     }
 
@@ -37,6 +38,7 @@ namespace ModernShop.Core.DTOs
         public OrderStatus Status { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus? PaymentStatus { get; set; }
+        public ShippingMethod ShippingMethod { get; set; }
         public decimal SubTotal { get; set; }
         public decimal ShippingCost { get; set; }
         public decimal DiscountAmount { get; set; }

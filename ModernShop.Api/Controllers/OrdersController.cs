@@ -67,12 +67,11 @@ public class OrdersController : ControllerBase
 
         var subtotal = cart.Items.Sum(i => i.UnitPrice * i.Quantity);
 
-        var settings = await _db.AppSettings
-            .Where(s => s.Key == "DefaultShippingCost" || s.Key == "FreeShippingThreshold")
-            .ToDictionaryAsync(s => s.Key, s => s.Value);
-        var shippingCost = settings.TryGetValue("DefaultShippingCost", out var sc) ? decimal.Parse(sc) : 45000;
-        var threshold = settings.TryGetValue("FreeShippingThreshold", out var th) ? decimal.Parse(th) : 5000000;
-        var actualShipping = subtotal >= threshold ? 0 : shippingCost;
+        // هزینه ارسال دیگه به سبد خرید یا سقف رایگان‌شدن ربطی نداره؛ تو چک‌اوت کاربر بین دو
+        // روش ارسال یکی رو انتخاب می‌کنه: پرداخت پیش‌پرداخت (مبلغ ثابت) یا پس‌کرایه تیپاکس
+        // (چیزی همین‌جا پرداخت نمی‌شه، هزینه رو گیرنده موقع تحویل به مامور تیپاکس می‌ده)
+        const decimal prepaidShippingCost = 95000;
+        var actualShipping = request.ShippingMethod == ShippingMethod.Prepaid ? prepaidShippingCost : 0;
 
         decimal discountAmount = 0;
         DiscountCode? discountCode = null;
@@ -104,6 +103,7 @@ public class OrdersController : ControllerBase
 
             DiscountCodeId = discountCode?.Id,
             PaymentMethod = request.PaymentMethod,
+            ShippingMethod = request.ShippingMethod,
             Status = OrderStatus.PendingPayment,
             SubTotal = subtotal,
             ShippingCost = actualShipping,
@@ -350,6 +350,7 @@ public class OrdersController : ControllerBase
         Status = order.Status,
         PaymentMethod = order.PaymentMethod,
         PaymentStatus = order.Payments.OrderByDescending(p => p.Id).FirstOrDefault()?.Status,
+        ShippingMethod = order.ShippingMethod,
         SubTotal = order.SubTotal,
         ShippingCost = order.ShippingCost,
         DiscountAmount = order.DiscountAmount,

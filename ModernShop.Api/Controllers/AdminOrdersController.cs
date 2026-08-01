@@ -78,6 +78,7 @@ public class AdminOrdersController : ControllerBase
             Status = order.Status,
             PaymentMethod = order.PaymentMethod,
             PaymentStatus = lastPayment?.Status,
+            ShippingMethod = order.ShippingMethod,
             DiscountCode = order.DiscountCode?.Code,
 
             CustomerName = string.IsNullOrWhiteSpace(customerFullName) ? order.ShippingFullName : customerFullName,

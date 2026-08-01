@@ -115,13 +115,9 @@
             <span class="text-muted">جمع کالاها</span>
             <span><span class="ticker font-semibold" id="sum-subtotal">۰</span> <span class="text-xs text-muted">تومان</span></span>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-muted"> هزینه ارسال (پست پیشتاز)</span>
-            <span><span class="ticker font-semibold" id="sum-shipping">۰</span> <span class="text-xs text-muted" id="sum-shipping-unit">تومان</span></span>
-          </div>
         </div>
 
-        <p class="mt-4 text-xs text-muted">کد تخفیف را می‌توانید در مرحله‌ی بعد وارد کنید.</p>
+        <p class="mt-4 text-xs text-muted">هزینه ارسال بر اساس روش انتخابی، در مرحله‌ی تسویه‌حساب مشخص می‌شود. کد تخفیف را هم می‌توانید در همان مرحله وارد کنید.</p>
 
         <div class="mt-5 flex items-baseline justify-between border-t border-line pt-5">
           <span class="text-sm font-bold">مبلغ نهایی</span>
@@ -262,12 +258,9 @@ function renderCart(){
 
 function renderSummary(){
   const subtotal = currentCart?.subTotal || 0;
-  const shipping = currentCart?.shippingCost || 0;
   const total = currentCart?.total || 0;
 
   document.getElementById('sum-subtotal').textContent = formatPrice(subtotal);
-  document.getElementById('sum-shipping').textContent = shipping === 0 ? 'رایگان' : formatPrice(shipping);
-  document.getElementById('sum-shipping-unit').style.display = shipping === 0 ? 'none' : '';
   document.getElementById('sum-total').textContent = formatPrice(total);
 
   document.getElementById('go-checkout').disabled = !currentCart || currentCart.items.length === 0;

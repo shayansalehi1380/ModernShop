@@ -152,6 +152,7 @@ namespace ModernShop.Core.DTOs
         public OrderStatus Status { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus? PaymentStatus { get; set; }
+        public ShippingMethod ShippingMethod { get; set; }
         public string? DiscountCode { get; set; }
 
         public string CustomerName { get; set; } = null!;

@@ -26,6 +26,8 @@ public class Order
     public OrderStatus Status { get; set; } = OrderStatus.PendingPayment;
     public PaymentMethod PaymentMethod { get; set; }
 
+    public ShippingMethod ShippingMethod { get; set; }
+
     public decimal SubTotal { get; set; }
     public decimal ShippingCost { get; set; }
     public decimal DiscountAmount { get; set; }

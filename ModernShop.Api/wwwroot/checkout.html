@@ -140,9 +140,15 @@
             display: none
         }
 
-        .pay-opt.selected {
+        .pay-opt.selected,
+        .ship-opt.selected {
             border-color: var(--emerald);
             background: var(--emerald-soft)
+        }
+
+        .ship-opt.locked {
+            pointer-events: none;
+            opacity: .5
         }
 
         .skeleton {
@@ -267,6 +273,35 @@
                             </div>
                         </div>
 
+                        <!-- shipping method -->
+                        <div class="mt-5 rounded-3xl border border-line bg-surface p-6">
+                            <h2 class="flex items-center gap-2 text-base font-bold">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-soft text-emerald">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 10h4l3 3v4h-2" /><path d="M10 17h4V6H2v11h2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg>
+                                </span>
+                                روش ارسال
+                            </h2>
+
+                            <p id="shipping-method-locked" class="mt-4 text-sm text-muted">ابتدا استان و شهر را در بخش «اطلاعات گیرنده» انتخاب کنید.</p>
+
+                            <div id="shipping-method-options" class="mt-4 hidden flex-col gap-3">
+                                <label class="ship-opt selected flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-ship="prepaid">
+                                    <input type="radio" name="ship" value="prepaid" checked class="h-4 w-4 accent-emerald" />
+                                    <span class="flex-1">
+                                        <span class="block text-sm font-semibold">ارسال با پست پیشتاز</span>
+                                        <span class="block text-xs text-muted">هزینه ارسال ۹۵,۰۰۰ تومان - همین‌جا همراه سفارش پرداخت می‌شود</span>
+                                    </span>
+                                </label>
+                                <label class="ship-opt flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-ship="tipax-cod">
+                                    <input type="radio" name="ship" value="tipax-cod" class="h-4 w-4 accent-emerald" />
+                                    <span class="flex-1">
+                                        <span class="block text-sm font-semibold">ارسال پس‌کرایه با تیپاکس</span>
+                                        <span class="block text-xs text-muted">هزینه ارسال را هنگام تحویل، نقداً به مأمور تیپاکس پرداخت می‌کنید</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- payment method -->
                         <div class="mt-5 rounded-3xl border border-line bg-surface p-6">
                             <h2 class="flex items-center gap-2 text-base font-bold">
@@ -381,6 +416,29 @@
         let currentCart = null;
         let existingAddressId = null;
 
+        /* ---------- روش ارسال: تا استان/شهر انتخاب نشه قفله ---------- */
+        const SHIPPING_PREPAID_COST = 95000;
+        let selectedShippingMethod = 'prepaid';
+
+        function isShippingMethodReady() {
+            return !!document.getElementById('province').value.trim() && !!document.getElementById('city').value.trim();
+        }
+
+        function updateShippingMethodAvailability() {
+            const ready = isShippingMethodReady();
+            const locked = document.getElementById('shipping-method-locked');
+            const options = document.getElementById('shipping-method-options');
+            locked.classList.toggle('hidden', ready);
+            if (ready) {
+                options.classList.remove('hidden');
+                options.classList.add('flex');
+            } else {
+                options.classList.add('hidden');
+                options.classList.remove('flex');
+            }
+            renderSummary();
+        }
+
         async function init() {
             try {
                 const [cart, addresses] = await Promise.all([Api.getCart(), Api.getAddresses()]);
@@ -443,6 +501,7 @@
                 provinceSelect.insertAdjacentHTML('beforeend', `<option value="${name}">${name}</option>`);
             });
             provinceSelect.addEventListener('change', () => populateCities(provinceSelect.value));
+            citySelect.addEventListener('change', updateShippingMethodAvailability);
             PrettySelect.attach(provinceSelect);
             PrettySelect.attach(citySelect);
         }
@@ -455,12 +514,14 @@
                 citySelect.disabled = true;
                 citySelect.classList.add('text-muted');
                 citySelect._prettySelect?.refresh();
+                updateShippingMethodAvailability();
                 return;
             }
             citySelect.disabled = false;
             citySelect.classList.remove('text-muted');
             citySelect.innerHTML = '<option value="">انتخاب شهر</option>' + cities.map(c => `<option value="${c}" ${c === selectedCity ? 'selected' : ''}>${c}</option>`).join('');
             citySelect._prettySelect?.refresh();
+            updateShippingMethodAvailability();
         }
         initProvinceCity();
 
@@ -479,6 +540,7 @@
         }
 
         function renderSummary() {
+            if (!currentCart) return;
             document.getElementById('summary-items').innerHTML = currentCart.items.map(item => `
             <div class="flex items-center gap-3">
               <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-media">
@@ -491,9 +553,23 @@
           `).join('');
 
             document.getElementById('sum-subtotal').textContent = formatPrice(currentCart.subTotal);
-            document.getElementById('sum-shipping').textContent = currentCart.shippingCost === 0 ? 'رایگان' : formatPrice(currentCart.shippingCost);
-            document.getElementById('sum-shipping-unit').style.display = currentCart.shippingCost === 0 ? 'none' : '';
-            document.getElementById('sum-total').textContent = formatPrice(currentCart.total);
+
+            const shippingReady = isShippingMethodReady();
+            const shippingCost = shippingReady && selectedShippingMethod === 'prepaid' ? SHIPPING_PREPAID_COST : 0;
+            const shippingEl = document.getElementById('sum-shipping');
+            const shippingUnitEl = document.getElementById('sum-shipping-unit');
+            if (!shippingReady) {
+                shippingEl.textContent = 'پس از انتخاب استان و شهر';
+                shippingUnitEl.style.display = 'none';
+            } else if (selectedShippingMethod === 'tipax-cod') {
+                shippingEl.textContent = 'پس‌کرایه (نقداً به مأمور)';
+                shippingUnitEl.style.display = 'none';
+            } else {
+                shippingEl.textContent = formatPrice(shippingCost);
+                shippingUnitEl.style.display = '';
+            }
+
+            document.getElementById('sum-total').textContent = formatPrice(currentCart.total + shippingCost);
 
             const discRow = document.getElementById('sum-discount-row');
             if (currentCart.discountAmount > 0) {
@@ -534,6 +610,18 @@
                 document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
                 opt.querySelector('input').checked = true;
+            });
+        });
+
+        /* ---------- shipping method option styling ---------- */
+        document.querySelectorAll('.ship-opt').forEach(opt => {
+            opt.addEventListener('click', () => {
+                if (!isShippingMethodReady()) return;
+                document.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                opt.querySelector('input').checked = true;
+                selectedShippingMethod = opt.dataset.ship;
+                renderSummary();
             });
         });
 
@@ -585,10 +673,11 @@
                 const savedAddress = await Api.upsertAddress(addressPayload);
 
                 const paymentMethod = 0; // Online (درگاه زرین‌پال)
+                const shippingMethod = selectedShippingMethod === 'tipax-cod' ? 1 : 0; // ShippingMethod enum: Prepaid=0, TipaxCashOnDelivery=1
 
                 const discountCode = localStorage.getItem(DISCOUNT_STORAGE_KEY) || null;
 
-                const result = await Api.createOrder(savedAddress.id, paymentMethod, discountCode);
+                const result = await Api.createOrder(savedAddress.id, paymentMethod, discountCode, shippingMethod);
 
                 localStorage.removeItem(DISCOUNT_STORAGE_KEY);
 

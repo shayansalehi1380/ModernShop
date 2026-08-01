@@ -476,7 +476,7 @@ function renderOrderDetail(order){
   `).join('');
 
   document.getElementById('od-subtotal').textContent = formatPrice(order.subTotal);
-  document.getElementById('od-shipping').textContent = order.shippingCost === 0 ? 'رایگان' : formatPrice(order.shippingCost);
+  document.getElementById('od-shipping').textContent = order.shippingMethod === 1 ? 'پس‌کرایه تیپاکس (پرداخت در محل)' : formatPrice(order.shippingCost);
   document.getElementById('od-total').textContent = formatPrice(order.totalAmount);
   if(order.discountAmount > 0){
     document.getElementById('od-discount-row').style.display = 'flex';

@@ -225,7 +225,7 @@ function renderOrder(order){
   renderItems(order.items);
 
   document.getElementById('sum-subtotal').textContent = formatPrice(order.subTotal);
-  document.getElementById('sum-shipping').textContent = order.shippingCost === 0 ? 'رایگان' : formatPrice(order.shippingCost);
+  document.getElementById('sum-shipping').textContent = order.shippingMethod === 1 ? 'پس‌کرایه تیپاکس (پرداخت در محل)' : formatPrice(order.shippingCost);
   document.getElementById('sum-total').textContent = formatPrice(order.totalAmount);
 
   if(order.discountAmount > 0){

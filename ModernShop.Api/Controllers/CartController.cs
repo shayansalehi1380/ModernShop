@@ -27,8 +27,7 @@ public class CartController : ControllerBase
     public async Task<ActionResult<CartDto>> GetCart()
     {
         var cart = await GetOrCreateCartAsync();
-        var (shippingCost, threshold) = await GetShippingSettingsAsync();
-        return Ok(ToDto(cart, shippingCost, threshold, 0, null));
+        return Ok(ToDto(cart, 0, null));
     }
 
     // فقط تعداد آیتم‌های سبد (نشان روی آیکون سبد خرید تو هدر/منوی موبایل که تقریباً تو هر
@@ -112,8 +111,7 @@ public class CartController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        var (shippingCost, threshold) = await GetShippingSettingsAsync();
-        return Ok(ToDto(cart, shippingCost, threshold, 0, null));
+        return Ok(ToDto(cart, 0, null));
     }
 
     // مربوط به دکمه‌های + / - جلوی هر آیتم سبد خرید
@@ -152,8 +150,7 @@ public class CartController : ControllerBase
 
         await _db.SaveChangesAsync();
 
-        var (shippingCost, threshold) = await GetShippingSettingsAsync();
-        return Ok(ToDto(cart, shippingCost, threshold, 0, null));
+        return Ok(ToDto(cart, 0, null));
     }
 
     [HttpDelete("items/{id:int}")]
@@ -167,8 +164,7 @@ public class CartController : ControllerBase
             await _db.SaveChangesAsync();
         }
 
-        var (shippingCost, threshold) = await GetShippingSettingsAsync();
-        return Ok(ToDto(cart, shippingCost, threshold, 0, null));
+        return Ok(ToDto(cart, 0, null));
     }
 
     // مربوط به کادر کد تخفیف تو cart.html
@@ -176,7 +172,6 @@ public class CartController : ControllerBase
     public async Task<ActionResult<CartDto>> ApplyDiscount([FromBody] ApplyDiscountRequestDto request)
     {
         var cart = await GetOrCreateCartAsync();
-        var (shippingCost, threshold) = await GetShippingSettingsAsync();
 
         var discount = await _db.DiscountCodes.FirstOrDefaultAsync(d =>
             d.Code == request.Code && d.IsActive &&
@@ -197,7 +192,7 @@ public class CartController : ControllerBase
             ? Math.Round(subtotal * discount.Amount / 100)
             : discount.Amount;
 
-        return Ok(ToDto(cart, shippingCost, threshold, discountAmount, discount.Code));
+        return Ok(ToDto(cart, discountAmount, discount.Code));
     }
 
     // موجودی واقعاً در دسترس یک محصول/تنوع = کل موجودی منهای مجموع تعداد رزروشده تو سبد بقیه‌ی
@@ -251,19 +246,9 @@ public class CartController : ControllerBase
         return cart;
     }
 
-    private async Task<(decimal shippingCost, decimal freeShippingThreshold)> GetShippingSettingsAsync()
-    {
-        var settings = await _db.AppSettings
-            .Where(s => s.Key == "DefaultShippingCost" || s.Key == "FreeShippingThreshold")
-            .ToDictionaryAsync(s => s.Key, s => s.Value);
-
-        var shippingCost = settings.TryGetValue("DefaultShippingCost", out var sc) ? decimal.Parse(sc) : 45000;
-        var threshold = settings.TryGetValue("FreeShippingThreshold", out var th) ? decimal.Parse(th) : 5000000;
-
-        return (shippingCost, threshold);
-    }
-
-    private static CartDto ToDto(Cart cart, decimal shippingCost, decimal freeShippingThreshold, decimal discountAmount, string? discountCode)
+    // هزینه ارسال دیگه تو سبد خرید محاسبه/نمایش داده نمی‌شه - چون به روش ارسالی که کاربر تو
+    // چک‌اوت انتخاب می‌کنه (پیش‌پرداخت ثابت یا پس‌کرایه تیپاکس) بستگی داره، نه به مبلغ سبد.
+    private static CartDto ToDto(Cart cart, decimal discountAmount, string? discountCode)
     {
         var items = cart.Items.Select(i => new CartItemDto
         {
@@ -284,16 +269,15 @@ public class CartController : ControllerBase
         }).ToList();
 
         var subtotal = items.Sum(i => i.TotalPrice);
-        var actualShipping = subtotal == 0 ? 0 : (subtotal >= freeShippingThreshold ? 0 : shippingCost);
 
         return new CartDto
         {
             Id = cart.Id,
             Items = items,
             SubTotal = subtotal,
-            ShippingCost = actualShipping,
+            ShippingCost = 0,
             DiscountAmount = discountAmount,
-            Total = Math.Max(subtotal + actualShipping - discountAmount, 0),
+            Total = Math.Max(subtotal - discountAmount, 0),
             AppliedDiscountCode = discountCode
         };
     }

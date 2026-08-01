@@ -2531,7 +2531,7 @@ async function openOrderDetail(id){
         </table>
         <div class="totals-box">
           <div class="tln"><span>جمع اقلام</span><span>${toman(o.subTotal)}</span></div>
-          <div class="tln"><span>هزینه ارسال</span><span>${o.shippingCost ? toman(o.shippingCost) : "رایگان"}</span></div>
+          <div class="tln"><span>هزینه ارسال</span><span>${o.shippingMethod === 1 ? "پس‌کرایه تیپاکس (پرداخت در محل)" : toman(o.shippingCost)}</span></div>
           ${o.discountAmount ? `<div class="tln"><span>تخفیف</span><span>−${toman(o.discountAmount)}</span></div>` : ""}
           <div class="tln grand"><span>مبلغ نهایی</span><span>${toman(o.totalAmount)}</span></div>
         </div>

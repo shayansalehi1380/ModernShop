@@ -56,4 +56,10 @@ namespace ModernShop.Core.Enums
         Fixed   // دو بنر ثابت تبلیغاتی زیر نوار برندها
     }
 
+    public enum ShippingMethod
+    {
+        Prepaid,             // هزینه ارسال ثابت، همین‌جا و همراه سفارش پرداخت می‌شه
+        TipaxCashOnDelivery  // پس‌کرایه تیپاکس - هزینه ارسال رو گیرنده موقع تحویل نقدا به مامور تیپاکس می‌ده
+    }
+
 }
