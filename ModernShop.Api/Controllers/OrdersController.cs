@@ -68,9 +68,11 @@ public class OrdersController : ControllerBase
         var subtotal = cart.Items.Sum(i => i.UnitPrice * i.Quantity);
 
         // هزینه ارسال دیگه به سبد خرید یا سقف رایگان‌شدن ربطی نداره؛ تو چک‌اوت کاربر بین دو
-        // روش ارسال یکی رو انتخاب می‌کنه: پرداخت پیش‌پرداخت (مبلغ ثابت) یا پس‌کرایه تیپاکس
-        // (چیزی همین‌جا پرداخت نمی‌شه، هزینه رو گیرنده موقع تحویل به مامور تیپاکس می‌ده)
-        const decimal prepaidShippingCost = 95000;
+        // روش ارسال یکی رو انتخاب می‌کنه: پرداخت پیش‌پرداخت (مبلغی که ادمین از پنل تنظیمات
+        // مشخص کرده) یا پس‌کرایه تیپاکس (چیزی همین‌جا پرداخت نمی‌شه، هزینه رو گیرنده موقع
+        // تحویل به مامور تیپاکس می‌ده)
+        var shippingSetting = await _db.AppSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Key == "PrepaidShippingCost");
+        var prepaidShippingCost = shippingSetting is not null && decimal.TryParse(shippingSetting.Value, out var parsedCost) ? parsedCost : 95000;
         var actualShipping = request.ShippingMethod == ShippingMethod.Prepaid ? prepaidShippingCost : 0;
 
         decimal discountAmount = 0;

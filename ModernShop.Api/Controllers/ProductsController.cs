@@ -58,7 +58,7 @@ public class ProductsController : ControllerBase
             "cheap" => query.OrderBy(p => p.DiscountPrice ?? p.Price),
             "expensive" => query.OrderByDescending(p => p.DiscountPrice ?? p.Price),
             "bestselling" => query.OrderByDescending(p => p.Reviews.Count),
-            "rating" => query.OrderByDescending(p => p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0),
+            "rating" => query.OrderByDescending(p => p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 5),
             _ => query.OrderByDescending(p => p.CreatedAt) // newest
         };
 
@@ -80,7 +80,7 @@ public class ProductsController : ControllerBase
                                 ?? p.Images.Select(i => i.ImageUrl).FirstOrDefault() ?? "",
                 Price = p.Price,
                 DiscountPrice = p.DiscountPrice,
-                AverageRating = p.Reviews.Any() ? Math.Round(p.Reviews.Average(r => r.Rating), 1) : 0,
+                AverageRating = p.Reviews.Any() ? Math.Round(p.Reviews.Average(r => r.Rating), 1) : 5,
                 ReviewCount = p.Reviews.Count,
                 InStock = p.StockQuantity - (_db.CartItems
                     .Where(ci => ci.ProductId == p.Id && ci.ReservedUntil > now).Sum(ci => (int?)ci.Quantity) ?? 0) > 0,
@@ -166,7 +166,7 @@ public class ProductsController : ControllerBase
             Price = product.Price,
             DiscountPrice = product.DiscountPrice,
             StockQuantity = Math.Max(0, product.StockQuantity - reservedForProduct),
-            AverageRating = product.Reviews.Any() ? Math.Round(product.Reviews.Average(r => r.Rating), 1) : 0,
+            AverageRating = product.Reviews.Any() ? Math.Round(product.Reviews.Average(r => r.Rating), 1) : 5,
             ReviewCount = product.Reviews.Count,
             Images = product.Images
                 .OrderBy(i => i.DisplayOrder)

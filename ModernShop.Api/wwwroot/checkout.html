@@ -289,7 +289,7 @@
                                     <input type="radio" name="ship" value="prepaid" checked class="h-4 w-4 accent-emerald" />
                                     <span class="flex-1">
                                         <span class="block text-sm font-semibold">ارسال با پست پیشتاز</span>
-                                        <span class="block text-xs text-muted">هزینه ارسال ۹۵,۰۰۰ تومان - همین‌جا همراه سفارش پرداخت می‌شود</span>
+                                        <span class="block text-xs text-muted" id="ship-prepaid-desc">هزینه ارسال - همین‌جا همراه سفارش پرداخت می‌شود</span>
                                     </span>
                                 </label>
                                 <label class="ship-opt flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-ship="tipax-cod">
@@ -417,7 +417,9 @@
         let existingAddressId = null;
 
         /* ---------- روش ارسال: تا استان/شهر انتخاب نشه قفله ---------- */
-        const SHIPPING_PREPAID_COST = 95000;
+        // مقدار واقعی از /api/settings/shipping-cost خونده می‌شه (تو پنل مدیریت قابل تغییره)؛
+        // این عدد فقط یک مقدار پیش‌فرض برای قبل از لود شدن جوابه
+        let SHIPPING_PREPAID_COST = 95000;
         let selectedShippingMethod = 'prepaid';
 
         function isShippingMethodReady() {
@@ -441,8 +443,10 @@
 
         async function init() {
             try {
-                const [cart, addresses] = await Promise.all([Api.getCart(), Api.getAddresses()]);
+                const [cart, addresses, shippingSetting] = await Promise.all([Api.getCart(), Api.getAddresses(), Api.getShippingCost()]);
                 currentCart = cart;
+                SHIPPING_PREPAID_COST = shippingSetting.prepaidShippingCost;
+                document.getElementById('ship-prepaid-desc').textContent = `هزینه ارسال ${formatPrice(SHIPPING_PREPAID_COST)} تومان - همین‌جا همراه سفارش پرداخت می‌شود`;
 
                 if (!currentCart.items || currentCart.items.length === 0) {
                     window.location.href = 'cart';

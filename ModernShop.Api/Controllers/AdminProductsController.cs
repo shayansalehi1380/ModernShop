@@ -166,7 +166,7 @@ public class AdminProductsController : ControllerBase
     // ذخیره می‌کنه و آدرس نسبی رو برمی‌گردونه تا تو همون فیلد آدرس تصویر استفاده بشه
     [HttpPost("upload-image")]
     [RequestSizeLimit(10_000_000)]
-    public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] IWebHostEnvironment env)
+    public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] UploadsSettings uploadsSettings)
     {
         if (file is null || file.Length == 0)
             return BadRequest(new { message = "فایلی انتخاب نشده است" });
@@ -176,7 +176,7 @@ public class AdminProductsController : ControllerBase
         if (!allowedExtensions.Contains(ext))
             return BadRequest(new { message = "فقط فایل‌های تصویری (jpg, png, webp, gif) مجاز هستند" });
 
-        var uploadsDir = Path.Combine(env.WebRootPath, "uploads", "products");
+        var uploadsDir = Path.Combine(uploadsSettings.Root, "products");
         Directory.CreateDirectory(uploadsDir);
 
         var fileName = $"{Guid.NewGuid():N}{ext}";

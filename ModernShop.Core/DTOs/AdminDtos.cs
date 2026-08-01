@@ -273,4 +273,16 @@ namespace ModernShop.Core.DTOs
         public DateTime? StartsAt { get; set; }
         public DateTime? EndsAt { get; set; }
     }
+
+    // ---------------- تنظیمات ----------------
+
+    public class ShippingCostSettingDto
+    {
+        public decimal PrepaidShippingCost { get; set; }
+    }
+
+    public class UpdateShippingCostRequestDto
+    {
+        public decimal PrepaidShippingCost { get; set; }
+    }
 }
