@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,19 @@ builder.Services.AddScoped<JwtTokenService>();
 builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("Admin"));
 builder.Services.AddScoped<SeoPageRenderer>();
 builder.Services.AddHostedService<CartReservationCleanupService>();
+
+// آپلودها (بنر/برند/دسته‌بندی/محصول) رو از یک مسیر فیزیکی قابل‌تنظیم سرو می‌کنیم، نه لزوماً
+// wwwroot/uploads خود پروژه؛ چون هر بار publish/ری‌دیپلوی معمولاً کل پوشه‌ی سایت رو با نسخه‌ی
+// جدید جایگزین می‌کنه و اگه آپلودها همون داخل پوشه‌ی سایت باشن، هر عکسی که از پنل مدیریت رو
+// خود سرور آپلود شده (نه از قبل تو سورس بوده) با ری‌دیپلوی بعدی از بین می‌ره. با تنظیم
+// UploadsPath تو appsettings.json به یک مسیر مطلق و خارج از پوشه‌ی سایت، این مشکل حل می‌شه.
+// اگه تنظیم نشه (پیش‌فرض)، دقیقاً رفتار قبلی (wwwroot/uploads) حفظ می‌شه.
+var configuredUploadsPath = builder.Configuration["UploadsPath"];
+var uploadsRoot = string.IsNullOrWhiteSpace(configuredUploadsPath)
+    ? Path.Combine(builder.Environment.WebRootPath, "uploads")
+    : (Path.IsPathRooted(configuredUploadsPath) ? configuredUploadsPath : Path.Combine(builder.Environment.ContentRootPath, configuredUploadsPath));
+Directory.CreateDirectory(uploadsRoot);
+builder.Services.AddSingleton(new UploadsSettings(uploadsRoot));
 
 // ===== احراز هویت با JWT =====
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -279,9 +293,8 @@ app.Use(async (context, next) =>
             var isGif = string.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase);
             var thumbFileName = isGif ? fileName : Path.GetFileNameWithoutExtension(fileName) + ".webp";
 
-            var webRoot = app.Environment.WebRootPath;
-            var originalPath = Path.Combine(webRoot, "uploads", "products", fileName);
-            var thumbDir = Path.Combine(webRoot, "uploads", "products", "thumb", width.ToString());
+            var originalPath = Path.Combine(uploadsRoot, "products", fileName);
+            var thumbDir = Path.Combine(uploadsRoot, "products", "thumb", width.ToString());
             var thumbPath = Path.Combine(thumbDir, thumbFileName);
 
             if (!File.Exists(thumbPath) && File.Exists(originalPath))
@@ -324,19 +337,28 @@ app.UseDefaultFiles(new DefaultFilesOptions
     DefaultFileNames = new List<string> { "home.html" }
 });
 
-// Cache-Control برای فایل‌های استاتیک: /uploads چون هر فایل با اسم GUID یکتاست (هیچ‌وقت با
-// همون اسم بازنویسی نمی‌شه)، کش طولانی و immutable کاملاً امنه. بقیه (js/css/html) چون این
-// پروژه هنوز نسخه‌بندی/hash تو اسم فایل نداره و مرتب در حال تغییره، کش کوتاه با اجبار به
-// revalidate می‌گیرن - هم از کش مرورگر (با ۳۰۴ سریع) سود می‌بریم، هم هیچ‌وقت محتوای قدیمی
-// برای چند روز/هفته گیر نمی‌کنه (دقیقاً همون مشکلی که موقع دیباگ کش شدن api.js دیدیم)
+// /uploads از uploadsRoot سرو می‌شه (که ممکنه بیرون از wwwroot باشه، توضیح بالاتر)؛ چون هر
+// فایل آپلودی اسمش GUID یکتاست (هیچ‌وقت با همون اسم بازنویسی نمی‌شه)، کش طولانی و immutable
+// کاملاً امنه
+app.UseStaticFiles(new StaticFileOptions
+{
+    RequestPath = "/uploads",
+    FileProvider = new PhysicalFileProvider(uploadsRoot),
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+    }
+});
+
+// بقیه فایل‌های استاتیک (js/css/html) از wwwroot سرو می‌شن؛ چون این پروژه هنوز نسخه‌بندی/hash
+// تو اسم فایل نداره و مرتب در حال تغییره، کش کوتاه با اجبار به revalidate می‌گیرن - هم از کش
+// مرورگر (با ۳۰۴ سریع) سود می‌بریم، هم هیچ‌وقت محتوای قدیمی برای چند روز/هفته گیر نمی‌کنه
+// (دقیقاً همون مشکلی که موقع دیباگ کش شدن api.js دیدیم)
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        var isUpload = ctx.Context.Request.Path.StartsWithSegments("/uploads");
-        ctx.Context.Response.Headers["Cache-Control"] = isUpload
-            ? "public, max-age=31536000, immutable"
-            : "public, max-age=3600, must-revalidate";
+        ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=3600, must-revalidate";
     }
 });
 app.UseCors("AllowFrontend");
