@@ -17,6 +17,11 @@ public class Product
     public decimal? DiscountPrice { get; set; }
     public int StockQuantity { get; set; }
     public bool IsActive { get; set; } = true;
+
+    // اگه فعال باشه، صفحه محصول همیشه «فقط ۱ عدد در انبار مانده» رو نشون می‌ده (صرف‌نظر از
+    // موجودی واقعی) تا حس فوریت خرید رو تحریک کنه؛ اگه غیرفعال باشه، این پیام فقط وقتی نشون
+    // داده می‌شه که موجودی واقعی دقیقاً ۱ باشه
+    public bool ForceLowStockBadge { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();

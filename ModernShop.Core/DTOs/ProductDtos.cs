@@ -66,6 +66,7 @@ namespace ModernShop.Core.DTOs
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
         public int StockQuantity { get; set; }
+        public bool ForceLowStockBadge { get; set; }
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }
 

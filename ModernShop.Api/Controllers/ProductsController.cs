@@ -166,6 +166,7 @@ public class ProductsController : ControllerBase
             Price = product.Price,
             DiscountPrice = product.DiscountPrice,
             StockQuantity = Math.Max(0, product.StockQuantity - reservedForProduct),
+            ForceLowStockBadge = product.ForceLowStockBadge,
             AverageRating = product.Reviews.Any() ? Math.Round(product.Reviews.Average(r => r.Rating), 1) : 5,
             ReviewCount = product.Reviews.Count,
             Images = product.Images

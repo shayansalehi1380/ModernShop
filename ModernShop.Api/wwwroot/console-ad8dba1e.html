@@ -1195,6 +1195,10 @@ async function openProductForm(id){
             <div class="lbl">فعال در فروشگاه<small>محصولات غیرفعال برای مشتری نمایش داده نمی‌شوند</small></div>
             <label class="switch"><input type="checkbox" id="pf-active" ${p.isActive?"checked":""}><span class="track"><span class="knob"></span></span></label>
           </div>
+          <div class="switch-row">
+            <div class="lbl">نمایش «فقط ۱ عدد در انبار مانده»<small>صرف‌نظر از موجودی واقعی، همیشه این پیام رو تو صفحه محصول نشون بده (برای تحریک خرید)</small></div>
+            <label class="switch"><input type="checkbox" id="pf-force-low-stock" ${p.forceLowStockBadge?"checked":""}><span class="track"><span class="knob"></span></span></label>
+          </div>
 
           <div class="subsection">
             <div class="subsection-head"><h4>نوع محصول</h4></div>
@@ -1454,6 +1458,7 @@ async function saveProduct(existingId){
   const discountVal = document.getElementById("pf-discount").value;
   const discountPrice = discountVal ? parseFloat(discountVal) : null;
   const stockQuantity = parseInt(document.getElementById("pf-stock").value) || 0;
+  const forceLowStockBadge = document.getElementById("pf-force-low-stock").checked;
   const isActive = document.getElementById("pf-active").checked;
 
   const isVariableType = document.getElementById("pf-type").value === "variable";
@@ -1477,7 +1482,7 @@ async function saveProduct(existingId){
     if(key && value) specifications.push({ key, value });
   });
 
-  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, isActive, imageUrl, galleryImageUrls, specifications, variants };
+  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, forceLowStockBadge, isActive, imageUrl, galleryImageUrls, specifications, variants };
 
   const btn = document.getElementById("product-save-btn");
   btn.disabled = true;

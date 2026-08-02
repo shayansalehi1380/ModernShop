@@ -50,6 +50,7 @@ namespace ModernShop.Core.DTOs
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
         public int StockQuantity { get; set; }
+        public bool ForceLowStockBadge { get; set; }
         public bool IsActive { get; set; }
         public string? ImageUrl { get; set; }
         public List<string> GalleryImageUrls { get; set; } = new();
@@ -68,6 +69,7 @@ namespace ModernShop.Core.DTOs
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
         public int StockQuantity { get; set; }
+        public bool ForceLowStockBadge { get; set; }
         public bool IsActive { get; set; } = true;
         public string? ImageUrl { get; set; }
         public List<string>? GalleryImageUrls { get; set; }

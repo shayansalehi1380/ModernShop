@@ -80,6 +80,7 @@ public class AdminProductsController : ControllerBase
             BrandId = request.BrandId,
             Price = request.Price,
             DiscountPrice = request.DiscountPrice,
+            ForceLowStockBadge = request.ForceLowStockBadge,
             IsActive = request.IsActive
         };
 
@@ -117,6 +118,7 @@ public class AdminProductsController : ControllerBase
         product.BrandId = request.BrandId;
         product.Price = request.Price;
         product.DiscountPrice = request.DiscountPrice;
+        product.ForceLowStockBadge = request.ForceLowStockBadge;
         product.IsActive = request.IsActive;
 
         product.Specifications.Clear();
@@ -224,6 +226,7 @@ public class AdminProductsController : ControllerBase
         Price = product.Price,
         DiscountPrice = product.DiscountPrice,
         StockQuantity = product.StockQuantity,
+        ForceLowStockBadge = product.ForceLowStockBadge,
         IsActive = product.IsActive,
         ImageUrl = product.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl
                    ?? product.Images.FirstOrDefault()?.ImageUrl,
