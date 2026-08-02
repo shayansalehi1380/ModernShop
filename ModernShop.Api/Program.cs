@@ -277,7 +277,7 @@ app.Use(async (context, next) =>
 // می‌شن (بدون هیچ پردازش عکسی) - یعنی به‌سرعت هر فایل استاتیک دیگه. این باعث می‌شه کارت
 // محصول همه‌جای سایت به‌جای عکس اصلی، نسخه‌ی سبک‌شده رو بارگذاری کنه، حتی برای عکس‌هایی که
 // از قبل (قبل از این تغییر) آپلود شدن.
-var allowedThumbWidths = new HashSet<int> { 96, 160, 240, 320, 480, 640, 960 };
+var allowedThumbWidths = new HashSet<int> { 96, 160, 240, 320, 480, 640, 960, 1200 };
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value;
