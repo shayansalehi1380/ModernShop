@@ -1191,6 +1191,10 @@ async function openProductForm(id){
               <input class="input" id="pf-stock" type="number" value="${p.stockQuantity}" ${isVariable ? "disabled" : ""} placeholder="۰" />
             </div>
           </div>
+          <div class="field">
+            <label>گارانتی (اختیاری)</label>
+            <input class="input" id="pf-guarantee" maxlength="200" value="${escapeHtml(p.guarantee||"")}" placeholder="مثلاً: ۱۲ ماه گارانتی تعویض" />
+          </div>
           <div class="switch-row">
             <div class="lbl">فعال در فروشگاه<small>محصولات غیرفعال برای مشتری نمایش داده نمی‌شوند</small></div>
             <label class="switch"><input type="checkbox" id="pf-active" ${p.isActive?"checked":""}><span class="track"><span class="knob"></span></span></label>
@@ -1459,6 +1463,7 @@ async function saveProduct(existingId){
   const discountPrice = discountVal ? parseFloat(discountVal) : null;
   const stockQuantity = parseInt(document.getElementById("pf-stock").value) || 0;
   const forceLowStockBadge = document.getElementById("pf-force-low-stock").checked;
+  const guarantee = document.getElementById("pf-guarantee").value.trim();
   const isActive = document.getElementById("pf-active").checked;
 
   const isVariableType = document.getElementById("pf-type").value === "variable";
@@ -1482,7 +1487,7 @@ async function saveProduct(existingId){
     if(key && value) specifications.push({ key, value });
   });
 
-  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, forceLowStockBadge, isActive, imageUrl, galleryImageUrls, specifications, variants };
+  const payload = { name, slug, sku, description, categoryId, brandId, price, discountPrice, stockQuantity, forceLowStockBadge, guarantee, isActive, imageUrl, galleryImageUrls, specifications, variants };
 
   const btn = document.getElementById("product-save-btn");
   btn.disabled = true;

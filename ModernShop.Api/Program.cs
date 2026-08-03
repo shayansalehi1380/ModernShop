@@ -23,6 +23,8 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.Configure<AdminSettings>(builder.Configuration.GetSection("Admin"));
+builder.Services.Configure<TorobSettings>(builder.Configuration.GetSection("Torob"));
+builder.Services.AddSingleton<TorobTokenValidator>();
 builder.Services.AddScoped<SeoPageRenderer>();
 builder.Services.AddHostedService<CartReservationCleanupService>();
 

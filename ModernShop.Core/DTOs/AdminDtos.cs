@@ -52,6 +52,7 @@ namespace ModernShop.Core.DTOs
         public int StockQuantity { get; set; }
         public bool ForceLowStockBadge { get; set; }
         public bool IsActive { get; set; }
+        public string? Guarantee { get; set; }
         public string? ImageUrl { get; set; }
         public List<string> GalleryImageUrls { get; set; } = new();
         public List<AdminProductSpecDto> Specifications { get; set; } = new();
@@ -71,6 +72,7 @@ namespace ModernShop.Core.DTOs
         public int StockQuantity { get; set; }
         public bool ForceLowStockBadge { get; set; }
         public bool IsActive { get; set; } = true;
+        public string? Guarantee { get; set; }
         public string? ImageUrl { get; set; }
         public List<string>? GalleryImageUrls { get; set; }
         public List<AdminProductSpecDto> Specifications { get; set; } = new();

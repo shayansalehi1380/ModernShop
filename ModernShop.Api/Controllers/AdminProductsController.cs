@@ -81,7 +81,8 @@ public class AdminProductsController : ControllerBase
             Price = request.Price,
             DiscountPrice = request.DiscountPrice,
             ForceLowStockBadge = request.ForceLowStockBadge,
-            IsActive = request.IsActive
+            IsActive = request.IsActive,
+            Guarantee = string.IsNullOrWhiteSpace(request.Guarantee) ? null : request.Guarantee.Trim()
         };
 
         ApplyVariantsSpecsAndStock(product, request);
@@ -120,6 +121,7 @@ public class AdminProductsController : ControllerBase
         product.DiscountPrice = request.DiscountPrice;
         product.ForceLowStockBadge = request.ForceLowStockBadge;
         product.IsActive = request.IsActive;
+        product.Guarantee = string.IsNullOrWhiteSpace(request.Guarantee) ? null : request.Guarantee.Trim();
 
         product.Specifications.Clear();
         foreach (var spec in BuildSpecifications(request))
@@ -228,6 +230,7 @@ public class AdminProductsController : ControllerBase
         StockQuantity = product.StockQuantity,
         ForceLowStockBadge = product.ForceLowStockBadge,
         IsActive = product.IsActive,
+        Guarantee = product.Guarantee,
         ImageUrl = product.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl
                    ?? product.Images.FirstOrDefault()?.ImageUrl,
         GalleryImageUrls = product.Images

@@ -24,6 +24,9 @@ public class Product
     public bool ForceLowStockBadge { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    // متن گارانتی محصول (اختیاری) - مثلاً برای اعلام به ترب یا نمایش رو صفحه محصول
+    public string? Guarantee { get; set; }
+
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     public ICollection<ProductSpecification> Specifications { get; set; } = new List<ProductSpecification>();
