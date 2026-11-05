@@ -339,11 +339,9 @@ namespace ModernShop.Infrastructure.Migrations
 
                     b.HasIndex("CartId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductVariantId");
 
                     b.HasIndex("ProductId", "ProductVariantId", "ReservedUntil");
-
-                    b.HasIndex("ProductVariantId");
 
                     b.ToTable("CartItems");
                 });
@@ -491,6 +489,9 @@ namespace ModernShop.Infrastructure.Migrations
                     b.Property<string>("ShippingFullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ShippingMethod")
+                        .HasColumnType("int");
 
                     b.Property<string>("ShippingPhone")
                         .IsRequired()
@@ -680,6 +681,12 @@ namespace ModernShop.Infrastructure.Migrations
                     b.Property<decimal?>("DiscountPrice")
                         .HasColumnType("decimal(18,0)");
 
+                    b.Property<bool>("ForceLowStockBadge")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Guarantee")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -696,6 +703,9 @@ namespace ModernShop.Infrastructure.Migrations
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SnappshopSku")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
