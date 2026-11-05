@@ -7,13 +7,12 @@
     <link id="favicon-16" rel="icon" type="image/png" sizes="16x16" href="images/favicon-loading.gif" />
     <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
     <link id="favicon-shortcut" rel="shortcut icon" href="images/favicon-loading.gif" />
-    <script>window.addEventListener('load',()=>{const a=document.getElementById('favicon-32'),b=document.getElementById('favicon-16'),c=document.getElementById('favicon-shortcut');if(a)a.href='images/favicon-32x32.png';if(b)b.href='images/favicon-16x16.png';if(c)c.href='images/favicon.ico';});</script>
+    <script>window.addEventListener('load', () => { const a = document.getElementById('favicon-32'), b = document.getElementById('favicon-16'), c = document.getElementById('favicon-shortcut'); if (a) a.href = 'images/favicon-32x32.png'; if (b) b.href = 'images/favicon-16x16.png'; if (c) c.href = 'images/favicon.ico'; });</script>
     <title id="page-title">دُرین مارکت | در حال بارگذاری...</title>
     <meta id="meta-description" name="description" content="" />
     <meta name="robots" content="index, follow" />
     <script type="application/ld+json" id="jsonld-product"></script>
     <!--SEO_META_INJECT-->
-
     <!-- فونت وزیرمتن -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -42,10 +41,7 @@
         html, body {
             font-family: 'Vazirmatn', system-ui, sans-serif;
             color: var(--color-foreground);
-            background:
-                radial-gradient(1300px 700px at 12% -10%, color-mix(in srgb, var(--color-gold) 5%, transparent), transparent 60%),
-                radial-gradient(1300px 700px at 100% 100%, color-mix(in srgb, var(--color-emerald) 5%, transparent), transparent 60%),
-                var(--color-bg);
+            background: radial-gradient(1300px 700px at 12% -10%, color-mix(in srgb, var(--color-gold) 5%, transparent), transparent 60%), radial-gradient(1300px 700px at 100% 100%, color-mix(in srgb, var(--color-emerald) 5%, transparent), transparent 60%), var(--color-bg);
             background-repeat: no-repeat;
         }
 
@@ -120,9 +116,9 @@
             touch-action: pan-y;
         }
 
-        .zoom-wrap.dragging {
-            cursor: grabbing;
-        }
+            .zoom-wrap.dragging {
+                cursor: grabbing;
+            }
 
         .zoom-img {
             transition: transform 0.4s ease;
@@ -147,10 +143,11 @@
             align-items: baseline;
             gap: 0.5rem 0.75rem;
         }
-        .price-row .old-price {
-            order: 3;
-            width: 100%;
-        }
+
+            .price-row .old-price {
+                order: 3;
+                width: 100%;
+            }
 
         .carousel-wrap .track.cursor-grabbing {
             cursor: grabbing;
@@ -230,171 +227,171 @@
 
     <div id="header-placeholder"></div>
 
-<main>
+    <main>
 
-    <!-- breadcrumb -->
-    <div class="border-b border-line bg-surface">
-        <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
-            <a href="home" class="hover:text-emerald">صفحه اصلی</a>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
-            <a id="breadcrumb-category" href="shop" class="hover:text-emerald">دسته‌بندی</a>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
-            <span id="breadcrumb-title" class="truncate text-foreground/70">در حال بارگذاری...</span>
-        </div>
-    </div>
-
-    <!-- ============ loading skeleton ============ -->
-    <div id="loading-state" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-            <div class="skeleton aspect-square rounded-3xl"></div>
-            <div class="space-y-4">
-                <div class="skeleton h-4 w-24 rounded"></div>
-                <div class="skeleton h-8 w-3/4 rounded"></div>
-                <div class="skeleton h-4 w-32 rounded"></div>
-                <div class="skeleton h-20 w-full rounded-2xl"></div>
-                <div class="skeleton h-12 w-full rounded-2xl"></div>
+        <!-- breadcrumb -->
+        <div class="border-b border-line bg-surface">
+            <div class="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 text-xs text-muted sm:px-6 lg:px-8">
+                <a href="home" class="hover:text-emerald">صفحه اصلی</a>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+                <a id="breadcrumb-category" href="shop" class="hover:text-emerald">دسته‌بندی</a>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+                <span id="breadcrumb-title" class="truncate text-foreground/70">در حال بارگذاری...</span>
             </div>
         </div>
-    </div>
 
-    <!-- ============ empty / not found ============ -->
-    <div id="not-found-state" class="mx-auto hidden max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
-        <p class="text-lg font-bold">محصول مورد نظر یافت نشد</p>
-        <a href="shop" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به فروشگاه</a>
-    </div>
-
-    <!-- ============ PRODUCT MAIN ============ -->
-    <section id="product-content" class="mx-auto hidden max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-
-            <!-- gallery -->
-            <div>
-                <div class="zoom-wrap relative aspect-square overflow-hidden rounded-3xl bg-media">
-                    <button onclick="toggleGalleryWish()" id="gallery-wish" class="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
-                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>
-                    </button>
-                    <img id="main-image" src="" onerror="onProductImgError(this)" onclick="openGalleryLightbox()" fetchpriority="high" draggable="false" class="zoom-img h-full w-full cursor-zoom-in object-cover" />
-                    <button onclick="galleryStep(1)" id="gallery-next" class="absolute left-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر بعدی">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
-                    </button>
-                    <button onclick="galleryStep(-1)" id="gallery-prev" class="absolute right-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر قبلی">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6" /></svg>
-                    </button>
+        <!-- ============ loading skeleton ============ -->
+        <div id="loading-state" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+                <div class="skeleton aspect-square rounded-3xl"></div>
+                <div class="space-y-4">
+                    <div class="skeleton h-4 w-24 rounded"></div>
+                    <div class="skeleton h-8 w-3/4 rounded"></div>
+                    <div class="skeleton h-4 w-32 rounded"></div>
+                    <div class="skeleton h-20 w-full rounded-2xl"></div>
+                    <div class="skeleton h-12 w-full rounded-2xl"></div>
                 </div>
-                <div id="thumb-row" class="mt-3 flex gap-3 overflow-x-auto no-scrollbar"></div>
             </div>
+        </div>
 
-            <!-- info -->
-            <div class="lg:sticky lg:top-24">
-                <div class="flex items-center gap-2 text-xs text-muted">
-                    <span id="info-category"></span>
-                </div>
-                <h1 id="product-name" class="mt-2 text-2xl font-extrabold leading-relaxed sm:text-[28px]"></h1>
+        <!-- ============ empty / not found ============ -->
+        <div id="not-found-state" class="mx-auto hidden max-w-7xl px-4 py-24 text-center sm:px-6 lg:px-8">
+            <p class="text-lg font-bold">محصول مورد نظر یافت نشد</p>
+            <a href="shop" class="mt-4 inline-flex rounded-full bg-emerald px-5 py-2.5 text-sm font-semibold text-white">بازگشت به فروشگاه</a>
+        </div>
 
-                <div class="mt-3 flex items-center gap-3">
-                    <div class="flex items-center gap-1 text-sm">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z" /></svg>
-                        <span class="ticker font-semibold" id="avg-rating">-</span>
+        <!-- ============ PRODUCT MAIN ============ -->
+        <section id="product-content" class="mx-auto hidden max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+
+                <!-- gallery -->
+                <div>
+                    <div class="zoom-wrap relative aspect-square overflow-hidden rounded-3xl bg-media">
+                        <button onclick="toggleGalleryWish()" id="gallery-wish" class="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-foreground/70" aria-label="افزودن به علاقه‌مندی‌ها">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8Z" /></svg>
+                        </button>
+                        <img id="main-image" src="" onerror="onProductImgError(this)" onclick="openGalleryLightbox()" fetchpriority="high" draggable="false" class="zoom-img h-full w-full cursor-zoom-in object-cover" />
+                        <button onclick="galleryStep(1)" id="gallery-next" class="absolute left-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر بعدی">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+                        </button>
+                        <button onclick="galleryStep(-1)" id="gallery-prev" class="absolute right-3 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface/90 text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="تصویر قبلی">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6" /></svg>
+                        </button>
                     </div>
-                    <a href="#reviews-tab" class="text-xs text-muted hover:text-emerald"><span id="review-count">0</span> نظر</a>
-                    <span class="h-3 w-px bg-line"></span>
-                    <span class="text-xs text-emerald" id="sku-display"></span>
+                    <div id="thumb-row" class="mt-3 flex gap-3 overflow-x-auto no-scrollbar"></div>
                 </div>
 
-                <div class="mt-5 flex items-baseline gap-3 rounded-2xl bg-surface-muted p-4">
-                    <span class="ticker text-2xl font-extrabold" id="main-price"></span>
-                    <span class="text-xs text-muted">تومان</span>
-                    <span class="ticker text-sm text-muted line-through hidden" id="old-price"></span>
-                    <span class="rounded-full bg-danger/10 px-2 py-1 text-[11px] font-semibold text-danger hidden" id="discount-pct"></span>
-                </div>
-
-                <div id="stock-status" class="mt-4 flex items-center gap-2 text-xs"></div>
-
-                <!-- color / variant -->
-                <div id="variant-block" class="mt-6 hidden">
-                    <div class="mb-2.5 text-sm font-semibold">رنگ: <span id="color-label" class="font-normal text-muted"></span></div>
-                    <div id="color-swatches" class="flex flex-wrap items-center gap-2.5"></div>
-                </div>
-                <div id="size-block" class="mt-4 hidden">
-                    <div class="mb-2.5 text-sm font-semibold">سایز: <span id="size-label" class="font-normal text-muted"></span></div>
-                    <div id="size-swatches" class="flex flex-wrap items-center gap-2.5"></div>
-                </div>
-
-                <!-- add to cart / qty stepper - دقیقاً همون رفتار کارت محصول تو بقیه‌ی سایت -->
-                <div class="mt-7 flex items-stretch gap-3">
-                    <div class="flex-1" id="pdp-cart-area"></div>
-                </div>
-
-                <!-- کالاهای انتخابی شما - لیست همه‌ی رنگ/سایزهایی از همین محصول که تا الان به سبد اضافه شده -->
-                <div id="pdp-selected-list" class="mt-4 hidden rounded-2xl border border-line bg-surface-muted p-4">
-                    <p class="mb-3 text-sm font-semibold">کالاهای انتخابی شما</p>
-                    <div id="pdp-selected-items" class="flex flex-col gap-2"></div>
-                </div>
-
-                <!-- trust strip -->
-                <div class="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-2">
-                    <div class="flex items-center gap-2.5 text-xs text-muted">
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z" /><path d="m9 12 2 2 4-4" /></svg></span>
-                        ضمانت اصالت کالا
+                <!-- info -->
+                <div class="lg:sticky lg:top-24">
+                    <div class="flex items-center gap-2 text-xs text-muted">
+                        <span id="info-category"></span>
                     </div>
-                    <div class="flex items-center gap-2.5 text-xs text-muted">
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg></span>
-                        ۷ روز ضمانت بازگشت
-                    </div>
-                    <div class="flex items-center gap-2.5 text-xs text-muted">
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V6H2v11h2" /><path d="M14 10h4l3 3v4h-2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg></span>
-                        ارسال رایگان بالای ۵۰۰ هزار تومان
-                    </div>
-                    <div class="flex items-center gap-2.5 text-xs text-muted">
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3Z" /><path d="M3 19a2 2 0 0 0 2 2h1v-6H3Z" /></svg></span>
-                        پشتیبانی ۲۴ ساعته
-                    </div>
-                </div>
+                    <h1 id="product-name" class="mt-2 text-2xl font-extrabold leading-relaxed sm:text-[28px]"></h1>
 
-                <!-- سوال درباره محصول - در واقع همون کانال واتساپ سایته -->
-                <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface-muted p-4 text-center lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:text-right">
-                    <div class="flex flex-col items-center gap-3 lg:flex-row lg:text-right">
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                        </span>
-                        <div>
-                            <div class="text-sm font-semibold">سوالی درباره این محصول دارید؟</div>
-                            <div class="text-xs text-muted">همکاران ما در واتساپ پاسخگوی شما هستند</div>
+                    <div class="mt-3 flex items-center gap-3">
+                        <div class="flex items-center gap-1 text-sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-gold"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z" /></svg>
+                            <span class="ticker font-semibold" id="avg-rating">-</span>
+                        </div>
+                        <a href="#reviews-tab" class="text-xs text-muted hover:text-emerald"><span id="review-count">0</span> نظر</a>
+                        <span class="h-3 w-px bg-line"></span>
+                        <span class="text-xs text-emerald" id="sku-display"></span>
+                    </div>
+
+                    <div class="mt-5 flex items-baseline gap-3 rounded-2xl bg-surface-muted p-4">
+                        <span class="ticker text-2xl font-extrabold" id="main-price"></span>
+                        <span class="text-xs text-muted">تومان</span>
+                        <span class="ticker text-sm text-muted line-through hidden" id="old-price"></span>
+                        <span class="rounded-full bg-danger/10 px-2 py-1 text-[11px] font-semibold text-danger hidden" id="discount-pct"></span>
+                    </div>
+
+                    <div id="stock-status" class="mt-4 flex items-center gap-2 text-xs"></div>
+
+                    <!-- color / variant -->
+                    <div id="variant-block" class="mt-6 hidden">
+                        <div class="mb-2.5 text-sm font-semibold">رنگ: <span id="color-label" class="font-normal text-muted"></span></div>
+                        <div id="color-swatches" class="flex flex-wrap items-center gap-2.5"></div>
+                    </div>
+                    <div id="size-block" class="mt-4 hidden">
+                        <div class="mb-2.5 text-sm font-semibold">سایز: <span id="size-label" class="font-normal text-muted"></span></div>
+                        <div id="size-swatches" class="flex flex-wrap items-center gap-2.5"></div>
+                    </div>
+
+                    <!-- add to cart / qty stepper - دقیقاً همون رفتار کارت محصول تو بقیه‌ی سایت -->
+                    <div class="mt-7 flex items-stretch gap-3">
+                        <div class="flex-1" id="pdp-cart-area"></div>
+                    </div>
+
+                    <!-- کالاهای انتخابی شما - لیست همه‌ی رنگ/سایزهایی از همین محصول که تا الان به سبد اضافه شده -->
+                    <div id="pdp-selected-list" class="mt-4 hidden rounded-2xl border border-line bg-surface-muted p-4">
+                        <p class="mb-3 text-sm font-semibold">کالاهای انتخابی شما</p>
+                        <div id="pdp-selected-items" class="flex flex-col gap-2"></div>
+                    </div>
+
+                    <!-- trust strip -->
+                    <div class="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-2">
+                        <div class="flex items-center gap-2.5 text-xs text-muted">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.9 8 11 4.6-2.1 8-6 8-11V5Z" /><path d="m9 12 2 2 4-4" /></svg></span>
+                            ضمانت اصالت کالا
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-muted">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg></span>
+                            تضمین خرید
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-muted">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V6H2v11h2" /><path d="M14 10h4l3 3v4h-2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg></span>
+                            ارسال سریع
+                        </div>
+                        <div class="flex items-center gap-2.5 text-xs text-muted">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3Z" /><path d="M3 19a2 2 0 0 0 2 2h1v-6H3Z" /></svg></span>
+                            پشتیبانی ۲۴ ساعته
                         </div>
                     </div>
-                    <a href="https://wa.me/989015538133" target="_blank" rel="noopener" class="shrink-0 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-semibold text-white transition-colors duration-200">ارتباط با ما</a>
+
+                    <!-- سوال درباره محصول - در واقع همون کانال واتساپ سایته -->
+                    <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface-muted p-4 text-center lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:text-right">
+                        <div class="flex flex-col items-center gap-3 lg:flex-row lg:text-right">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-soft text-emerald">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>
+                            </span>
+                            <div>
+                                <div class="text-sm font-semibold">سوالی درباره این محصول دارید؟</div>
+                                <div class="text-xs text-muted">همکاران ما در واتساپ پاسخگوی شما هستند</div>
+                            </div>
+                        </div>
+                        <a href="https://wa.me/989395370277" target="_blank" rel="noopener" class="shrink-0 rounded-full bg-emerald bg-emerald-hover px-4 py-2 text-xs font-semibold text-white transition-colors duration-200">ارتباط با ما</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ============ TABS ============ -->
-        <div class="mt-14 border-b border-line">
-            <div class="flex gap-6 overflow-x-auto no-scrollbar">
-                <button onclick="switchTab('desc')" data-tab="desc" class="tab-btn active shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">توضیحات محصول</button>
-                <button onclick="switchTab('specs')" data-tab="specs" class="tab-btn shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">مشخصات فنی</button>
-                <button onclick="switchTab('reviews')" data-tab="reviews" class="tab-btn shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">نظرات (<span id="tab-review-count">0</span>)</button>
+            <!-- ============ TABS ============ -->
+            <div class="mt-14 border-b border-line">
+                <div class="flex gap-6 overflow-x-auto no-scrollbar">
+                    <button onclick="switchTab('desc')" data-tab="desc" class="tab-btn active shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">توضیحات محصول</button>
+                    <button onclick="switchTab('specs')" data-tab="specs" class="tab-btn shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">مشخصات فنی</button>
+                    <button onclick="switchTab('reviews')" data-tab="reviews" class="tab-btn shrink-0 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-muted">نظرات (<span id="tab-review-count">0</span>)</button>
+                </div>
             </div>
-        </div>
 
-        <div class="py-8" id="reviews-tab">
-            <div id="tab-desc" class="tab-panel max-w-3xl text-sm leading-8 text-foreground/80"></div>
-            <div id="tab-specs" class="tab-panel hidden max-w-2xl overflow-hidden rounded-2xl border border-line"></div>
-            <div id="tab-reviews" class="tab-panel hidden max-w-2xl"></div>
-        </div>
-    </section>
+            <div class="py-8" id="reviews-tab">
+                <div id="tab-desc" class="tab-panel max-w-3xl text-sm leading-8 text-foreground/80"></div>
+                <div id="tab-specs" class="tab-panel hidden max-w-2xl overflow-hidden rounded-2xl border border-line"></div>
+                <div id="tab-reviews" class="tab-panel hidden max-w-2xl"></div>
+            </div>
+        </section>
 
-    <!-- related products -->
-    <section id="related-section" class="mx-auto hidden max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mb-7">
-            <span class="text-xs font-medium tracking-widest text-emerald">مرتبط با این کالا</span>
-            <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات مشابه</h2>
-        </div>
-        <div id="carousel-related" class="carousel-wrap relative"></div>
-    </section>
+        <!-- related products -->
+        <section id="related-section" class="mx-auto hidden max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <div class="mb-7">
+                <span class="text-xs font-medium tracking-widest text-emerald">مرتبط با این کالا</span>
+                <h2 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">محصولات مشابه</h2>
+            </div>
+            <div id="carousel-related" class="carousel-wrap relative"></div>
+        </section>
 
     </main>
 
-<div id="footer-placeholder"></div>
+    <div id="footer-placeholder"></div>
     <div id="mobile-nav-placeholder"></div>
 
     <!-- mobile sticky add-to-cart bar - بالای نوار پایین موبایل قرار می‌گیره، نه روش -->
@@ -411,7 +408,7 @@
 
     <script src="js/api.js"></script>
     <script src="js/layout.js"></script>
-<script src="js/search.js"></script>
+    <script src="js/search.js"></script>
     <script src="js/mobile-nav.js"></script>
     <script src="js/product-card.js"></script>
     <script src="js/color-map.js"></script>
@@ -549,10 +546,10 @@
             galleryIndex = Math.max(0, images.indexOf(mainImg));
             document.getElementById('main-image').src = productThumb(mainImg.imageUrl, 1200);
             document.getElementById('thumb-row').innerHTML = images.map((img, i) => `
-            <button onclick="setMainImage(this, '${img.imageUrl}')" class="thumb ${img.imageUrl === mainImg.imageUrl ? 'active' : ''} h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-line">
-              <img src="${productThumb(img.imageUrl, 160)}" onerror="onProductImgError(this)" class="h-full w-full object-cover" />
-            </button>
-          `).join('');
+                    <button onclick="setMainImage(this, '${img.imageUrl}')" class="thumb ${img.imageUrl === mainImg.imageUrl ? 'active' : ''} h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-line">
+                      <img src="${productThumb(img.imageUrl, 160)}" onerror="onProductImgError(this)" class="h-full w-full object-cover" />
+                    </button>
+                  `).join('');
             updateGalleryArrows();
 
             // رنگ/سایز، قیمت نهایی (شامل تخفیف یا نه بسته به تنوع)، موجودی و ناحیه‌ی افزودن به سبد -
@@ -568,15 +565,15 @@
             const specsWrap = document.getElementById('tab-specs');
             if (product.specifications && product.specifications.length) {
                 specsWrap.innerHTML = `
-              <div class="grid grid-cols-2 divide-x divide-line divide-x-reverse border-b border-line bg-surface-muted text-sm">
-                <div class="px-4 py-3 font-semibold">مشخصه</div><div class="px-4 py-3 font-semibold">مقدار</div>
-              </div>
-              ${product.specifications.map((s, i) => `
-                <div class="grid grid-cols-2 divide-x divide-line divide-x-reverse ${i < product.specifications.length - 1 ? 'border-b border-line' : ''} text-sm">
-                  <div class="px-4 py-3 text-muted">${s.key}</div><div class="px-4 py-3">${s.value}</div>
-                </div>
-              `).join('')}
-            `;
+                      <div class="grid grid-cols-2 divide-x divide-line divide-x-reverse border-b border-line bg-surface-muted text-sm">
+                        <div class="px-4 py-3 font-semibold">مشخصه</div><div class="px-4 py-3 font-semibold">مقدار</div>
+                      </div>
+                      ${product.specifications.map((s, i) => `
+                        <div class="grid grid-cols-2 divide-x divide-line divide-x-reverse ${i < product.specifications.length - 1 ? 'border-b border-line' : ''} text-sm">
+                          <div class="px-4 py-3 text-muted">${s.key}</div><div class="px-4 py-3">${s.value}</div>
+                        </div>
+                      `).join('')}
+                    `;
             } else {
                 specsWrap.innerHTML = `<p class="p-4 text-sm text-muted">مشخصات فنی ثبت نشده است.</p>`;
             }
@@ -585,30 +582,30 @@
             const reviewsWrap = document.getElementById('tab-reviews');
             if (product.reviews && product.reviews.length) {
                 reviewsWrap.innerHTML = `
-              <div class="mb-6 flex items-center gap-4 rounded-2xl bg-surface-muted p-5">
-                <div class="text-center">
-                  <div class="ticker text-3xl font-extrabold">${toFaDigits(product.averageRating.toFixed(1))}</div>
-                </div>
-                <div class="text-xs text-muted">بر اساس ${toFaDigits(product.reviewCount)} نظر خریداران</div>
-              </div>
-              <div class="space-y-5">
-                ${product.reviews.map((r, i) => `
-                  <div class="${i < product.reviews.length - 1 ? 'border-b border-line' : ''} pb-5">
-                    <div class="flex items-center justify-between">
-                      <span class="text-sm font-semibold">${r.userFullName}</span>
-                      <span class="ticker text-[11px] text-muted">${new Date(r.createdAt).toLocaleDateString('fa-IR')}</span>
-                    </div>
-                    <div class="mt-1 flex gap-0.5">${starsHtml(r.rating)}</div>
-                    <p class="mt-2 text-sm leading-7 text-foreground/80">${r.comment || ''}</p>
-                    ${r.adminReply ? `
-                    <div class="mt-3 rounded-xl border-r-4 border-emerald bg-surface-muted p-3">
-                      <div class="mb-1 text-xs font-bold text-emerald">پاسخ فروشگاه</div>
-                      <p class="text-xs leading-6 text-foreground/80">${r.adminReply}</p>
-                    </div>` : ''}
-                  </div>
-                `).join('')}
-              </div>
-            `;
+                      <div class="mb-6 flex items-center gap-4 rounded-2xl bg-surface-muted p-5">
+                        <div class="text-center">
+                          <div class="ticker text-3xl font-extrabold">${toFaDigits(product.averageRating.toFixed(1))}</div>
+                        </div>
+                        <div class="text-xs text-muted">بر اساس ${toFaDigits(product.reviewCount)} نظر خریداران</div>
+                      </div>
+                      <div class="space-y-5">
+                        ${product.reviews.map((r, i) => `
+                          <div class="${i < product.reviews.length - 1 ? 'border-b border-line' : ''} pb-5">
+                            <div class="flex items-center justify-between">
+                              <span class="text-sm font-semibold">${r.userFullName}</span>
+                              <span class="ticker text-[11px] text-muted">${new Date(r.createdAt).toLocaleDateString('fa-IR')}</span>
+                            </div>
+                            <div class="mt-1 flex gap-0.5">${starsHtml(r.rating)}</div>
+                            <p class="mt-2 text-sm leading-7 text-foreground/80">${r.comment || ''}</p>
+                            ${r.adminReply ? `
+                            <div class="mt-3 rounded-xl border-r-4 border-emerald bg-surface-muted p-3">
+                              <div class="mb-1 text-xs font-bold text-emerald">پاسخ فروشگاه</div>
+                              <p class="text-xs leading-6 text-foreground/80">${r.adminReply}</p>
+                            </div>` : ''}
+                          </div>
+                        `).join('')}
+                      </div>
+                    `;
             } else {
                 reviewsWrap.innerHTML = `<p class="text-sm text-muted">هنوز نظری برای این محصول ثبت نشده است.</p>`;
             }
@@ -696,10 +693,10 @@
         function renderLightboxThumbs() {
             const wrap = document.getElementById('lightbox-thumbs');
             wrap.innerHTML = galleryImages.map((img, i) => `
-              <button onclick="setGalleryIndex(${i})" class="lightbox-thumb h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 border-transparent sm:h-16 sm:w-16">
-                <img src="${productThumb(img.imageUrl, 160)}" class="h-full w-full object-cover" />
-              </button>
-            `).join('');
+                      <button onclick="setGalleryIndex(${i})" class="lightbox-thumb h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 border-transparent sm:h-16 sm:w-16">
+                        <img src="${productThumb(img.imageUrl, 160)}" class="h-full w-full object-cover" />
+                      </button>
+                    `).join('');
         }
 
         // اسلایدها رو از صفر و بدون هیچ انیمیشنی (چون تازه ساخته شدن) دقیقاً سر جای خودشون
@@ -923,10 +920,10 @@
 
             const colors = Object.keys(variantsByColor);
             document.getElementById('color-swatches').innerHTML = colors.map((c, i) => `
-              <button onclick="selectColor('${c.replace(/'/g, "\\'")}', this)" class="color-swatch ${i === 0 ? 'active' : ''} h-9 w-9 rounded-full border-2 ${i === 0 ? '' : 'border-transparent'} p-0.5" aria-label="${c}">
-                <span class="block h-full w-full rounded-full border border-line" style="background:${colorToHex(c)}"></span>
-              </button>
-            `).join('');
+                      <button onclick="selectColor('${c.replace(/'/g, "\\'")}', this)" class="color-swatch ${i === 0 ? 'active' : ''} h-9 w-9 rounded-full border-2 ${i === 0 ? '' : 'border-transparent'} p-0.5" aria-label="${c}">
+                        <span class="block h-full w-full rounded-full border border-line" style="background:${colorToHex(c)}"></span>
+                      </button>
+                    `).join('');
 
             selectColor(colors[0], document.querySelector('#color-swatches .color-swatch'));
         }
@@ -940,8 +937,8 @@
             if (sizes.length) {
                 document.getElementById('size-block').classList.remove('hidden');
                 document.getElementById('size-swatches').innerHTML = sizes.map((v, i) => `
-                  <button onclick="selectSize(${v.id}, '${(v.size || '').replace(/'/g, "\\'")}', this)" class="size-swatch ${i === 0 ? 'active border-emerald text-emerald' : 'border-line'} rounded-xl border-2 px-3.5 py-1.5 text-xs font-semibold">${v.size}</button>
-                `).join('');
+                          <button onclick="selectSize(${v.id}, '${(v.size || '').replace(/'/g, "\\'")}', this)" class="size-swatch ${i === 0 ? 'active border-emerald text-emerald' : 'border-line'} rounded-xl border-2 px-3.5 py-1.5 text-xs font-semibold">${v.size}</button>
+                        `).join('');
                 selectSize(sizes[0].id, sizes[0].size, document.querySelector('#size-swatches .size-swatch'));
             } else {
                 document.getElementById('size-block').classList.add('hidden');
@@ -1042,15 +1039,15 @@
             }
             if (qty > 0) {
                 return `<div class="flex items-center justify-between rounded-2xl border border-emerald bg-emerald-soft px-3 py-2">
-                  <button type="button" onclick="pdpChangeQty(-1)" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" aria-label="کم کردن">−</button>
-                  <span class="ticker text-base font-bold text-emerald-deep">${qty}</span>
-                  <button type="button" onclick="pdpChangeQty(1)" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" aria-label="زیاد کردن">+</button>
-                </div>`;
+                          <button type="button" onclick="pdpChangeQty(-1)" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" aria-label="کم کردن">−</button>
+                          <span class="ticker text-base font-bold text-emerald-deep">${qty}</span>
+                          <button type="button" onclick="pdpChangeQty(1)" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald text-lg font-bold leading-none" aria-label="زیاد کردن">+</button>
+                        </div>`;
             }
             return `<button type="button" onclick="pdpAddToCart()" class="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald bg-emerald-hover py-3 text-sm font-bold text-white transition-colors duration-200">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
-              افزودن به سبد خرید
-            </button>`;
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+                      افزودن به سبد خرید
+                    </button>`;
         }
 
         function refreshPdpCartArea() {
@@ -1097,21 +1094,21 @@
                 const variant = (product.variants || []).find(v => v.id === line.productVariantId) || null;
                 const label = pdpVariantLabel(variant);
                 return `
-                <div class="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
-                    <div class="flex items-center gap-3">
-                        <img src="${productThumb(mainImage?.imageUrl, 96) || ''}" onerror="onProductImgError(this)" class="h-12 w-12 shrink-0 rounded-lg object-cover" alt="" />
-                        <div>
-                            <p class="text-xs font-semibold leading-snug">${escapeHtmlPdp(product.name)}</p>
-                            ${label ? `<p class="mt-0.5 text-[11px] text-muted">${escapeHtmlPdp(label)}</p>` : ''}
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="ticker text-xs font-bold text-emerald-deep">${toFaDigits(line.quantity)} عدد</span>
-                        <button type="button" onclick="removeSelectedLine(${line.id})" class="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger" aria-label="حذف از سبد">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                </div>`;
+                        <div class="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface px-3 py-2.5">
+                            <div class="flex items-center gap-3">
+                                <img src="${productThumb(mainImage?.imageUrl, 96) || ''}" onerror="onProductImgError(this)" class="h-12 w-12 shrink-0 rounded-lg object-cover" alt="" />
+                                <div>
+                                    <p class="text-xs font-semibold leading-snug">${escapeHtmlPdp(product.name)}</p>
+                                    ${label ? `<p class="mt-0.5 text-[11px] text-muted">${escapeHtmlPdp(label)}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="ticker text-xs font-bold text-emerald-deep">${toFaDigits(line.quantity)} عدد</span>
+                                <button type="button" onclick="removeSelectedLine(${line.id})" class="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger" aria-label="حذف از سبد">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        </div>`;
             }).join('');
         }
 
@@ -1239,16 +1236,16 @@
                 return;
             }
             wrap.innerHTML = `
-            <div class="fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
-            <div class="fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
-            <button class="arrow-next absolute left-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت بعدی">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <button class="arrow-prev absolute right-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت قبلی">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-            </button>
-            <div class="track flex cursor-grab gap-4 overflow-x-auto pt-2 pb-2 select-none no-scrollbar"></div>
-          `;
+                    <div class="fade-right pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+                    <div class="fade-left pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-bg to-transparent transition-opacity duration-300 sm:w-16 opacity-0"></div>
+                    <button class="arrow-next absolute left-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت بعدی">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <button class="arrow-prev absolute right-1 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-surface text-foreground shadow-md transition hover:border-emerald hover:text-emerald active:scale-95" aria-label="کارت قبلی">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+                    </button>
+                    <div class="track flex cursor-grab gap-4 overflow-x-auto pt-2 pb-2 select-none no-scrollbar"></div>
+                  `;
             const track = wrap.querySelector('.track');
             track.innerHTML = items.map(p => `<div class="w-[220px] shrink-0 sm:w-[240px]">${ProductCard.render(p)}</div>`).join('');
             ProductCard.bind(track);

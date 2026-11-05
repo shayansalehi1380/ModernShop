@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -146,11 +147,6 @@
             background: var(--emerald-soft)
         }
 
-        .ship-opt.locked {
-            pointer-events: none;
-            opacity: .5
-        }
-
         .skeleton {
             background: linear-gradient(90deg, var(--surface-muted) 25%, var(--line) 37%, var(--surface-muted) 63%);
             background-size: 400% 100%;
@@ -282,23 +278,14 @@
                                 روش ارسال
                             </h2>
 
-                            <p id="shipping-method-locked" class="mt-4 text-sm text-muted">ابتدا استان و شهر را در بخش «اطلاعات گیرنده» انتخاب کنید.</p>
-
-                            <div id="shipping-method-options" class="mt-4 hidden flex-col gap-3">
-                                <label class="ship-opt selected flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-ship="prepaid">
-                                    <input type="radio" name="ship" value="prepaid" checked class="h-4 w-4 accent-emerald" />
-                                    <span class="flex-1">
-                                        <span class="block text-sm font-semibold">ارسال با پست پیشتاز</span>
-                                        <span class="block text-xs text-muted" id="ship-prepaid-desc">هزینه ارسال - همین‌جا همراه سفارش پرداخت می‌شود</span>
-                                    </span>
-                                </label>
-                                <label class="ship-opt flex cursor-pointer items-center gap-3 rounded-2xl border border-line p-4" data-ship="tipax-cod">
-                                    <input type="radio" name="ship" value="tipax-cod" class="h-4 w-4 accent-emerald" />
+                            <div class="mt-4">
+                                <div class="ship-opt selected flex items-center gap-3 rounded-2xl border border-line p-4">
+                                    <input type="radio" name="ship" value="tipax-cod" checked class="h-4 w-4 accent-emerald" />
                                     <span class="flex-1">
                                         <span class="block text-sm font-semibold">ارسال پس‌کرایه با تیپاکس</span>
                                         <span class="block text-xs text-muted">هزینه ارسال را هنگام تحویل، نقداً به مأمور تیپاکس پرداخت می‌کنید</span>
                                     </span>
-                                </label>
+                                </div>
                             </div>
                         </div>
 
@@ -340,8 +327,8 @@
                                 <span><span class="ticker font-semibold" id="sum-subtotal">۰</span> <span class="text-xs text-muted">تومان</span></span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-muted"> هزینه ارسال (پست پیشتاز)</span>
-                                <span><span class="ticker font-semibold" id="sum-shipping">۰</span> <span class="text-xs text-muted" id="sum-shipping-unit">تومان</span></span>
+                                <span class="text-muted">هزینه ارسال (تیپاکس)</span>
+                                <span><span class="ticker font-semibold" id="sum-shipping">پس‌کرایه</span></span>
                             </div>
                             <div class="flex items-center justify-between" id="sum-discount-row" style="display:none">
                                 <span class="text-muted">تخفیف (<span id="applied-code"></span>)</span>
@@ -416,37 +403,18 @@
         let currentCart = null;
         let existingAddressId = null;
 
-        /* ---------- روش ارسال: تا استان/شهر انتخاب نشه قفله ---------- */
-        // مقدار واقعی از /api/settings/shipping-cost خونده می‌شه (تو پنل مدیریت قابل تغییره)؛
-        // این عدد فقط یک مقدار پیش‌فرض برای قبل از لود شدن جوابه
-        let SHIPPING_PREPAID_COST = 95000;
-        let selectedShippingMethod = 'prepaid';
-
-        function isShippingMethodReady() {
-            return !!document.getElementById('province').value.trim() && !!document.getElementById('city').value.trim();
-        }
+        /* ---------- روش ارسال: فقط تیپاکس پس‌کرایه ---------- */
+        // ShippingMethod enum: Prepaid=0, TipaxCashOnDelivery=1
+        const SHIPPING_METHOD_TIPAX_COD = 1;
 
         function updateShippingMethodAvailability() {
-            const ready = isShippingMethodReady();
-            const locked = document.getElementById('shipping-method-locked');
-            const options = document.getElementById('shipping-method-options');
-            locked.classList.toggle('hidden', ready);
-            if (ready) {
-                options.classList.remove('hidden');
-                options.classList.add('flex');
-            } else {
-                options.classList.add('hidden');
-                options.classList.remove('flex');
-            }
             renderSummary();
         }
 
         async function init() {
             try {
-                const [cart, addresses, shippingSetting] = await Promise.all([Api.getCart(), Api.getAddresses(), Api.getShippingCost()]);
+                const [cart, addresses] = await Promise.all([Api.getCart(), Api.getAddresses()]);
                 currentCart = cart;
-                SHIPPING_PREPAID_COST = shippingSetting.prepaidShippingCost;
-                document.getElementById('ship-prepaid-desc').textContent = `هزینه ارسال ${formatPrice(SHIPPING_PREPAID_COST)} تومان - همین‌جا همراه سفارش پرداخت می‌شود`;
 
                 if (!currentCart.items || currentCart.items.length === 0) {
                     window.location.href = 'cart';
@@ -546,34 +514,21 @@
         function renderSummary() {
             if (!currentCart) return;
             document.getElementById('summary-items').innerHTML = currentCart.items.map(item => `
-            <div class="flex items-center gap-3">
-              <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-media">
-                <img src="${productThumb(item.imageUrl, 160)}" onerror="onProductImgError(this)" class="h-full w-full object-cover" />
-                <span class="ticker absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white">${toFaDigits(item.quantity)}</span>
-              </div>
-              <span class="flex-1 truncate text-xs">${item.productName}</span>
-              <span class="shrink-0 text-left text-xs font-semibold"><span class="ticker">${formatPrice(item.totalPrice)}</span> <span class="text-[10px] font-normal text-muted">تومان</span></span>
-            </div>
-          `).join('');
+                    <div class="flex items-center gap-3">
+                      <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-media">
+                        <img src="${productThumb(item.imageUrl, 160)}" onerror="onProductImgError(this)" class="h-full w-full object-cover" />
+                        <span class="ticker absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald text-[9px] font-bold text-white">${toFaDigits(item.quantity)}</span>
+                      </div>
+                      <span class="flex-1 truncate text-xs">${item.productName}</span>
+                      <span class="shrink-0 text-left text-xs font-semibold"><span class="ticker">${formatPrice(item.totalPrice)}</span> <span class="text-[10px] font-normal text-muted">تومان</span></span>
+                    </div>
+                  `).join('');
 
             document.getElementById('sum-subtotal').textContent = formatPrice(currentCart.subTotal);
 
-            const shippingReady = isShippingMethodReady();
-            const shippingCost = shippingReady && selectedShippingMethod === 'prepaid' ? SHIPPING_PREPAID_COST : 0;
-            const shippingEl = document.getElementById('sum-shipping');
-            const shippingUnitEl = document.getElementById('sum-shipping-unit');
-            if (!shippingReady) {
-                shippingEl.textContent = 'پس از انتخاب استان و شهر';
-                shippingUnitEl.style.display = 'none';
-            } else if (selectedShippingMethod === 'tipax-cod') {
-                shippingEl.textContent = 'پس‌کرایه (نقداً به مأمور)';
-                shippingUnitEl.style.display = 'none';
-            } else {
-                shippingEl.textContent = formatPrice(shippingCost);
-                shippingUnitEl.style.display = '';
-            }
-
-            document.getElementById('sum-total').textContent = formatPrice(currentCart.total + shippingCost);
+            // ارسال فقط با تیپاکس و پس‌کرایه است؛ هزینه‌ای به مبلغ نهایی اضافه نمی‌شه
+            document.getElementById('sum-shipping').textContent = 'پس‌کرایه';
+            document.getElementById('sum-total').textContent = formatPrice(currentCart.total);
 
             const discRow = document.getElementById('sum-discount-row');
             if (currentCart.discountAmount > 0) {
@@ -614,18 +569,6 @@
                 document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
                 opt.querySelector('input').checked = true;
-            });
-        });
-
-        /* ---------- shipping method option styling ---------- */
-        document.querySelectorAll('.ship-opt').forEach(opt => {
-            opt.addEventListener('click', () => {
-                if (!isShippingMethodReady()) return;
-                document.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                opt.querySelector('input').checked = true;
-                selectedShippingMethod = opt.dataset.ship;
-                renderSummary();
             });
         });
 
@@ -677,7 +620,7 @@
                 const savedAddress = await Api.upsertAddress(addressPayload);
 
                 const paymentMethod = 0; // Online (درگاه زرین‌پال)
-                const shippingMethod = selectedShippingMethod === 'tipax-cod' ? 1 : 0; // ShippingMethod enum: Prepaid=0, TipaxCashOnDelivery=1
+                const shippingMethod = SHIPPING_METHOD_TIPAX_COD; // فقط تیپاکس پس‌کرایه
 
                 const discountCode = localStorage.getItem(DISCOUNT_STORAGE_KEY) || null;
 

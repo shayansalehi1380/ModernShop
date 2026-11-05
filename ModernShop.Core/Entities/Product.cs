@@ -27,6 +27,8 @@ public class Product
     // متن گارانتی محصول (اختیاری) - مثلاً برای اعلام به ترب یا نمایش رو صفحه محصول
     public string? Guarantee { get; set; }
 
+    public string? SnappshopSku { get; set; }
+
     public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
     public ICollection<ProductSpecification> Specifications { get; set; } = new List<ProductSpecification>();

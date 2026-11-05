@@ -11,6 +11,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,24 @@ builder.Services.Configure<TorobSettings>(builder.Configuration.GetSection("Toro
 builder.Services.AddSingleton<TorobTokenValidator>();
 builder.Services.AddScoped<SeoPageRenderer>();
 builder.Services.AddHostedService<CartReservationCleanupService>();
+
+builder.Services.AddHostedService<CartReservationCleanupService>();
+
+// ===== اسنپ‌شاپ =====
+builder.Services.Configure<SnappshopSettings>(builder.Configuration.GetSection("Snappshop"));
+
+builder.Services.AddHttpClient<SnappshopClient>((sp, c) =>
+{
+    var s = sp.GetRequiredService<IOptions<SnappshopSettings>>().Value;
+    c.BaseAddress = new Uri(s.BaseUrl.TrimEnd('/') + "/");
+    c.Timeout = TimeSpan.FromSeconds(30);
+    c.DefaultRequestHeaders.Add("Agent-User", s.AgentUser);
+    c.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", s.Token);
+});
+
+builder.Services.AddScoped<SnappshopSyncService>();
+builder.Services.AddHostedService<SnappshopSyncBackgroundService>();
 
 // آپلودها (بنر/برند/دسته‌بندی/محصول) رو از یک مسیر فیزیکی قابل‌تنظیم سرو می‌کنیم، نه لزوماً
 // wwwroot/uploads خود پروژه؛ چون هر بار publish/ری‌دیپلوی معمولاً کل پوشه‌ی سایت رو با نسخه‌ی
@@ -367,6 +386,16 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
+// در Program.cs قبل از app.MapControllers()
+app.Use(async (ctx, next) =>
+{
+    try { await next(); }
+    catch (SnappshopApiException ex)
+    {
+        ctx.Response.StatusCode = 502;
+        await ctx.Response.WriteAsJsonAsync(new { error = ex.Message, apiCode = ex.ApiCode });
+    }
+});
 app.MapControllers();
 
 app.Run();
